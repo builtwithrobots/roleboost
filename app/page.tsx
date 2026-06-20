@@ -1,13 +1,16 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getRequestClient } from '@/lib/supabase/server';
+import LandingPage from '@/components/landing/LandingPage';
 
 export default async function HomePage() {
-  try {
-    const { userId } = await auth();
-    if (!userId) redirect('/sign-in');
+  const { userId } = await auth();
 
-    // Check if this user already has a role — returning users skip onboarding
+  if (!userId) {
+    return <LandingPage />;
+  }
+
+  try {
     const supabase = await getRequestClient();
     const { data: user } = await supabase
       .from('users')
