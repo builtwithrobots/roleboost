@@ -1,4 +1,4 @@
-# [PLATFORM NAME] — Vision Document
+# RoleBoost — Vision Document
 **Version 1.0 | June 2026 | Rob Ramos, Founder**
 
 ---

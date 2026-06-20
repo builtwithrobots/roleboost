@@ -1,4 +1,4 @@
-# [APPNAME]
+# RoleBoost
 
 > The multi-format candidate narrative platform. One link. Every version of you. Finally heard.
 
@@ -6,7 +6,7 @@
 
 ## What This Is
 
-[APPNAME] is a two-sided SaaS platform that replaces the resume with a rich, shareable candidate profile. Job seekers upload their resume and context, receive an AI-engineered prompt to run through Google NotebookLM, and get back a suite of professional career assets -- audio narrative, video overview, slide deck, career infographic, and ATS resume. Those assets are hosted on a shareable profile page that opens as a pop-up modal for employers.
+RoleBoost is a two-sided SaaS platform that replaces the resume with a rich, shareable candidate profile. Job seekers upload their resume and context, receive an AI-engineered prompt to run through Google NotebookLM, and get back a suite of professional career assets -- audio narrative, video overview, slide deck, career infographic, and ATS resume. Those assets are hosted on a shareable profile page that opens as a pop-up modal for employers.
 
 Employers get a candidate management dashboard where they can save candidates to a pool, attach them to job postings, move them through hiring stages, collaborate with their team, and send feedback directly to candidates.
 
@@ -113,7 +113,7 @@ npm run dev
 ## Project Structure
 
 ```
-[appname]/
+roleboost/
 ├── app/
 │   ├── (auth)/                  # Clerk auth pages
 │   ├── (candidate)/             # Candidate dashboard
@@ -161,7 +161,7 @@ npm run dev
 
 ### Two-Sided Platform
 
-[APPNAME] serves two user types that interact through a shared asset layer.
+RoleBoost serves two user types that interact through a shared asset layer.
 
 ```
 Candidate                    Platform                    Employer
@@ -193,7 +193,7 @@ Candidate dashboard                    Employer dashboard
 Every candidate gets a permanent, public URL:
 
 ```
-[APPNAME].com/c/[slug]
+roleboost.com/c/[slug]
 ```
 
 This URL is shareable anywhere -- LinkedIn bio, email signature, job applications. When opened, it renders the candidate profile modal. No login required to view.

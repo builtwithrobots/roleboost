@@ -1,4 +1,4 @@
-# CLAUDE.md — [APPNAME]
+# CLAUDE.md — RoleBoost
 
 > This file is the project memory for Claude Code. Read it at the start of every session.
 > Last updated: June 2026
@@ -7,7 +7,7 @@
 
 ## What This Project Is
 
-[APPNAME] is a two-sided candidate narrative platform. Job seekers upload their resume and context, the platform generates an elite AI prompt, and they use Google NotebookLM to produce a suite of professional career assets -- audio narrative, video overview, slide deck, career infographic, and ATS resume. Those assets are hosted on a shareable candidate profile page that opens as a pop-up modal when clicked. Employers get a candidate management dashboard with job postings, stage tracking, team collaboration, and a feedback loop back to candidates.
+RoleBoost is a two-sided candidate narrative platform. Job seekers upload their resume and context, the platform generates an elite AI prompt, and they use Google NotebookLM to produce a suite of professional career assets -- audio narrative, video overview, slide deck, career infographic, and ATS resume. Those assets are hosted on a shareable candidate profile page that opens as a pop-up modal when clicked. Employers get a candidate management dashboard with job postings, stage tracking, team collaboration, and a feedback loop back to candidates.
 
 **The one-line pitch:** "When everyone sounds the same on paper -- be heard."
 
@@ -47,7 +47,7 @@ After a command fails, fix the underlying issue before moving on. Do not suppres
 ## Project Structure
 
 ```
-[appname]/
+roleboost/
 ├── app/
 │   ├── (auth)/                  # Clerk auth pages (sign-in, sign-up, onboarding)
 │   ├── (candidate)/             # Candidate-facing pages
