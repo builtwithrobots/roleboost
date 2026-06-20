@@ -1,1 +1,371 @@
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   ROLEBOOST DESIGN SYSTEM
+   Style: Enterprise SaaS — Linear × Notion × Spotify
+   Stack: Next.js 16 · Tailwind v4 · Catalyst UI Kit · Headless UI
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Class-based dark mode — add .dark to <html> to activate */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ── Typography ─────────────────────────────────────────────────
+     Display: Plus Jakarta Sans — headings, hero text, labels
+     Body:    Inter            — all prose, UI text, inputs
+     Mono:    JetBrains Mono   — stats, data values, timestamps
+  ─────────────────────────────────────────────────────────────── */
+  --font-display: var(--font-display), "Plus Jakarta Sans", sans-serif;
+  --font-body:    var(--font-body), "Inter", sans-serif;
+  --font-sans:    var(--font-body), "Inter", sans-serif;
+  --font-mono:    var(--font-mono), "JetBrains Mono", monospace;
+
+  /* ── Brand: Indigo-Violet gradient identity ─────────────────────
+     Primary #4F46E5 — buttons, active nav, links, focus rings
+     Secondary #7C3AED — gradient terminus, hover accents
+  ─────────────────────────────────────────────────────────────── */
+  --color-brand-50:  #EEF2FF;
+  --color-brand-100: #E0E7FF;
+  --color-brand-200: #C7D2FE;
+  --color-brand-300: #A5B4FC;
+  --color-brand-400: #818CF8;
+  --color-brand-500: #6366F1;
+  --color-brand-600: #4F46E5;
+  --color-brand-700: #4338CA;
+  --color-brand-800: #3730A3;
+  --color-brand-900: #312E81;
+  --color-brand-950: #1E1B4B;
+
+  --color-violet-400: #A78BFA;
+  --color-violet-500: #8B5CF6;
+  --color-violet-600: #7C3AED;
+  --color-violet-700: #6D28D9;
+
+  /* ── Candidate Stage Colors (board columns, badges) ─────────────
+     Each stage has a foreground-safe value meeting WCAG 3:1 on white.
+  ─────────────────────────────────────────────────────────────── */
+  --color-stage-saved:      #64748B;   /* slate-500  — neutral, entry */
+  --color-stage-screening:  #2563EB;   /* blue-600   — active review  */
+  --color-stage-interview:  #D97706;   /* amber-600  — high priority  */
+  --color-stage-offer:      #059669;   /* emerald-600— positive       */
+  --color-stage-passed:     #DC2626;   /* red-600    — closed         */
+
+  /* Stage backgrounds (column fills, badge backgrounds) */
+  --color-stage-saved-bg:      #F1F5F9;  /* slate-100  */
+  --color-stage-screening-bg:  #DBEAFE;  /* blue-100   */
+  --color-stage-interview-bg:  #FEF3C7;  /* amber-100  */
+  --color-stage-offer-bg:      #D1FAE5;  /* emerald-100*/
+  --color-stage-passed-bg:     #FEE2E2;  /* red-100    */
+
+  /* ── Semantic Status ────────────────────────────────────────────*/
+  --color-success:        #059669;   /* emerald-600 */
+  --color-success-bg:     #D1FAE5;   /* emerald-100 */
+  --color-warning:        #D97706;   /* amber-600   */
+  --color-warning-bg:     #FEF3C7;   /* amber-100   */
+  --color-error:          #DC2626;   /* red-600     */
+  --color-error-bg:       #FEE2E2;   /* red-100     */
+  --color-info:           #2563EB;   /* blue-600    */
+  --color-info-bg:        #DBEAFE;   /* blue-100    */
+
+  /* ── Border Radius Scale ────────────────────────────────────────
+     Applied consistently: inputs=md, buttons=md, cards=xl, modals=2xl
+  ─────────────────────────────────────────────────────────────── */
+  --radius-xs:   0.25rem;   /*  4px — tags, tiny chips        */
+  --radius-sm:   0.375rem;  /*  6px — small badges, tooltips  */
+  --radius-md:   0.5rem;    /*  8px — inputs, buttons         */
+  --radius-lg:   0.625rem;  /* 10px — default cards           */
+  --radius-xl:   0.75rem;   /* 12px — dashboard cards         */
+  --radius-2xl:  1rem;      /* 16px — modals, drawers         */
+  --radius-3xl:  1.5rem;    /* 24px — hero cards              */
+  --radius-full: 9999px;    /* pills, avatars, progress bars  */
+
+  /* ── Shadow Scale ───────────────────────────────────────────────
+     Indigo-tinted shadows on hover = premium brand signature
+  ─────────────────────────────────────────────────────────────── */
+  --shadow-xs:      0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-sm:      0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-card:    0 1px 4px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 16px rgb(79 70 229 / 0.10), 0 2px 6px rgb(0 0 0 / 0.05);
+  --shadow-modal:   0 24px 64px rgb(0 0 0 / 0.14), 0 8px 24px rgb(0 0 0 / 0.08);
+  --shadow-player:  0 -2px 20px rgb(0 0 0 / 0.10), 0 -1px 4px rgb(0 0 0 / 0.06);
+  --shadow-dropdown:0 4px 16px rgb(0 0 0 / 0.08), 0 1px 4px rgb(0 0 0 / 0.05);
+  --shadow-focus:   0 0 0 3px rgb(79 70 229 / 0.20);
+
+  /* ── Animation Tokens ───────────────────────────────────────────
+     Spring easing = Linear's signature feel (expo.out)
+     All UI transitions stay in 150–300ms range (WCAG motion rules)
+  ─────────────────────────────────────────────────────────────── */
+  --duration-fast:    150ms;
+  --duration-base:    200ms;
+  --duration-slow:    300ms;
+  --duration-enter:   250ms;
+  --duration-exit:    175ms;   /* exits shorter than enters */
+
+  --ease-standard:   cubic-bezier(0.4, 0, 0.2, 1);   /* Material standard */
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);      /* enter from below */
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);      /* exit upward */
+  --ease-spring:     cubic-bezier(0.16, 1, 0.3, 1);   /* expo.out — premium */
+
+  /* ── Z-Index Scale ──────────────────────────────────────────────
+     Defined once. Referenced everywhere. No ad-hoc z values.
+  ─────────────────────────────────────────────────────────────── */
+  --z-base:     0;
+  --z-raised:   10;    /* card hover lift            */
+  --z-dropdown: 20;    /* dropdowns, popovers        */
+  --z-sticky:   30;    /* sticky headers, filter bars*/
+  --z-overlay:  40;    /* modal backdrops            */
+  --z-modal:    50;    /* modals, dialogs            */
+  --z-player:   60;    /* playlist bar (above modals)*/
+  --z-toast:    70;    /* toast notifications        */
+  --z-tooltip:  80;    /* tooltips (topmost)         */
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEMANTIC COLOR TOKENS
+   Light-mode defaults in :root — override in .dark
+   Reference in components as: bg-[--rb-bg-page], text-[--rb-text]
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Surfaces */
+  --rb-bg-page:          #F8FAFC;   /* slate-50  — outermost bg  */
+  --rb-bg-surface:       #FFFFFF;   /* cards, panels             */
+  --rb-bg-surface-raised:#F1F5F9;   /* slate-100 — hover, raised */
+  --rb-bg-surface-sunken:#E2E8F0;   /* slate-200 — inset areas   */
+  --rb-bg-sidebar:       #FFFFFF;   /* sidebar background        */
+  --rb-bg-modal:         #FFFFFF;   /* modal background          */
+  --rb-bg-input:         #FFFFFF;   /* input field background    */
+
+  /* Text */
+  --rb-text:             #0F172A;   /* slate-900 — primary text  */
+  --rb-text-secondary:   #475569;   /* slate-600 — secondary     */
+  --rb-text-muted:       #94A3B8;   /* slate-400 — placeholder   */
+  --rb-text-inverse:     #FFFFFF;   /* on dark backgrounds       */
+  --rb-text-brand:       #4F46E5;   /* brand-colored text        */
+
+  /* Borders */
+  --rb-border:           #E2E8F0;   /* slate-200 — default       */
+  --rb-border-strong:    #CBD5E1;   /* slate-300 — emphasis      */
+  --rb-border-brand:     #A5B4FC;   /* brand-200 — brand border  */
+  --rb-border-focus:     #4F46E5;   /* brand-600 — focus ring    */
+
+  /* Interactive */
+  --rb-brand:            #4F46E5;
+  --rb-brand-hover:      #4338CA;   /* brand-700 — darken        */
+  --rb-brand-subtle:     #EEF2FF;   /* brand-50  — subtle tint   */
+  --rb-brand-gradient:   linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+
+  /* Playlist player */
+  --rb-player-bg:        #0F172A;   /* slate-900 — Spotify-dark  */
+  --rb-player-text:      #F1F5F9;
+  --rb-player-muted:     #64748B;
+  --rb-player-border:    #1E293B;   /* slate-800                 */
+
+  /* Overlay */
+  --rb-overlay:          rgb(15 23 42 / 0.60);   /* modal backdrop*/
+  --rb-scrim:            rgb(15 23 42 / 0.80);   /* fullscreen    */
+}
+
+/* Dark mode overrides */
+.dark {
+  /* Surfaces */
+  --rb-bg-page:          #070711;   /* near-black, not pure #000 */
+  --rb-bg-surface:       #0F0F1A;   /* dark card                 */
+  --rb-bg-surface-raised:#1A1A2E;   /* elevated surface          */
+  --rb-bg-surface-sunken:#050508;   /* sunken input/inset        */
+  --rb-bg-sidebar:       #0A0A15;   /* sidebar in dark mode      */
+  --rb-bg-modal:         #111120;   /* modal in dark mode        */
+  --rb-bg-input:         #131326;   /* input in dark mode        */
+
+  /* Text */
+  --rb-text:             #F1F5F9;   /* slate-100 — primary text  */
+  --rb-text-secondary:   #94A3B8;   /* slate-400 — secondary     */
+  --rb-text-muted:       #475569;   /* slate-600 — placeholder   */
+  --rb-text-inverse:     #0F172A;
+  --rb-text-brand:       #818CF8;   /* brand-400 — lighter brand */
+
+  /* Borders */
+  --rb-border:           rgb(255 255 255 / 0.08);
+  --rb-border-strong:    rgb(255 255 255 / 0.14);
+  --rb-border-brand:     rgb(99 102 241 / 0.40);
+  --rb-border-focus:     #6366F1;
+
+  /* Interactive */
+  --rb-brand:            #6366F1;   /* brand-500 — slightly lighter*/
+  --rb-brand-hover:      #818CF8;   /* brand-400 — lighter hover  */
+  --rb-brand-subtle:     rgb(79 70 229 / 0.12);
+  --rb-brand-gradient:   linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+
+  /* Player stays dark in both modes */
+  --rb-player-bg:        #070711;
+  --rb-player-text:      #F1F5F9;
+  --rb-player-muted:     #475569;
+  --rb-player-border:    rgb(255 255 255 / 0.06);
+
+  /* Overlay */
+  --rb-overlay:          rgb(0 0 0 / 0.70);
+  --rb-scrim:            rgb(0 0 0 / 0.90);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--rb-bg-page);
+  color: var(--rb-text);
+  font-family: var(--font-body), "Inter", sans-serif;
+  font-size: 1rem;        /* 16px — prevents iOS auto-zoom on inputs */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Focus Styles ───────────────────────────────────────────────────
+   2px solid brand ring + 2px offset — WCAG 2.1 AA compliant
+   Respect prefers-reduced-motion for all transitions
+────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--rb-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Typography Defaults ────────────────────────────────────────────
+   Headings use display font. Data values use mono.
+────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), "Plus Jakarta Sans", sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--rb-text);
+}
+
+/* Stat values, timestamps, asset counts — tabular figures */
+.font-data {
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Interactive Defaults ───────────────────────────────────────────*/
+button, [role="button"] {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Stage Badge Utilities ──────────────────────────────────────────
+   Usage: <span class="stage-badge stage-screening">Screening</span>
+────────────────────────────────────────────────────────────────── */
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.stage-saved {
+  background-color: var(--color-stage-saved-bg);
+  color: var(--color-stage-saved);
+}
+
+.stage-screening {
+  background-color: var(--color-stage-screening-bg);
+  color: var(--color-stage-screening);
+}
+
+.stage-interview {
+  background-color: var(--color-stage-interview-bg);
+  color: var(--color-stage-interview);
+}
+
+.stage-offer {
+  background-color: var(--color-stage-offer-bg);
+  color: var(--color-stage-offer);
+}
+
+.stage-passed {
+  background-color: var(--color-stage-passed-bg);
+  color: var(--color-stage-passed);
+}
+
+/* ── Brand Gradient Text ────────────────────────────────────────────
+   Usage: <h1 class="gradient-text">Your career. Your AI.</h1>
+────────────────────────────────────────────────────────────────── */
+.gradient-text {
+  background: var(--rb-brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Card Defaults ──────────────────────────────────────────────────
+   Consistent card treatment used across candidate and employer UIs
+────────────────────────────────────────────────────────────────── */
+.rb-card {
+  background-color: var(--rb-bg-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--duration-base) var(--ease-standard),
+              transform var(--duration-base) var(--ease-standard);
+}
+
+.rb-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ── Scrollbar Styling ──────────────────────────────────────────────
+   Thin, branded scrollbars in WebKit browsers
+────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--rb-border-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--rb-text-muted);
+}
+
+/* ── Playlist Player Clearance ──────────────────────────────────────
+   When the player bar is visible, the main content needs bottom padding.
+   Applied by PlaylistContext to the employer layout wrapper.
+────────────────────────────────────────────────────────────────── */
+.has-player {
+  padding-bottom: 5rem; /* 80px — player bar height */
+}
