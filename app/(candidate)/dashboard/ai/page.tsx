@@ -1,3 +1,8 @@
-export default function Page() {
-  return <h1 className="font-display text-2xl font-bold text-[--rb-text]">Ai</h1>
+export default function AIStudioPage() {
+  return (
+    <div className="p-8">
+      <h1 className="font-display text-2xl font-bold text-[--rb-text-primary]">AI Studio</h1>
+      <p className="mt-2 text-[--rb-text-muted]">Train and test your personal career AI.</p>
+    </div>
+  );
 }

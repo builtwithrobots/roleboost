@@ -1,24 +1,27 @@
-import { redirect } from 'next/navigation'
-import { getUserContext, AuthError } from '@/lib/auth/user-context'
-import { SidebarLayout } from '@/components/ui/sidebar-layout'
-import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarSpacer } from '@/components/ui/sidebar'
-import RoleBoostLogo from '@/components/layout/RoleBoostLogo'
-import EmployerNav from '@/components/layout/EmployerNav'
-import SubscriptionBadge from '@/components/layout/SubscriptionBadge'
-import UserMenu from '@/components/layout/UserMenu'
+import { redirect } from 'next/navigation';
+import { getUserContext, AuthError, getAdminPreviewRole } from '@/lib/auth/user-context';
+import { SidebarLayout } from '@/components/ui/sidebar-layout';
+import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarSpacer } from '@/components/ui/sidebar';
+import RoleBoostLogo from '@/components/layout/RoleBoostLogo';
+import EmployerNav from '@/components/layout/EmployerNav';
+import SubscriptionBadge from '@/components/layout/SubscriptionBadge';
+import UserMenu from '@/components/layout/UserMenu';
+import AdminPreviewBanner from '@/components/layout/AdminPreviewBanner';
 
 export default async function EmployerLayout({ children }: { children: React.ReactNode }) {
-  let ctx
+  let ctx;
   try {
-    ctx = await getUserContext('employer')
+    ctx = await getUserContext('employer');
   } catch (e) {
     if (e instanceof AuthError) {
-      if (e.code === 'UNAUTHENTICATED') redirect('/sign-in')
-      if (e.code === 'FORBIDDEN') redirect('/dashboard/profile')
-      redirect('/onboarding')
+      if (e.code === 'UNAUTHENTICATED') redirect('/sign-in');
+      if (e.code === 'FORBIDDEN') redirect('/dashboard/profile');
+      redirect('/onboarding');
     }
-    throw e
+    throw e;
   }
+
+  const previewRole = ctx.isAdmin ? await getAdminPreviewRole() : null;
 
   const sidebar = (
     <Sidebar>
@@ -41,11 +44,14 @@ export default async function EmployerLayout({ children }: { children: React.Rea
         <UserMenu role="employer" />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 
   return (
-    <SidebarLayout navbar={<RoleBoostLogo compact />} sidebar={sidebar}>
-      {children}
-    </SidebarLayout>
-  )
+    <>
+      {previewRole === 'employer' && <AdminPreviewBanner previewRole="employer" />}
+      <SidebarLayout navbar={<RoleBoostLogo compact />} sidebar={sidebar}>
+        {children}
+      </SidebarLayout>
+    </>
+  );
 }

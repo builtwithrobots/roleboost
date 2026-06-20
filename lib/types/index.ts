@@ -1,4 +1,4 @@
-export type UserRole = 'candidate' | 'employer';
+export type UserRole = 'candidate' | 'employer' | 'admin';
 export type SubscriptionStatus = 'free' | 'active' | 'cancelled' | 'past_due';
 export type SubscriptionTier = 'basic' | 'pro' | 'starter' | 'growth' | 'scale';
 export type AssetType = 'audio' | 'video' | 'deck' | 'infographic' | 'resume';
@@ -10,6 +10,7 @@ export interface User {
   clerk_user_id: string;
   role: UserRole;
   email: string;
+  is_admin: boolean;
   paddle_subscription_id: string | null;
   subscription_status: SubscriptionStatus;
   subscription_tier: SubscriptionTier | null;
