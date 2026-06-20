@@ -86,14 +86,6 @@ CREATE TABLE employer_accounts (
 );
 
 ALTER TABLE employer_accounts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY employer_accounts_members ON employer_accounts
-  FOR ALL TO authenticated
-  USING (
-    id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
-    )
-  );
 
 -- Employer team members
 CREATE TABLE employer_members (
@@ -108,6 +100,17 @@ CREATE TABLE employer_members (
 );
 
 ALTER TABLE employer_members ENABLE ROW LEVEL SECURITY;
+
+-- employer_accounts policy deferred until after employer_members exists
+CREATE POLICY employer_accounts_members ON employer_accounts
+  FOR ALL TO authenticated
+  USING (
+    id IN (
+      SELECT employer_account_id FROM employer_members
+      WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
 CREATE POLICY employer_members_same_account ON employer_members
   FOR ALL TO authenticated
   USING (
