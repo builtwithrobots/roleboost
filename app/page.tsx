@@ -21,9 +21,10 @@ export default async function HomePage() {
     if (!user) redirect('/onboarding');
     if (user.role === 'candidate') redirect('/dashboard/profile');
     if (user.role === 'employer') redirect('/dashboard/candidates');
+    if (user.role === 'admin') redirect('/admin');
 
     redirect('/onboarding');
   } catch {
-    redirect('/sign-in');
+    redirect('/onboarding');
   }
 }
