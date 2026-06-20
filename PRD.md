@@ -1,4 +1,4 @@
-# PRD.md — [APPNAME] Product Requirements Document
+# PRD.md — RoleBoost Product Requirements Document
 
 **Version:** 1.0
 **Last updated:** June 2026
@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-[APPNAME] is a two-sided SaaS platform replacing the resume with a rich, shareable candidate narrative. Candidates upload their assets and get a hosted profile page with a pop-up modal experience. Employers save candidates, manage job postings, assign stages, collaborate with their team, and send feedback.
+RoleBoost is a two-sided SaaS platform replacing the resume with a rich, shareable candidate narrative. Candidates upload their assets and get a hosted profile page with a pop-up modal experience. Employers save candidates, manage job postings, assign stages, collaborate with their team, and send feedback.
 
 **Core user types:**
 - **Candidate** -- job seeker uploading career assets and sharing their profile link
@@ -36,7 +36,7 @@
 
 After first sign-up, every user lands on the onboarding screen before they see any dashboard.
 
-**Screen:** "How are you using [APPNAME]?"
+**Screen:** "How are you using RoleBoost?"
 
 Two options displayed as large, tappable cards:
 - "I am looking for my next role" → sets role to `candidate`
@@ -70,7 +70,7 @@ Three-step flow before reaching the dashboard.
 **Step 3 -- Profile slug:**
 - Auto-generated from full name (e.g. `robert-ramos`)
 - Editable -- must be unique, lowercase, alphanumeric and hyphens only
-- Show live preview of their public URL: `[APPNAME].com/c/[slug]`
+- Show live preview of their public URL: `roleboost.com/c/[slug]`
 
 On completion:
 - Insert row into `candidate_profiles`
@@ -127,7 +127,7 @@ The main hub for candidates to manage their profile and assets.
 - Profile visibility toggle (Published / Draft)
 
 **Shareable link section:**
-- Displays their full public URL: `[APPNAME].com/c/[slug]`
+- Displays their full public URL: `roleboost.com/c/[slug]`
 - Copy to clipboard button
 - Shows view count badge if on Basic or Pro tier
 
@@ -864,7 +864,7 @@ All UI must meet WCAG 2.1 AA. This is non-negotiable and applies to every compon
 
 Do not build these. Push back if asked.
 
-- AI generation on the platform (NotebookLM does the generation -- [APPNAME] is hosting and delivery)
+- AI generation on the platform (NotebookLM does the generation -- RoleBoost is hosting and delivery)
 - Drag and drop Kanban board (dropdown stage assignment in MVP)
 - Employer candidate browse/search directory (employers save via shared links only)
 - Resume parsing or ATS keyword optimization
