@@ -1,5 +1,7 @@
+---
 name: using-tmux-for-interactive-commands
 description: Use when you need to run interactive CLI tools (vim, git rebase -i, Python REPL, etc.) that require real-time input/output - provides tmux-based approach for controlling interactive sessions through detached sessions and send-keys
+---
 
 # Using tmux for Interactive Commands
 
@@ -10,7 +12,6 @@ Interactive CLI tools (vim, interactive git rebase, REPLs, etc.) cannot be contr
 ## When to Use
 
 **Use tmux when:**
-
 - Running vim, nano, or other text editors programmatically
 - Controlling interactive REPLs (Python, Node, etc.)
 - Handling interactive git commands (`git rebase -i`, `git add -p`)
@@ -18,7 +19,6 @@ Interactive CLI tools (vim, interactive git rebase, REPLs, etc.) cannot be contr
 - Commands that require terminal control codes or readline
 
 **Don't use for:**
-
 - Simple non-interactive commands (use regular Bash tool)
 - Commands that accept input via stdin redirection
 - One-shot commands that don't need interaction
@@ -36,14 +36,12 @@ Interactive CLI tools (vim, interactive git rebase, REPLs, etc.) cannot be contr
 ## Core Pattern
 
 ### Before (Won't Work)
-
 ```bash
 # This hangs because vim expects interactive terminal
 bash -c "vim file.txt"
 ```
 
 ### After (Works)
-
 ```bash
 # Create detached tmux session
 tmux new-session -d -s edit_session vim file.txt
@@ -72,7 +70,6 @@ tmux kill-session -t edit_session
 ### Special Keys
 
 Common tmux key names:
-
 - `Enter` - Return/newline
 - `Escape` - ESC key
 - `C-c` - Ctrl+C
@@ -84,15 +81,30 @@ Common tmux key names:
 ### Working Directory
 
 Specify working directory when creating session:
-
 ```bash
 tmux new-session -d -s git_session -c /path/to/repo git rebase -i HEAD~3
+```
+
+### Helper Wrapper
+
+For easier use, see `/home/jesse/git/interactive-command/tmux-wrapper.sh`:
+```bash
+# Start session
+/path/to/tmux-wrapper.sh start <session-name> <command> [args...]
+
+# Send input
+/path/to/tmux-wrapper.sh send <session-name> 'text' Enter
+
+# Capture current state
+/path/to/tmux-wrapper.sh capture <session-name>
+
+# Stop
+/path/to/tmux-wrapper.sh stop <session-name>
 ```
 
 ## Common Patterns
 
 ### Python REPL
-
 ```bash
 tmux new-session -d -s python python3 -i
 tmux send-keys -t python 'import math' Enter
@@ -102,7 +114,6 @@ tmux kill-session -t python
 ```
 
 ### Vim Editing
-
 ```bash
 tmux new-session -d -s vim vim /tmp/file.txt
 sleep 0.3  # Wait for vim to start
@@ -111,7 +122,6 @@ tmux send-keys -t vim 'i' 'New content' Escape ':wq' Enter
 ```
 
 ### Interactive Git Rebase
-
 ```bash
 tmux new-session -d -s rebase -c /repo/path git rebase -i HEAD~3
 sleep 0.5
@@ -124,11 +134,9 @@ tmux send-keys -t rebase ':wq' Enter
 ## Common Mistakes
 
 ### Not Waiting After Session Start
-
 **Problem:** Capturing immediately after `new-session` shows blank screen
 
 **Fix:** Add brief sleep (100-500ms) before first capture
-
 ```bash
 tmux new-session -d -s sess command
 sleep 0.3  # Let command initialize
@@ -136,32 +144,26 @@ tmux capture-pane -t sess -p
 ```
 
 ### Forgetting Enter Key
-
 **Problem:** Commands typed but not executed
 
 **Fix:** Explicitly send Enter
-
 ```bash
 tmux send-keys -t sess 'print("hello")' Enter  # Note: Enter is separate argument
 ```
 
 ### Using Wrong Key Names
-
 **Problem:** `tmux send-keys -t sess '\n'` doesn't work
 
 **Fix:** Use tmux key names: `Enter`, not `\n`
-
 ```bash
 tmux send-keys -t sess 'text' Enter  # ✓
-tmux send-keys -t sess 'text\\n'      # ✗
+tmux send-keys -t sess 'text\n'      # ✗
 ```
 
 ### Not Cleaning Up Sessions
-
 **Problem:** Orphaned tmux sessions accumulate
 
 **Fix:** Always kill sessions when done
-
 ```bash
 tmux kill-session -t session_name
 # Or check for existing: tmux has-session -t name 2>/dev/null
