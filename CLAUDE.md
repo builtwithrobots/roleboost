@@ -7,11 +7,11 @@
 
 ## What This Project Is
 
-RoleBoost is a two-sided candidate narrative platform. Job seekers upload their resume and context, the platform generates an elite AI prompt, and they use Google NotebookLM to produce a suite of professional career assets -- audio narrative, video overview, slide deck, career infographic, and ATS resume. Those assets are hosted on a shareable candidate profile page that opens as a pop-up modal when clicked. Employers get a candidate management dashboard with job postings, stage tracking, team collaboration, and a feedback loop back to candidates.
+RoleBoost is the world's first AI-powered candidate intelligence platform. Job seekers upload their resume and career context, receive a complete multi-format career narrative produced via Google NotebookLM, get a personal career AI chatbot trained on their career data, and share one link that gives hiring managers everything they need -- audio, video, infographic, slide deck, ATS resume, and a live AI they can interrogate 24/7. Every AI conversation generates a transcript delivered by email to both sides. Candidates fine-tune their AI over time based on what recruiters actually ask.
 
-**The one-line pitch:** "When everyone sounds the same on paper -- be heard."
+**The one-line pitch:** "Your career. Your AI. Finally heard."
 
-**Independent codebase.** Standalone project under the `builtwithrobots` GitHub organization. No shared infrastructure with any other project.
+**Domain:** getroleboost.com (brand name: RoleBoost) **GitHub org:** builtwithrobots **Independent codebase.** No shared infrastructure with any other project.
 
 ---
 
@@ -21,10 +21,12 @@ RoleBoost is a two-sided candidate narrative platform. Job seekers upload their 
 |---|---|
 | Framework | Next.js App Router (TypeScript, strict mode) |
 | Styling | Tailwind CSS |
-| Auth | Clerk (single sign-up flow, role declared in onboarding) |
+| Auth | Clerk (single sign-up, role declared in onboarding) |
 | Database | Supabase (PostgreSQL) |
 | Storage | Supabase Storage (audio, video, documents, images) |
-| Payments | Paddle (candidate and employer subscription tiers) |
+| AI Chatbot | Anthropic Claude API (claude-haiku-4-5-20251001 for chat, claude-sonnet-4-6 for prompt generation) |
+| Email | Resend (transcript delivery to candidates and employers) |
+| Payments | Paddle (employer subscription tiers only -- candidates always free) |
 | Deployment | Vercel (auto-deploy from GitHub, `builtwithrobots` org) |
 | Validation | Zod (schema validation at every server entry point) |
 
@@ -36,11 +38,11 @@ Claude runs these to verify its own work. All are safe to run in any session.
 
 | Command | Purpose |
 |---|---|
-| `npm run build` | Production build. Run to confirm a change does not break the build. |
+| `npm run build` | Production build -- run after every non-trivial change. |
 | `npm run lint` | ESLint via `next lint`. |
-| `npx tsc --noEmit` | Typecheck. Run this after every non-trivial TypeScript change. |
+| `npx tsc --noEmit` | Typecheck -- run after every TypeScript change. |
 
-After a command fails, fix the underlying issue before moving on. Do not suppress type errors with `@ts-ignore` or `any` -- ask for clarification instead.
+After a command fails, fix the underlying issue before moving on. Never suppress type errors with `@ts-ignore` or `any` -- ask for clarification instead.
 
 ---
 
@@ -49,39 +51,48 @@ After a command fails, fix the underlying issue before moving on. Do not suppres
 ```
 roleboost/
 ├── app/
-│   ├── (auth)/                  # Clerk auth pages (sign-in, sign-up, onboarding)
-│   ├── (candidate)/             # Candidate-facing pages
+│   ├── (auth)/                  # Clerk auth pages
+│   ├── (candidate)/             # Candidate dashboard
 │   │   └── dashboard/
-│   │       ├── profile/         # Build and manage profile
+│   │       ├── profile/         # Profile builder and asset management
 │   │       ├── assets/          # Upload and manage career assets
-│   │       ├── preview/         # Preview modal as employers see it
-│   │       ├── analytics/       # Profile view counts, engagement data
-│   │       └── feedback/        # Employer feedback received
-│   ├── (employer)/              # Employer-facing pages
+│   │       ├── ai/              # AI chatbot fine-tuning interface
+│   │       ├── transcripts/     # All recruiter conversation transcripts
+│   │       ├── analytics/       # Profile view and engagement data
+│   │       └── preview/         # Preview modal as employers see it
+│   ├── (employer)/              # Employer dashboard
 │   │   └── dashboard/
 │   │       ├── candidates/      # Saved candidate pool
 │   │       ├── jobs/            # Job postings management
 │   │       ├── board/           # Candidate board with stage assignment
+│   │       ├── transcripts/     # Saved AI chat transcripts
 │   │       └── team/            # Team member management
-│   ├── c/[slug]/                # Public candidate profile page (modal experience)
+│   ├── c/[slug]/                # Public candidate profile -- modal experience
 │   └── api/
+│       ├── chat/                # AI chatbot endpoint
+│       ├── transcripts/         # Transcript storage and email delivery
 │       ├── candidates/
 │       ├── employers/
 │       ├── assets/
 │       ├── jobs/
 │       ├── feedback/
-│       └── webhooks/            # Paddle webhook handler
+│       └── webhooks/
+│           └── paddle/
 ├── lib/
-│   ├── auth/                    # Clerk helpers, role and user context
-│   ├── supabase/                # Supabase clients (server, admin, browser)
-│   ├── storage/                 # Supabase Storage upload helpers
+│   ├── auth/                    # getUserContext(), AuthError
+│   ├── supabase/                # server.ts, admin.ts, browser.ts
+│   ├── storage/                 # Signed URL generation helpers
+│   ├── ai/                      # Claude API chat handler, prompt builder
+│   ├── email/                   # Resend email helpers, transcript templates
 │   └── types/                   # Shared TypeScript types
 ├── components/
 │   ├── modal/                   # Candidate profile pop-up modal
+│   ├── chat/                    # AI chat interface components
 │   ├── candidate/               # Candidate dashboard UI components
 │   ├── employer/                # Employer dashboard UI components
 │   └── ui/                      # Shared UI primitives
-└── middleware.ts                 # Clerk middleware -- role-based route protection
+└── supabase/
+    └── migrations/              # All database migrations
 ```
 
 ---
@@ -90,12 +101,12 @@ roleboost/
 
 ### Single Sign-Up Flow, Two Experiences
 
-There is one Clerk auth flow for all users. Role is declared during onboarding -- `candidate` or `employer`. After onboarding, routing diverges:
+One Clerk auth flow. Role declared in onboarding. After onboarding routing diverges:
 
 - Candidates land on `/dashboard/profile`
 - Employers land on `/dashboard/candidates`
 
-Role is stored in Supabase `users.role` -- never in Clerk metadata. Always look up role from Supabase on the server. Never trust client-side role claims.
+Role stored in Supabase `users.role` -- never in Clerk metadata. Always look up role from Supabase on the server. Never trust client-side role claims.
 
 ### user_id = Clerk userId (TEXT)
 
@@ -116,8 +127,6 @@ Hard rules:
 
 RLS is enabled on every user-scoped table from day one. A missed `.eq()` filter would silently leak data without RLS -- this makes that impossible.
 
-Pattern:
-
 ```sql
 CREATE OR REPLACE FUNCTION requesting_user_id() RETURNS text
 LANGUAGE sql STABLE
@@ -125,13 +134,6 @@ SECURITY DEFINER SET search_path = public, auth
 AS $$
   SELECT auth.jwt() ->> 'sub';
 $$;
-
-ALTER TABLE candidate_profiles ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY candidate_profiles_user_isolation ON candidate_profiles
-  FOR ALL TO authenticated
-  USING (clerk_user_id = requesting_user_id())
-  WITH CHECK (clerk_user_id = requesting_user_id());
 ```
 
 Rules:
@@ -139,97 +141,209 @@ Rules:
 - Server queries still include `.eq('clerk_user_id', userId)` as defense in depth and for index performance.
 - The admin client bypasses RLS -- treat every usage as security-review-worthy.
 
-### Employer Accounts and Team Members
+### AI Chatbot Architecture
 
-Employers operate in accounts. One employer creates an account and can invite team members. All saved candidates, job postings, and board data are scoped to the `employer_account_id`, not the individual user.
+The candidate career AI is a Claude API call with a dynamically built system prompt. No fine-tuning, no embeddings, no vector database needed for MVP.
 
-```sql
-CREATE TABLE employer_accounts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_name TEXT NOT NULL,
-  created_by TEXT NOT NULL, -- clerk_user_id of account creator
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+**System prompt construction (`lib/ai/build-system-prompt.ts`):**
 
-CREATE TABLE employer_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE CASCADE,
-  clerk_user_id TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'member', -- 'owner' | 'member'
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(employer_account_id, clerk_user_id)
-);
+```typescript
+export function buildCandidateSystemPrompt(candidate: CandidateProfile): string {
+  return `
+You are the career AI for ${candidate.full_name}. You represent them professionally to recruiters and hiring managers. You only answer questions using the career information provided below. If asked something outside this information, politely redirect to scheduling a direct conversation with the candidate.
+
+Never invent, embellish, or extrapolate beyond what is provided. If you do not know the answer from the provided data, say so honestly and suggest the recruiter connect directly.
+
+CAREER INFORMATION:
+${candidate.resume_text}
+
+CAREER CONTEXT:
+Target Role: ${candidate.target_role}
+Leadership Philosophy: ${candidate.leadership_philosophy}
+Key Wins: ${candidate.key_wins}
+Reasons for leaving each role: ${candidate.departure_reasons}
+Biggest professional challenge: ${candidate.biggest_challenge}
+Ideal team and work environment: ${candidate.ideal_environment}
+What they need from a manager: ${candidate.manager_needs}
+What they are not good at: ${candidate.honest_weaknesses}
+Questions they wish recruiters would ask: ${candidate.wish_questions}
+
+CUSTOM ANSWERS (candidate-refined, highest priority):
+${candidate.custom_qa_pairs}
+
+TOPICS TO REDIRECT:
+${candidate.redirect_topics}
+
+Keep responses concise, warm, and grounded. No corporate speak.
+  `.trim();
+}
 ```
 
-### Candidate Profile Slugs
+**Chat handler (`app/api/chat/route.ts`):**
 
-Every candidate gets a unique public URL: `/c/[slug]`. Slug is generated from their name on profile creation and stored in `candidate_profiles.slug`. Must be unique across the platform. If the slug is taken, append a short random suffix.
+```typescript
+export async function POST(request: Request) {
+  const { candidateSlug, message, sessionId, conversationHistory } = await request.json();
 
-The `/c/[slug]` route is **public** -- no Clerk session required to view a candidate profile. This is the shareable link candidates put in their email signatures, LinkedIn profiles, and job applications.
+  const candidate = await getCandidateBySlug(candidateSlug);
+  const systemPrompt = buildCandidateSystemPrompt(candidate);
+
+  const response = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 500,
+    system: systemPrompt,
+    messages: [
+      ...conversationHistory,
+      { role: 'user', content: message }
+    ]
+  });
+
+  const answer = response.content[0].text;
+
+  await logChatExchange({ candidateId: candidate.id, sessionId, question: message, answer });
+
+  return NextResponse.json({ answer, sessionId });
+}
+```
+
+### Transcript Delivery
+
+Every AI chat session generates a transcript delivered by email to both sides when the modal closes or after 30 minutes of inactivity.
+
+**Trigger:** Modal close event or inactivity timeout fires `POST /api/transcripts/deliver`
+
+**Candidate email:** Full transcript of all questions and answers, company name if employer is logged in, pattern insights if 3+ questions on same topic, link to fine-tune AI.
+
+**Employer email:** Full transcript, link to candidate profile, save candidate CTA, send feedback CTA.
+
+Use Resend for all email delivery. Templates live in `lib/email/templates/`.
+
+### Candidate AI Fine-Tuning
+
+Candidates refine their AI through the dashboard at `/dashboard/ai`:
+
+- See questions asked most frequently this week
+- See how their AI answered each one
+- Edit specific answers -- stored as `custom_qa_pairs` JSONB in `candidate_profiles`
+- Toggle privacy settings -- which topics redirect to direct conversation
+- Test mode -- ask their own AI questions in a sandbox
+
+Custom QA pairs are injected into the system prompt above base career data, giving them priority over resume-derived answers.
 
 ### Asset Storage
 
-Supabase Storage buckets:
+All buckets private. Assets served via signed URLs with 1-hour TTL.
 
-| Bucket | Access | Contents | Path Pattern |
-|---|---|---|---|
-| `candidate-audio` | Private (signed URL) | Audio overview files | `{clerk_user_id}/{filename}` |
-| `candidate-video` | Private (signed URL) | Video overview files | `{clerk_user_id}/{filename}` |
-| `candidate-documents` | Private (signed URL) | Slide decks, ATS resumes (PDF) | `{clerk_user_id}/{filename}` |
-| `candidate-images` | Private (signed URL) | Career infographics | `{clerk_user_id}/{filename}` |
+| Bucket | Contents |
+|---|---|
+| `candidate-audio` | Audio overview and debate audio files |
+| `candidate-video` | Video overview files |
+| `candidate-documents` | Slide decks and ATS resumes (PDF) |
+| `candidate-images` | Career infographics |
 
-Signed URL TTL: 1 hour. Regenerated on every profile modal load. Never store assets in a public bucket.
+File path pattern: `{clerk_user_id}/{timestamp}-{sanitized-filename}`
 
-The public `/c/[slug]` route generates fresh signed URLs server-side on every load. The modal client receives pre-signed URLs -- it never calls Supabase Storage directly.
+Signed URLs generated server-side on every modal load. Modal client receives pre-signed URLs -- never calls Supabase Storage directly.
 
-### Data Fetching -- RSC + Server Actions, API Routes Only for External Callers
+### Email Delivery -- Resend
 
-- **Reads** -- Server Components call Supabase directly via `getRequestClient()`. No API round-trip.
-- **Mutations** -- Server Actions (`"use server"`). Zod-validate input first, run the write, call `revalidatePath` before returning.
-- **`/api` routes** -- reserved for: Paddle webhook handler, external integrations, and any caller without a Clerk session.
+All transactional email goes through Resend. Two critical email types:
+
+1. **Transcript emails** -- triggered after every AI chat session
+2. **Feedback emails** -- triggered when employer sends feedback to candidate
+
+Both use React Email templates in `lib/email/templates/`. Never send email from client components -- always server-side via Server Actions or API routes.
+
+```typescript
+// lib/email/send-transcript.ts
+import 'server-only';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function sendTranscriptEmails(session: ChatSession, messages: ChatMessage[]) {
+  await resend.emails.send({
+    from: 'RoleBoost <transcripts@getroleboost.com>',
+    to: session.candidateEmail,
+    subject: `A recruiter just chatted with your RoleBoost AI`,
+    react: CandidateTranscriptEmail({ session, messages })
+  });
+
+  if (session.employerEmail) {
+    await resend.emails.send({
+      from: 'RoleBoost <transcripts@getroleboost.com>',
+      to: session.employerEmail,
+      subject: `Your RoleBoost conversation with ${session.candidateName}`,
+      react: EmployerTranscriptEmail({ session, messages })
+    });
+  }
+}
+```
+
+### Data Fetching -- RSC + Server Actions
+
+- **Reads** -- Server Components call Supabase via `getRequestClient()`. No API round-trip.
+- **Mutations** -- Server Actions (`"use server"`). Zod-validate first, write, `revalidatePath`.
+- **`/api` routes** -- reserved for: Paddle webhook handler, AI chat endpoint (`/api/chat`), transcript delivery (`/api/transcripts/deliver`), and any caller without a Clerk session.
 
 ### Default to Server Components
 
-Every `.tsx` in `app/` is a Server Component unless it explicitly opts out with `"use client"`. Opt in only when required: React hooks, browser APIs, interactive DOM event handlers, or third-party components that need them. Push the interactive subtree into a small `*Client.tsx` child and keep the parent on the server.
+Every `.tsx` in `app/` is a Server Component unless it explicitly opts out with `"use client"`. The chat interface is the primary client component -- it needs real-time state for the conversation. Push all other interactive subtrees into small `*Client.tsx` children.
 
 ### Candidate Profile Modal
 
-The modal is the core employer-facing experience. It is a React component rendered at `/c/[slug]` and also embedded inline inside the employer dashboard. Key rules:
+The core employer-facing experience. Rendered at `/c/[slug]` and inline inside the employer dashboard.
 
-- Modal opens without page navigation -- it overlays whatever the employer is looking at
-- Tabs: Audio | Video | Deck | Infographic | Resume
+Key rules:
+- Modal opens without page navigation
+- Tabs: Audio | Debate | Video | Deck | Infographic | Resume | Chat
+- Chat tab opens the AI conversation interface
 - Each tab loads its asset lazily -- do not preload all assets on open
-- Connect button triggers a direct message or email to the candidate
-- Save button adds candidate to the employer's pool (requires employer session)
-- Modal must be fully keyboard navigable and screen-reader accessible
-- Focus must be trapped inside the modal while open
-- ESC key closes the modal and returns focus to the trigger element
+- Focus trapped while open
+- ESC closes modal and returns focus to trigger element
+- Fully keyboard navigable
+- WCAG 2.1 AA compliant
 
 ### Employer Candidate Board
 
-The board is a filtered view of the employer's saved candidate pool, scoped to a specific job posting. Candidates are assigned to stages via a dropdown (MVP). Stages are fixed:
+Filtered view of saved candidate pool scoped to a job posting. Stage assignment via dropdown in MVP -- no drag and drop.
 
-`Saved → Screening → Interview → Offer → Passed`
-
-Do not build drag and drop in MVP. Stage assignment is a dropdown on each candidate card.
+Stages: `Saved → Screening → Interview → Offer → Passed`
 
 ### Paddle Payments
 
-Paddle handles all billing. Candidate and employer tiers are separate product/price IDs in Paddle.
+Candidate tier is always free. Paddle handles employer billing only.
 
-| Tier | Side | Price | Paddle Product |
-|---|---|---|---|
-| Basic | Candidate | $9/mo | `PADDLE_CANDIDATE_BASIC_PRICE_ID` |
-| Pro | Candidate | $19/mo | `PADDLE_CANDIDATE_PRO_PRICE_ID` |
-| Starter | Employer | $49/mo | `PADDLE_EMPLOYER_STARTER_PRICE_ID` |
-| Growth | Employer | $99/mo | `PADDLE_EMPLOYER_GROWTH_PRICE_ID` |
-| Scale | Employer | $249/mo | `PADDLE_EMPLOYER_SCALE_PRICE_ID` |
+| Variable | Tier |
+|---|---|
+| `PADDLE_EMPLOYER_STARTER_PRICE_ID` | Employer Starter $49/mo |
+| `PADDLE_EMPLOYER_GROWTH_PRICE_ID` | Employer Growth $99/mo |
+| `PADDLE_EMPLOYER_SCALE_PRICE_ID` | Employer Scale $249/mo |
 
-Paddle webhooks update `users.paddle_subscription_id` and `users.subscription_status` in Supabase. The webhook handler lives at `/api/webhooks/paddle`. Always verify the Paddle webhook signature before processing.
+Webhook handler at `/api/webhooks/paddle`. Always verify Paddle webhook signature before processing.
 
-Free tier limits enforced server-side:
-- Candidate free: 1 asset slot, no analytics, no feedback
-- Employer free: 5 saved candidates, 1 job posting, no team members
+---
+
+## Claude API Usage
+
+Two models. Two purposes. Never swap them.
+
+| Model | Use | Why |
+|---|---|---|
+| `claude-haiku-4-5-20251001` | AI chatbot responses | Fast, cheap, perfect for conversational chat |
+| `claude-sonnet-4-6` | Prompt generation, bullet summary generation | Higher quality for one-time generation tasks |
+
+Always import the Anthropic SDK from a server-only file. Never expose the API key to the client.
+
+```typescript
+// lib/ai/client.ts
+import 'server-only';
+import Anthropic from '@anthropic-ai/sdk';
+
+export const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY
+});
+```
 
 ---
 
@@ -237,116 +351,304 @@ Free tier limits enforced server-side:
 
 All migrations live in `supabase/migrations/`. Never edit the database manually -- always use migrations.
 
-### Core Tables
-
 ```sql
--- All users (candidates and employers share this table)
+-- Users
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_user_id TEXT NOT NULL UNIQUE,
-  role TEXT NOT NULL, -- 'candidate' | 'employer'
+  role TEXT NOT NULL CHECK (role IN ('candidate', 'employer')),
   email TEXT NOT NULL,
   paddle_subscription_id TEXT,
-  subscription_status TEXT DEFAULT 'free', -- 'free' | 'active' | 'cancelled' | 'past_due'
-  subscription_tier TEXT, -- 'basic' | 'pro' | 'starter' | 'growth' | 'scale'
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  subscription_status TEXT NOT NULL DEFAULT 'free'
+    CHECK (subscription_status IN ('free', 'active', 'cancelled', 'past_due')),
+  subscription_tier TEXT
+    CHECK (subscription_tier IN ('pro', 'starter', 'growth', 'scale')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Candidate profiles (one per candidate user)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY users_self ON users
+  FOR ALL TO authenticated
+  USING (clerk_user_id = requesting_user_id())
+  WITH CHECK (clerk_user_id = requesting_user_id());
+
+-- Candidate profiles
 CREATE TABLE candidate_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id TEXT NOT NULL UNIQUE REFERENCES users(clerk_user_id),
-  slug TEXT NOT NULL UNIQUE,
+  clerk_user_id TEXT NOT NULL UNIQUE REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+  slug TEXT NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9-]+$'),
   full_name TEXT NOT NULL,
-  headline TEXT, -- e.g. "Director of Operations | 20+ years warehouse leadership"
+  headline TEXT CHECK (char_length(headline) <= 200),
   target_role TEXT,
   location TEXT,
-  summary_bullets TEXT[], -- AI-generated or manually entered bullet points
-  is_published BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  linkedin_url TEXT,
+  resume_text TEXT,
+  summary_bullets TEXT[] DEFAULT '{}',
+  -- AI context fields
+  leadership_philosophy TEXT,
+  key_wins TEXT,
+  departure_reasons TEXT,
+  biggest_challenge TEXT,
+  ideal_environment TEXT,
+  manager_needs TEXT,
+  honest_weaknesses TEXT,
+  wish_questions TEXT,
+  custom_qa_pairs JSONB DEFAULT '[]',
+  redirect_topics TEXT[] DEFAULT '{}',
+  ai_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  -- Profile settings
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Career assets uploaded by candidates
+ALTER TABLE candidate_profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY candidate_profiles_owner ON candidate_profiles
+  FOR ALL TO authenticated
+  USING (clerk_user_id = requesting_user_id())
+  WITH CHECK (clerk_user_id = requesting_user_id());
+
+CREATE POLICY candidate_profiles_public_read ON candidate_profiles
+  FOR SELECT TO anon
+  USING (is_published = TRUE);
+
+-- Candidate assets
 CREATE TABLE candidate_assets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  candidate_profile_id UUID REFERENCES candidate_profiles(id) ON DELETE CASCADE,
-  clerk_user_id TEXT NOT NULL,
-  asset_type TEXT NOT NULL, -- 'audio' | 'video' | 'deck' | 'infographic' | 'resume'
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+  asset_type TEXT NOT NULL
+    CHECK (asset_type IN ('audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume')),
   storage_bucket TEXT NOT NULL,
   storage_path TEXT NOT NULL,
   file_name TEXT NOT NULL,
   file_size_bytes INTEGER,
-  duration_seconds INTEGER, -- audio/video only
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  duration_seconds INTEGER,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Employer accounts (team-level entity)
+ALTER TABLE candidate_assets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY candidate_assets_owner ON candidate_assets
+  FOR ALL TO authenticated
+  USING (clerk_user_id = requesting_user_id())
+  WITH CHECK (clerk_user_id = requesting_user_id());
+
+-- AI chat sessions
+CREATE TABLE chat_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  viewer_clerk_user_id TEXT REFERENCES users(clerk_user_id) ON DELETE SET NULL,
+  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE SET NULL,
+  employer_company_name TEXT,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ,
+  transcript_sent BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY chat_sessions_candidate_read ON chat_sessions
+  FOR SELECT TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+CREATE POLICY chat_sessions_employer_read ON chat_sessions
+  FOR SELECT TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+CREATE POLICY chat_sessions_insert ON chat_sessions
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (TRUE);
+
+-- AI chat messages
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chat_session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY chat_messages_session_access ON chat_messages
+  FOR ALL TO anon, authenticated
+  USING (
+    chat_session_id IN (
+      SELECT id FROM chat_sessions
+      WHERE
+        candidate_profile_id IN (
+          SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+        )
+        OR employer_account_id IN (
+          SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+        )
+    )
+  );
+
+-- Employer accounts
 CREATE TABLE employer_accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_name TEXT NOT NULL,
   industry TEXT,
-  created_by TEXT NOT NULL, -- clerk_user_id
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  team_size TEXT,
+  created_by TEXT NOT NULL REFERENCES users(clerk_user_id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE employer_accounts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY employer_accounts_members ON employer_accounts
+  FOR ALL TO authenticated
+  USING (
+    id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
 
 -- Employer team members
 CREATE TABLE employer_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE CASCADE,
-  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id),
-  role TEXT NOT NULL DEFAULT 'member', -- 'owner' | 'member'
-  created_at TIMESTAMPTZ DEFAULT NOW(),
+  employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
+  clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
+  invited_by TEXT REFERENCES users(clerk_user_id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(employer_account_id, clerk_user_id)
 );
 
--- Job postings created by employers
+ALTER TABLE employer_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY employer_members_same_account ON employer_members
+  FOR ALL TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+-- Job postings
 CREATE TABLE job_postings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE CASCADE,
+  employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   department TEXT,
   location TEXT,
   description TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by TEXT NOT NULL REFERENCES users(clerk_user_id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Candidates saved by employers (the candidate pool)
+ALTER TABLE job_postings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY job_postings_employer_account ON job_postings
+  FOR ALL TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+-- Saved candidates
 CREATE TABLE saved_candidates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE CASCADE,
-  candidate_profile_id UUID REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
   job_posting_id UUID REFERENCES job_postings(id) ON DELETE SET NULL,
-  stage TEXT NOT NULL DEFAULT 'saved', -- 'saved' | 'screening' | 'interview' | 'offer' | 'passed'
+  stage TEXT NOT NULL DEFAULT 'saved'
+    CHECK (stage IN ('saved', 'screening', 'interview', 'offer', 'passed')),
   notes TEXT,
-  saved_by TEXT NOT NULL, -- clerk_user_id of team member who saved
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  saved_by TEXT NOT NULL REFERENCES users(clerk_user_id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(employer_account_id, candidate_profile_id)
 );
 
--- Feedback sent from employers to candidates
+ALTER TABLE saved_candidates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY saved_candidates_employer_account ON saved_candidates
+  FOR ALL TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+-- Feedback
 CREATE TABLE feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE CASCADE,
-  candidate_profile_id UUID REFERENCES candidate_profiles(id) ON DELETE CASCADE,
-  sent_by TEXT NOT NULL, -- clerk_user_id
-  message TEXT NOT NULL,
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  sent_by TEXT NOT NULL REFERENCES users(clerk_user_id),
+  message TEXT NOT NULL CHECK (char_length(message) <= 1000),
+  is_read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Profile view analytics
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY feedback_employer ON feedback
+  FOR ALL TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+CREATE POLICY feedback_candidate_read ON feedback
+  FOR SELECT TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+CREATE POLICY feedback_candidate_update ON feedback
+  FOR UPDATE TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  )
+  WITH CHECK (TRUE);
+
+-- Profile views
 CREATE TABLE profile_views (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  candidate_profile_id UUID REFERENCES candidate_profiles(id) ON DELETE CASCADE,
-  viewer_clerk_user_id TEXT, -- NULL for anonymous views
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  viewer_clerk_user_id TEXT REFERENCES users(clerk_user_id) ON DELETE SET NULL,
   employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE SET NULL,
-  viewed_at TIMESTAMPTZ DEFAULT NOW(),
-  duration_seconds INTEGER -- how long they engaged
+  viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  duration_seconds INTEGER
 );
+
+ALTER TABLE profile_views ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY profile_views_candidate_read ON profile_views
+  FOR SELECT TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+
+CREATE POLICY profile_views_insert ON profile_views
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (TRUE);
 ```
 
 ---
@@ -355,11 +657,11 @@ CREATE TABLE profile_views (
 
 | Role | Who | Access |
 |---|---|---|
-| `candidate` | Job seeker | Own profile, own assets, own analytics, received feedback |
+| `candidate` | Job seeker | Own profile, own assets, own analytics, received feedback, transcripts |
 | `employer_owner` | Created the employer account | Full employer dashboard, team management, billing |
-| `employer_member` | Invited team member | Candidate pool, job board, feedback -- no billing |
+| `employer_member` | Invited team member | Candidate pool, job board, feedback, transcripts -- no billing |
 
-Role is stored in `users.role` as either `candidate` or `employer`. Employer sub-role (owner vs member) is stored in `employer_members.role`.
+Role stored in `users.role` as `candidate` or `employer`. Employer sub-role (owner vs member) stored in `employer_members.role`.
 
 ---
 
@@ -457,22 +759,21 @@ Every failed response uses this exact shape:
 | Clerk session but no user row | 403 | `NO_USER` |
 | Wrong role | 403 | `FORBIDDEN` |
 | Row not found | 404 | `NOT_FOUND` |
-| Supabase error | 500 | `INTERNAL` |
+| Supabase or API error | 500 | `INTERNAL` |
 
 ---
 
 ## Accessibility Requirements
 
-All UI must meet WCAG 2.1 AA from the start. Non-negotiable.
+All UI must meet WCAG 2.1 AA. Non-negotiable.
 
 - Minimum 44px touch targets on mobile
 - Minimum 4.5:1 color contrast ratio for normal text
-- Minimum 3:1 for large text and UI components
 - All interactive elements keyboard accessible
 - All images have meaningful alt text
-- Focus indicators visible on all focusable elements
 - Focus trapped inside modal while open
-- ESC key closes modal and returns focus to trigger
+- ESC closes modal and returns focus to trigger
+- Chat interface fully keyboard navigable
 - No reliance on color alone to convey information
 
 ---
@@ -508,52 +809,112 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
+# Anthropic
+ANTHROPIC_API_KEY=
+
+# Resend
+RESEND_API_KEY=
+
 # Paddle
 PADDLE_API_KEY=
 PADDLE_WEBHOOK_SECRET=
 NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=
-PADDLE_CANDIDATE_BASIC_PRICE_ID=
-PADDLE_CANDIDATE_PRO_PRICE_ID=
 PADDLE_EMPLOYER_STARTER_PRICE_ID=
 PADDLE_EMPLOYER_GROWTH_PRICE_ID=
 PADDLE_EMPLOYER_SCALE_PRICE_ID=
 
 # App
-NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+---
+
+## Build Phases
+
+### Phase 0 -- Foundation (Week 1-2)
+
+- Initialize Next.js with TypeScript and Tailwind
+- Configure Clerk
+- Configure Supabase with Clerk third-party auth
+- Run all database migrations
+- Create Supabase Storage buckets
+- Configure Resend domain and sending address
+- Set up Vercel under `builtwithrobots`
+- Configure all environment variables
+
+### Phase 1 -- Candidate Profiles and Modal (Week 2-4)
+
+- Onboarding -- role selection
+- Candidate onboarding -- 3 steps
+- Candidate dashboard layout and navigation
+- Profile editor
+- Asset upload (audio, debate audio, video, deck, infographic, resume)
+- Public modal at `/c/[slug]` (without chat tab)
+- View tracking
+- QR code generation
+- Badge download
+
+### Phase 2 -- Employer Dashboard (Week 4-7)
+
+- Employer onboarding -- 2 steps
+- Employer dashboard layout
+- Candidates tab -- saved pool
+- Save candidate from modal
+- Jobs tab
+- Board tab with stage assignment
+- Notes
+- Feedback compose, send, and email notification
+
+### Phase 3 -- AI Chatbot and Transcripts (Week 7-10)
+
+- Candidate context form -- deep career questions
+- System prompt builder (`lib/ai/build-system-prompt.ts`)
+- Claude Haiku chat endpoint (`/api/chat`)
+- Chat UI in modal (Chat tab)
+- Chat session and message logging
+- Candidate AI tab -- fine-tuning interface
+- Custom QA pairs
+- Privacy controls -- redirect topics and `ai_enabled` toggle
+- Testing sandbox -- candidate tests their own AI
+- Transcript delivery endpoint (`/api/transcripts/deliver`)
+- Candidate and employer transcript email templates
+- Transcripts tab for candidates and employers
+- Pattern recognition -- most asked questions
+
+### Phase 4 -- Payments and Polish (Week 10-12)
+
+- Paddle JS integration
+- Employer upgrade prompts at free tier limits
+- Checkout flow
+- Paddle webhook handler
+- Subscription status gates on features
+- Billing management via Paddle customer portal
+- Error states and empty states for all screens
+- Loading and skeleton screens
+- Candidate Pro upgrade flow
+- Analytics tab
 
 ---
 
 ## What Not to Build in MVP
 
-Push back if anyone asks for these during MVP:
+Push back if asked for these:
 
-- AI generation on the platform -- NotebookLM is the generation tool, the platform is hosting and delivery
-- Drag and drop Kanban board -- stage assignment is a dropdown in MVP
-- Employer candidate search or browse directory -- employers save via shared links only in MVP
-- Resume parsing or ATS keyword optimization -- not this product
-- Video recording in browser -- candidates upload pre-produced files only
-- Real-time notifications -- polling or manual refresh in MVP
-- Mobile app -- responsive web only
-- Social features, endorsements, or recommendations
-- Advanced analytics beyond view counts and engagement duration
-- Integration with external ATS systems
-
-These are Phase 2. Scope creep kills MVPs.
+- AI asset generation on platform -- NotebookLM is the production engine
+- Drag and drop Kanban -- dropdown stage assignment only
+- Employer candidate browse directory -- save via shared links only
+- Resume parsing or ATS keyword optimization
+- Video or audio recording in browser
+- Real-time chat notifications -- email transcripts are the delivery mechanism
+- Voice cloning for the AI chatbot
+- Multi-language support
+- Native mobile app
+- Social features or endorsements
+- External ATS integrations (Workday, Greenhouse, Lever)
+- Advanced AI model selection for chatbot
 
 ---
 
 ## Current Build Status
 
-**Phase:** Pre-development. Vision, PRD, and CLAUDE.md complete. Ready to scaffold.
-
-**Next steps:**
-1. Initialize Next.js project with TypeScript, Tailwind, Clerk, Supabase
-2. Build database schema and run migrations
-3. Build auth flow with role-based onboarding
-4. Build candidate profile and asset upload
-5. Build public modal at `/c/[slug]`
-6. Build employer dashboard and candidate pool
-7. Build job postings and board
-8. Build feedback loop
-9. Integrate Paddle payments
+**Phase:** Pre-development. Vision, PRD, and CLAUDE.md complete. Ready to begin Phase 0.
