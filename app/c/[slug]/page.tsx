@@ -1,9 +1,32 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import type { CandidateProfile } from '@/lib/types';
+import { adminClient } from '@/lib/supabase/admin';
+import CandidateModal from '@/components/modal/CandidateModal';
+import type { Metadata } from 'next';
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from('candidate_profiles')
+    .select('full_name, headline, target_role')
+    .eq('slug', slug)
+    .eq('is_published', true)
+    .single();
+
+  if (!data) return { title: 'Profile not found' };
+
+  return {
+    title: `${data.full_name} — RoleBoost`,
+    description: data.headline ?? (data.target_role ? `${data.target_role} on RoleBoost` : 'Career profile on RoleBoost'),
+  };
 }
 
 export default async function CandidateProfilePage({ params }: Props) {
@@ -14,28 +37,78 @@ export default async function CandidateProfilePage({ params }: Props) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data } = await supabase
+  // Fetch the public profile — anon client, RLS allows is_published = true
+  const { data: profileData } = await supabase
     .from('candidate_profiles')
-    .select('id, full_name, headline, target_role, location, summary_bullets')
+    .select('id, clerk_user_id, full_name, headline, target_role, location, linkedin_url, summary_bullets, ai_enabled')
     .eq('slug', slug)
     .eq('is_published', true)
     .single();
 
-  if (!data) notFound();
+  if (!profileData) notFound();
 
-  const profile = data as Pick<
-    CandidateProfile,
-    'id' | 'full_name' | 'headline' | 'target_role' | 'location' | 'summary_bullets'
-  >;
+  // Fetch active assets — use admin client to generate signed URLs for private buckets
+  const { data: assetData } = await (adminClient.from('candidate_assets') as any)
+    .select('asset_type, file_name, storage_bucket, storage_path')
+    .eq('candidate_profile_id', profileData.id)
+    .eq('is_active', true);
+
+  const assets: Array<{
+    asset_type: string;
+    file_name: string;
+    signed_url: string;
+  }> = [];
+
+  for (const asset of (assetData ?? [])) {
+    try {
+      const { data: signedData } = await (adminClient.storage
+        .from(asset.storage_bucket) as any)
+        .createSignedUrl(asset.storage_path, 3600);
+      if (signedData?.signedUrl) {
+        assets.push({
+          asset_type: asset.asset_type,
+          file_name: asset.file_name,
+          signed_url: signedData.signedUrl,
+        });
+      }
+    } catch {
+      // Skip assets we can't sign — bucket may not exist yet
+    }
+  }
+
+  // Record the profile view (fire-and-forget, no await)
+  void (adminClient.from('profile_views') as any).insert({
+    candidate_profile_id: profileData.id,
+    viewed_at: new Date().toISOString(),
+  });
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <div className="max-w-2xl w-full">
-        <h1 className="text-3xl font-bold">{profile.full_name}</h1>
-        {profile.headline && (
-          <p className="text-lg text-gray-600 mt-2">{profile.headline}</p>
-        )}
-      </div>
-    </main>
+    <div className="min-h-screen bg-[--rb-bg-page]">
+      {/* Slim brand header */}
+      <header className="sticky top-0 z-[--z-sticky] bg-[--rb-bg-surface]/90 backdrop-blur border-b border-[--rb-border] px-6 py-3">
+        <div className="mx-auto max-w-3xl flex items-center justify-between">
+          <span className="text-sm font-bold tracking-tight text-[--rb-text]">
+            Role<span className="text-[--rb-brand]">Boost</span>
+          </span>
+          <a
+            href="/"
+            className="text-xs text-[--rb-brand] hover:underline font-medium"
+          >
+            Create your profile →
+          </a>
+        </div>
+      </header>
+
+      <CandidateModal
+        fullName={profileData.full_name}
+        headline={profileData.headline}
+        targetRole={profileData.target_role}
+        location={profileData.location}
+        linkedinUrl={profileData.linkedin_url}
+        summaryBullets={profileData.summary_bullets ?? []}
+        aiEnabled={profileData.ai_enabled ?? false}
+        assets={assets as any}
+      />
+    </div>
   );
 }
