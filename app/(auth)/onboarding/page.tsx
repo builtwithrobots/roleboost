@@ -1,18 +1,22 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { setUserRole } from './actions';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSelect = (role: 'candidate' | 'employer') => {
+    setError(null);
     startTransition(async () => {
       const result = await setUserRole(role);
       if (result.ok) {
         router.push(role === 'candidate' ? '/dashboard/profile' : '/dashboard/candidates');
+      } else {
+        setError('Something went wrong. Please try again.');
       }
     });
   };
@@ -37,6 +41,9 @@ export default function OnboardingPage() {
             <span className="font-semibold">I am hiring for my team</span>
           </button>
         </div>
+        {error && (
+          <p className="mt-4 text-sm text-red-600">{error}</p>
+        )}
       </div>
     </div>
   );
