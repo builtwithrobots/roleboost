@@ -33,7 +33,7 @@ export default async function CandidateAssetsPage() {
     .eq('clerk_user_id', userId)
     .eq('is_active', true);
 
-  const assets = rawAssets ?? [];
+  const assets: { id: string; asset_type: string; file_name: string; file_size_bytes: number | null; storage_bucket: string; storage_path: string; created_at: string }[] = rawAssets ?? [];
 
   // Generate signed URLs for existing assets
   const assetsWithUrls = await Promise.all(
