@@ -369,3 +369,242 @@ a {
 .has-player {
   padding-bottom: 5rem; /* 80px — player bar height */
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM UTILITIES
+   Higher-level patterns built on the token layer above.
+   Use these class names in components to maintain consistency.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Gradient Primary Button ────────────────────────────────────────
+   The top-level CTA on any page. Uses the brand gradient + glow.
+   Usage: <button class="rb-btn-primary">Get started</button>
+────────────────────────────────────────────────────────────────── */
+.rb-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  background: var(--rb-brand-gradient);
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 2px 16px rgb(79 70 229 / 0.40), 0 1px 4px rgb(0 0 0 / 0.10);
+  transition:
+    filter var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-spring);
+}
+
+.rb-btn-primary:hover {
+  filter: brightness(1.10);
+  box-shadow: 0 6px 28px rgb(79 70 229 / 0.52), 0 2px 8px rgb(0 0 0 / 0.12);
+}
+
+.rb-btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* ── Featured Card (gradient border) ───────────────────────────────
+   Cards that need to stand out — pricing featured tier, onboarding
+   highlights, etc. Gradient border via ::before pseudo-element.
+   Usage: <div class="rb-card rb-card-featured p-8">…</div>
+────────────────────────────────────────────────────────────────── */
+.rb-card-featured {
+  position: relative;
+  border: none !important;
+  z-index: 0;
+}
+
+.rb-card-featured::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: calc(var(--radius-xl) + 2px);
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+  z-index: -1;
+  opacity: 0.9;
+}
+
+.rb-card-featured:hover::before {
+  opacity: 1;
+}
+
+/* ── Glass Surface ──────────────────────────────────────────────────
+   Glassmorphism layer for modals, toasts, overlaid cards.
+────────────────────────────────────────────────────────────────── */
+.rb-glass {
+  background: rgb(255 255 255 / 0.70);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.55);
+  box-shadow: 0 4px 32px rgb(0 0 0 / 0.06), inset 0 1px 0 rgb(255 255 255 / 0.80);
+}
+
+/* ── Dot Grid Background ────────────────────────────────────────────
+   Subtle decorative pattern for hero and CTA sections.
+────────────────────────────────────────────────────────────────── */
+.rb-dot-grid {
+  background-image: radial-gradient(circle, rgb(79 70 229 / 0.10) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── Dark Gradient Section ──────────────────────────────────────────
+   Deep indigo/violet section background for high-contrast CTAs.
+────────────────────────────────────────────────────────────────── */
+.rb-section-dark {
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 45%, #4C1D95 100%);
+}
+
+/* ── Feature Icon Containers ────────────────────────────────────────
+   Each feature gets its own accent color — not all indigo.
+   Usage: <div class="rb-icon-indigo">…</div>
+────────────────────────────────────────────────────────────────── */
+.rb-icon-indigo {
+  background: linear-gradient(135deg, #EEF2FF 0%, #C7D2FE 100%);
+  color: #4338CA;
+  box-shadow: 0 0 0 1px rgb(79 70 229 / 0.12);
+}
+
+.rb-icon-violet {
+  background: linear-gradient(135deg, #F5F3FF 0%, #DDD6FE 100%);
+  color: #6D28D9;
+  box-shadow: 0 0 0 1px rgb(124 58 237 / 0.12);
+}
+
+.rb-icon-cyan {
+  background: linear-gradient(135deg, #ECFEFF 0%, #A5F3FC 100%);
+  color: #0E7490;
+  box-shadow: 0 0 0 1px rgb(6 182 212 / 0.12);
+}
+
+.rb-icon-amber {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FDE68A 100%);
+  color: #B45309;
+  box-shadow: 0 0 0 1px rgb(217 119 6 / 0.12);
+}
+
+.rb-icon-emerald {
+  background: linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%);
+  color: #065F46;
+  box-shadow: 0 0 0 1px rgb(5 150 105 / 0.12);
+}
+
+.rb-icon-rose {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FECDD3 100%);
+  color: #BE123C;
+  box-shadow: 0 0 0 1px rgb(244 63 94 / 0.12);
+}
+
+/* ── Brand Glow ─────────────────────────────────────────────────────
+   Adds a soft indigo glow — use on featured elements or hero art.
+────────────────────────────────────────────────────────────────── */
+.rb-glow {
+  box-shadow: 0 0 48px rgb(79 70 229 / 0.22), 0 0 16px rgb(124 58 237 / 0.14);
+}
+
+/* ── Shimmer Loading Skeleton ───────────────────────────────────────
+   Animated placeholder for async content > 300ms.
+────────────────────────────────────────────────────────────────── */
+@keyframes rb-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.rb-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--rb-bg-surface-raised) 25%,
+    var(--rb-bg-surface-sunken) 50%,
+    var(--rb-bg-surface-raised) 75%
+  );
+  background-size: 800px 100%;
+  animation: rb-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── Stat / Number Display ──────────────────────────────────────────
+   Large KPI numbers on dashboards and marketing pages.
+────────────────────────────────────────────────────────────────── */
+.rb-stat-number {
+  font-family: var(--font-display), "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  background: var(--rb-brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Section Label ──────────────────────────────────────────────────
+   Small ALL-CAPS overline above section headings.
+────────────────────────────────────────────────────────────────── */
+.rb-section-label {
+  font-size: 0.6875rem;   /* 11px */
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rb-text-brand);
+}
+
+/* ── Input Base ─────────────────────────────────────────────────────
+   Consistent input/select styling across forms.
+────────────────────────────────────────────────────────────────── */
+.rb-input {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--rb-border);
+  background-color: var(--rb-bg-input);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--rb-text);
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.rb-input::placeholder {
+  color: var(--rb-text-muted);
+}
+
+.rb-input:focus {
+  outline: none;
+  border-color: var(--rb-border-focus);
+  box-shadow: 0 0 0 3px rgb(79 70 229 / 0.15);
+}
+
+.rb-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Dashboard Stat Card ────────────────────────────────────────────
+   Usage: wrap a metric number + label inside this.
+────────────────────────────────────────────────────────────────── */
+.rb-stat-card {
+  background-color: var(--rb-bg-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* ── Inline Badge ───────────────────────────────────────────────────
+   Compact text badge. Pair with rb-icon-* for color.
+────────────────────────────────────────────────────────────────── */
+.rb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: var(--radius-full);
+  padding: 0.125rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
