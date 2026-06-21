@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { adminClient } from '@/lib/supabase/admin';
 
-// Clerk sends webhook events when users are created or deleted.
+// Clerk sends webhook events when users are created, updated, or deleted.
 // We use the admin Supabase client (RLS bypass) because there is no Clerk
 // session at webhook time — the request comes from Clerk's servers, not a browser.
 type ClerkEmailAddress = { email_address: string; id: string };
@@ -11,15 +11,31 @@ type ClerkUserCreatedEvent = {
   data: {
     id: string;
     email_addresses: ClerkEmailAddress[];
-    primary_email_address_id: string;
+    primary_email_address_id: string | null;
     public_metadata: Record<string, unknown>;
+  };
+};
+type ClerkUserUpdatedEvent = {
+  type: 'user.updated';
+  data: {
+    id: string;
+    email_addresses: ClerkEmailAddress[];
+    primary_email_address_id: string | null;
   };
 };
 type ClerkUserDeletedEvent = {
   type: 'user.deleted';
   data: { id: string; deleted: boolean };
 };
-type ClerkWebhookEvent = ClerkUserCreatedEvent | ClerkUserDeletedEvent;
+type ClerkWebhookEvent = ClerkUserCreatedEvent | ClerkUserUpdatedEvent | ClerkUserDeletedEvent;
+
+function extractEmail(email_addresses: ClerkEmailAddress[], primary_email_address_id: string | null): string {
+  return (
+    email_addresses.find((e) => e.id === primary_email_address_id)?.email_address
+    ?? email_addresses[0]?.email_address
+    ?? ''
+  );
+}
 
 export async function POST(req: NextRequest) {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
@@ -53,26 +69,35 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case 'user.created': {
       const { id, email_addresses, primary_email_address_id, public_metadata } = event.data;
-      const primaryEmail = email_addresses.find((e) => e.id === primary_email_address_id)?.email_address
-        ?? email_addresses[0]?.email_address;
-
-      if (!primaryEmail) {
-        console.error('Clerk user.created: no email address found for', id);
-        return NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 });
-      }
-
-      // Role may be set by onboarding via a Clerk public metadata update.
-      // Default to 'candidate' for now; the onboarding flow will update it.
+      const email = extractEmail(email_addresses, primary_email_address_id);
+      // email may be empty for OAuth sign-ups — user.updated will fill it in
       const role = (public_metadata?.role as string) ?? 'candidate';
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (adminClient.from('users') as any).upsert(
-        { clerk_user_id: id, email: primaryEmail, role, subscription_status: 'free' },
+        { clerk_user_id: id, email, role, subscription_status: 'free' },
         { onConflict: 'clerk_user_id' }
       );
 
       if (error) {
         console.error('Clerk user.created: failed to upsert user', id, error);
+        return NextResponse.json({ error: { code: 'INTERNAL', message: error.message } }, { status: 500 });
+      }
+      break;
+    }
+
+    case 'user.updated': {
+      const { id, email_addresses, primary_email_address_id } = event.data;
+      const email = extractEmail(email_addresses, primary_email_address_id);
+      if (!email) break; // nothing to update
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (adminClient.from('users') as any)
+        .update({ email })
+        .eq('clerk_user_id', id);
+
+      if (error) {
+        console.error('Clerk user.updated: failed to update email for', id, error);
         return NextResponse.json({ error: { code: 'INTERNAL', message: error.message } }, { status: 500 });
       }
       break;
