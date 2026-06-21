@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
 import CandidateModal from '@/components/modal/CandidateModal';
@@ -90,12 +91,12 @@ export default async function CandidateProfilePage({ params }: Props) {
           <span className="text-sm font-bold tracking-tight text-[--rb-text]">
             Role<span className="text-[--rb-brand]">Boost</span>
           </span>
-          <a
+          <Link
             href="/"
             className="text-xs text-[--rb-brand] hover:underline font-medium"
           >
             Create your profile →
-          </a>
+          </Link>
         </div>
       </header>
 

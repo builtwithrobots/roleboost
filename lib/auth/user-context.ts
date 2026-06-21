@@ -2,6 +2,7 @@ import 'server-only';
 import { auth } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
 import { adminClient } from '@/lib/supabase/admin';
+import { getRequestClient } from '@/lib/supabase/server';
 import type { UserRole, SubscriptionStatus, SubscriptionTier } from '@/lib/types';
 
 export type { UserRole };
@@ -59,11 +60,13 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
     throw new AuthError('FORBIDDEN');
   }
 
-  // Return adminClient as the supabase instance so all downstream server queries
-  // also bypass Third-Party Auth. Pages filter by userId for isolation.
+  // Return the request-scoped RLS-enforced client for all downstream queries.
+  // adminClient is only used above for the bootstrap user-row lookup (before we
+  // know the role) — all other writes and reads must go through this client.
+  const supabase = await getRequestClient();
   return {
     userId,
-    supabase: adminClient as any,
+    supabase,
     role: effectiveRole,
     isAdmin: user.is_admin,
     user: { ...user, role: effectiveRole },

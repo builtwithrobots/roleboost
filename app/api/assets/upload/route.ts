@@ -74,6 +74,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Unknown asset_type' } }, { status: 400 });
   }
 
+  // Verify the candidate_profile_id belongs to the authenticated user before
+  // accepting any file data. Without this, any authenticated user could attach
+  // assets to another candidate's profile.
+  const { data: ownedProfile } = await (adminClient.from('candidate_profiles') as any)
+    .select('id')
+    .eq('id', candidateProfileId)
+    .eq('clerk_user_id', userId)
+    .single();
+
+  if (!ownedProfile) {
+    return NextResponse.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
+  }
+
+  // Validate both the client-supplied MIME type and the file extension — the
+  // MIME type can be spoofed in the multipart envelope, so the extension acts
+  // as an independent guard.
+  const allowedExtensions: Record<string, string[]> = {
+    audio:        ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg'],
+    debate_audio: ['mp3', 'mp4', 'm4a', 'wav', 'webm', 'ogg'],
+    video:        ['mp4', 'webm', 'mov'],
+    deck:         ['pdf'],
+    infographic:  ['png', 'jpg', 'jpeg', 'webp', 'gif'],
+    resume:       ['pdf'],
+  };
+  const ext = (file.name.split('.').pop() ?? '').toLowerCase();
+  if (!(allowedExtensions[assetType] ?? []).includes(ext)) {
+    return NextResponse.json(
+      { error: { code: 'INVALID_INPUT', message: `File extension .${ext} not allowed for ${assetType}` } },
+      { status: 400 }
+    );
+  }
+
   if (!config.allowedMimes.includes(file.type)) {
     return NextResponse.json(
       { error: { code: 'INVALID_INPUT', message: `File type ${file.type} not allowed for ${assetType}` } },
@@ -110,11 +142,17 @@ export async function POST(req: NextRequest) {
   }
 
   // Mark previous active asset of this type as inactive
-  await (adminClient.from('candidate_assets') as any)
+  const { error: deactivateError } = await (adminClient.from('candidate_assets') as any)
     .update({ is_active: false })
     .eq('clerk_user_id', userId)
     .eq('asset_type', assetType)
     .eq('is_active', true);
+
+  if (deactivateError) {
+    // Non-fatal: log and continue. Duplicate active rows are preferable to blocking
+    // the upload. A cleanup job can resolve stale rows later.
+    console.error('Asset deactivation failed', userId, assetType, deactivateError);
+  }
 
   // Insert new asset row
   const { data: asset, error: insertError } = await (adminClient.from('candidate_assets') as any)
