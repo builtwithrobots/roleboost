@@ -1,0 +1,140 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { adminClient } from '@/lib/supabase/admin';
+
+type AssetConfig = {
+  bucket: string;
+  allowedMimes: string[];
+  maxBytes: number;
+  label: string;
+};
+
+const ASSET_CONFIGS: Record<string, AssetConfig> = {
+  audio: {
+    bucket: 'candidate-audio',
+    allowedMimes: ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/webm', 'audio/ogg', 'audio/x-m4a'],
+    maxBytes: 50 * 1024 * 1024,
+    label: 'Audio Overview',
+  },
+  debate_audio: {
+    bucket: 'candidate-audio',
+    allowedMimes: ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/webm', 'audio/ogg', 'audio/x-m4a'],
+    maxBytes: 50 * 1024 * 1024,
+    label: 'Debate Audio',
+  },
+  video: {
+    bucket: 'candidate-video',
+    allowedMimes: ['video/mp4', 'video/webm', 'video/quicktime'],
+    maxBytes: 500 * 1024 * 1024,
+    label: 'Video Overview',
+  },
+  deck: {
+    bucket: 'candidate-documents',
+    allowedMimes: ['application/pdf'],
+    maxBytes: 25 * 1024 * 1024,
+    label: 'Slide Deck',
+  },
+  infographic: {
+    bucket: 'candidate-images',
+    allowedMimes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
+    maxBytes: 10 * 1024 * 1024,
+    label: 'Infographic',
+  },
+  resume: {
+    bucket: 'candidate-documents',
+    allowedMimes: ['application/pdf'],
+    maxBytes: 10 * 1024 * 1024,
+    label: 'Resume',
+  },
+};
+
+export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 });
+  }
+
+  let formData: FormData;
+  try {
+    formData = await req.formData();
+  } catch {
+    return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Expected multipart/form-data' } }, { status: 400 });
+  }
+
+  const file = formData.get('file') as File | null;
+  const assetType = formData.get('asset_type') as string | null;
+  const candidateProfileId = formData.get('candidate_profile_id') as string | null;
+
+  if (!file || !assetType || !candidateProfileId) {
+    return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Missing file, asset_type, or candidate_profile_id' } }, { status: 400 });
+  }
+
+  const config = ASSET_CONFIGS[assetType];
+  if (!config) {
+    return NextResponse.json({ error: { code: 'INVALID_INPUT', message: 'Unknown asset_type' } }, { status: 400 });
+  }
+
+  if (!config.allowedMimes.includes(file.type)) {
+    return NextResponse.json(
+      { error: { code: 'INVALID_INPUT', message: `File type ${file.type} not allowed for ${assetType}` } },
+      { status: 400 }
+    );
+  }
+
+  if (file.size > config.maxBytes) {
+    const maxMB = Math.round(config.maxBytes / 1024 / 1024);
+    return NextResponse.json(
+      { error: { code: 'INVALID_INPUT', message: `File exceeds ${maxMB}MB limit` } },
+      { status: 400 }
+    );
+  }
+
+  const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const storagePath = `${userId}/${Date.now()}-${sanitizedName}`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // Upload to Supabase Storage
+  // adminClient: required because storage buckets are private and we're uploading on behalf of the user
+  const { error: uploadError } = await (adminClient.storage
+    .from(config.bucket) as any)
+    .upload(storagePath, buffer, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error('Asset upload failed', userId, assetType, uploadError);
+    return NextResponse.json({ error: { code: 'INTERNAL', message: uploadError.message } }, { status: 500 });
+  }
+
+  // Mark previous active asset of this type as inactive
+  await (adminClient.from('candidate_assets') as any)
+    .update({ is_active: false })
+    .eq('clerk_user_id', userId)
+    .eq('asset_type', assetType)
+    .eq('is_active', true);
+
+  // Insert new asset row
+  const { data: asset, error: insertError } = await (adminClient.from('candidate_assets') as any)
+    .insert({
+      candidate_profile_id: candidateProfileId,
+      clerk_user_id: userId,
+      asset_type: assetType,
+      storage_bucket: config.bucket,
+      storage_path: storagePath,
+      file_name: file.name,
+      file_size_bytes: file.size,
+      is_active: true,
+    })
+    .select('id')
+    .single();
+
+  if (insertError) {
+    console.error('Asset row insert failed', userId, assetType, insertError);
+    return NextResponse.json({ error: { code: 'INTERNAL', message: insertError.message } }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, asset_id: asset.id });
+}
