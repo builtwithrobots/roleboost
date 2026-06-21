@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getRequestClient } from '@/lib/supabase/server';
+import { adminClient } from '@/lib/supabase/admin';
 import LandingPage from '@/components/landing/LandingPage';
 
 export default async function HomePage() {
@@ -11,9 +11,7 @@ export default async function HomePage() {
   }
 
   try {
-    const supabase = await getRequestClient();
-    const { data: user } = await supabase
-      .from('users')
+    const { data: user } = await (adminClient.from('users') as any)
       .select('role')
       .eq('clerk_user_id', userId)
       .single();

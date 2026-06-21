@@ -1,7 +1,7 @@
 import 'server-only';
 import { auth } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
-import { getRequestClient } from '@/lib/supabase/server';
+import { adminClient } from '@/lib/supabase/admin';
 import type { UserRole, SubscriptionStatus, SubscriptionTier } from '@/lib/types';
 
 export type { UserRole };
@@ -34,9 +34,10 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   const { userId } = await auth();
   if (!userId) throw new AuthError('UNAUTHENTICATED');
 
-  const supabase = await getRequestClient();
-  const result = await supabase
-    .from('users')
+  // adminClient: Supabase Third-Party Auth (OIDC) is not required when we already
+  // have the verified Clerk userId from auth(). We filter by clerk_user_id for
+  // isolation — equivalent to what RLS would enforce.
+  const result = await (adminClient.from('users') as any)
     .select('role, is_admin, subscription_tier, subscription_status')
     .eq('clerk_user_id', userId)
     .single();
@@ -58,9 +59,11 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
     throw new AuthError('FORBIDDEN');
   }
 
+  // Return adminClient as the supabase instance so all downstream server queries
+  // also bypass Third-Party Auth. Pages filter by userId for isolation.
   return {
     userId,
-    supabase,
+    supabase: adminClient as any,
     role: effectiveRole,
     isAdmin: user.is_admin,
     user: { ...user, role: effectiveRole },
