@@ -54,12 +54,14 @@ export async function createJobPosting(input: unknown) {
 
 export async function archiveJobPosting(jobId: string) {
   try {
-    const { supabase } = await getUserContext('employer');
+    const { userId } = await getUserContext('employer');
+    const employerAccountId = await getEmployerAccountId(userId);
+    if (!employerAccountId) return { ok: false as const, error: { code: 'FORBIDDEN' } };
 
-    const { error } = await supabase
-      .from('job_postings')
+    const { error } = await (adminClient.from('job_postings') as any)
       .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('id', jobId);
+      .eq('id', jobId)
+      .eq('employer_account_id', employerAccountId);
 
     if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
 

@@ -15,8 +15,21 @@ export async function setUserRole(role: 'candidate' | 'employer') {
 
   const email = clerkUser.emailAddresses[0]?.emailAddress ?? '';
 
-  // admin client: onboarding creates the initial user row (same as Clerk webhook).
-  // Clerk session is already verified by currentUser() above.
+  // Prevent role re-assignment: if a role is already set, return early.
+  // This blocks role escalation (candidate → employer) and guards against
+  // upsert resetting subscription_status to 'free' for paying users.
+  const { data: existing } = await (adminClient.from('users') as any)
+    .select('role')
+    .eq('clerk_user_id', clerkUser.id)
+    .single();
+
+  if (existing?.role) {
+    return { ok: true as const };
+  }
+
+  // Row either doesn't exist yet, or exists without a role (OAuth flow where the
+  // Clerk webhook fired before onboarding completed). No subscription can exist
+  // for a user who hasn't finished onboarding, so upsert with 'free' is safe.
   const { error } = await (adminClient.from('users') as any).upsert(
     { clerk_user_id: clerkUser.id, role: parsed.data, email, subscription_status: 'free' },
     { onConflict: 'clerk_user_id' }

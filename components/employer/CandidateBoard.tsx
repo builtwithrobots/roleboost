@@ -90,7 +90,9 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
   const [isPending, startTransition] = useTransition();
 
   const handleStageChange = (savedId: string, newStage: Stage) => {
-    // Optimistic update
+    // Snapshot state before optimistic update so we can roll back on failure.
+    const previousCandidates = candidates;
+
     setCandidates((prev) =>
       prev.map((c) => (c.savedId === savedId ? { ...c, stage: newStage } : c))
     );
@@ -98,9 +100,8 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
     startTransition(async () => {
       const result = await updateCandidateStage(savedId, newStage);
       if (!result.ok) {
-        // Revert on failure — refetch would require router.refresh()
-        // For now just log; the revalidatePath in the action will sync on next nav
         console.error('Stage update failed:', result.error);
+        setCandidates(previousCandidates);
       }
     });
   };
