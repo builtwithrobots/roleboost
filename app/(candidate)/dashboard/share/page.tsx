@@ -1,8 +1,36 @@
-export default function ShareHubPage() {
+import { getUserContext, AuthError } from '@/lib/auth/user-context';
+import { redirect } from 'next/navigation';
+import ShareHub from '@/components/candidate/ShareHub';
+
+export default async function ShareHubPage() {
+  let ctx;
+  try {
+    ctx = await getUserContext('candidate');
+  } catch (e) {
+    if (e instanceof AuthError) redirect('/sign-in');
+    throw e;
+  }
+
+  const { supabase, userId } = ctx;
+
+  const { data: profile } = await supabase
+    .from('candidate_profiles')
+    .select('slug, full_name, headline, is_published')
+    .eq('clerk_user_id', userId)
+    .single();
+
+  if (!profile) redirect('/dashboard/profile');
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://getroleboost.com';
+  const profileUrl = `${appUrl}/c/${profile.slug}`;
+
   return (
-    <div className="p-8">
-      <h1 className="font-display text-2xl font-bold text-[--rb-text-primary]">Share Hub</h1>
-      <p className="mt-2 text-[--rb-text-muted]">Share your profile link, QR code, and digital badge.</p>
-    </div>
+    <ShareHub
+      profileUrl={profileUrl}
+      slug={profile.slug}
+      fullName={profile.full_name}
+      headline={profile.headline ?? ''}
+      isPublished={profile.is_published}
+    />
   );
 }
