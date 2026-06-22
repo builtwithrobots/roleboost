@@ -27,7 +27,7 @@ export default function AssetsGrid({ candidateProfileId, assetByType }: Props) {
     <>
       {/* Grid */}
       <motion.div
-        className="mx-auto max-w-5xl px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        className="mx-auto max-w-6xl px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
         variants={cardStagger}
         initial={prefersReduced ? false : 'hidden'}
         animate="visible"
