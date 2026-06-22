@@ -19,13 +19,16 @@ migrations do NOT auto-apply to production (`gsilfhywebnzlxyyzbgq`). Each migrat
 - [x] `lib/ai/parse-resume.ts` — `parseResumeText()` via Sonnet forced tool-call, Zod-revalidated.
 - [x] Gate: `tsc --noEmit` clean, `lint` 0 errors, `build` passes; `client.ts` is `server-only`.
 
-## Phase 1 — Resume → ATS pipeline
-- [ ] Add deps: `unpdf` (PDF), `mammoth` (DOCX), `docx` (.docx), `@react-pdf/renderer` (.pdf).
-- [ ] Migration `*_resume_pipeline.sql`: `resume_documents` table + owner RLS; extend
-      `candidate_assets.asset_type` CHECK with `resume_docx` (+ fix missing `debate_audio`).
-- [ ] `lib/resume/extract-text.ts` (dispatch on MIME), `render-docx.ts`, `render-pdf.tsx`, `generate.ts`.
-- [ ] `app/api/resume/parse/route.ts` (Node runtime) — extract → parse → upsert `resume_documents` draft.
-- [ ] `app/api/resume/generate/route.ts` (Node runtime) — render docx+pdf → store assets → status ready.
+## Phase 1a — Resume → ATS pipeline (backend)  ✅ DONE
+- [x] Add deps: `unpdf` (PDF), `mammoth` (DOCX), `docx` (.docx), `@react-pdf/renderer` (.pdf).
+- [x] Migration `20260622100000_resume_pipeline.sql`: `resume_documents` + owner RLS; extend
+      `candidate_assets.asset_type` CHECK with `resume_docx` (+ fix missing `debate_audio`).  ⏳ run on prod.
+- [x] `lib/resume/extract-text.ts` (dispatch on MIME), `render-docx.ts`, `render-pdf.tsx`, `store-asset.ts`, `generate.ts`.
+- [x] `app/api/resume/parse/route.ts` (Node runtime) — extract → parse → upsert `resume_documents` draft.
+- [x] `app/api/resume/generate/route.ts` (Node runtime) — render docx+pdf → store assets → status ready.
+- [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes (react-pdf/unpdf/docx compile on Next 16).
+
+## Phase 1b — Resume → ATS pipeline (UI)
 - [ ] `app/(candidate)/dashboard/assets/resume-actions.ts` — `saveCanonicalMarkdown`, `approveResume`.
 - [ ] Onboarding step 1 (resume upload): make `onboarding/page.tsx` 2-step for candidates.
 - [ ] `components/candidate/ResumeBuilderCard.tsx` at top of `dashboard/assets` (dropzone + markdown editor + approve).
