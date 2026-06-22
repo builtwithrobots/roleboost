@@ -7,7 +7,7 @@ export default function RoleBoostLogo({ compact = false }: { compact?: boolean }
         <span className="font-display text-sm font-extrabold leading-none">R</span>
       </div>
       {!compact && (
-        <span className="font-display text-base font-bold tracking-tight text-[--rb-text-primary]">
+        <span className="font-display text-base font-bold tracking-tight text-[--rb-text]">
           RoleBoost
         </span>
       )}
