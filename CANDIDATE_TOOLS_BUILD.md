@@ -41,14 +41,17 @@ migrations do NOT auto-apply to production (`gsilfhywebnzlxyyzbgq`). Each migrat
 - [x] `components/onboarding/ResumeUploadStep.tsx` (dropzone → /api/resume/parse).
 - [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes.
 
-## Phase 2 — Profile changes
-- [ ] Migration: `candidate_profiles.additional_context TEXT` (≤2000 CHECK).
-- [ ] Extend `ProfileInput` Zod + `updateCandidateProfile` + `PROFILE_COLUMNS` + `CandidateProfile` type.
-- [ ] `ProfileEditor.tsx`: clone Headline section for Additional Context.
+## Phase 2a — Additional Context field  ✅ DONE
+- [x] Migration `20260622200000_additional_context.sql`: `candidate_profiles.additional_context TEXT` (≤2000 CHECK).  ⏳ run on prod.
+- [x] Extend `ProfileInput` Zod + `updateCandidateProfile` payload + `PROFILE_COLUMNS` + page select + `CandidateProfile` type.
+- [x] `ProfileEditor.tsx`: Additional Context section (textarea + char counter + blur-save), cloned from Headline.
+- [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes.
+
+## Phase 2b — Auto-populate Headline + Career Snapshot on approval
 - [ ] `lib/ai/derive-profile.ts` — Sonnet → `{headline, summary_bullets}` (≤200/≤7).
 - [ ] `approveResume` → derive → stash in `resume_documents.derived_suggestions` → return.
 - [ ] `components/candidate/ProfileSuggestionModal.tsx` (review/confirm → existing `updateCandidateProfile`).
-- [ ] Gate + E2E: context persists/caps; approval → suggestion modal (not silent); accept survives refresh.
+- [ ] Gate + E2E: approval → suggestion modal (not silent); accept survives refresh.
 
 ## Phase 3 — Labels  (global searchable + capped personal non-searchable; both sides)
 - [ ] Migration `*_labels.sql`: `labels` (scope/name/color/is_searchable, invariant CHECK) +

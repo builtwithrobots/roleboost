@@ -8,7 +8,7 @@ import { adminClient } from '@/lib/supabase/admin';
 import type { CandidateProfile } from '@/lib/types';
 
 const PROFILE_COLUMNS =
-  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, is_published, created_at, updated_at';
+  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, created_at, updated_at';
 
 const ProfileInput = z.object({
   full_name: z.string().min(1).max(200),
@@ -17,6 +17,7 @@ const ProfileInput = z.object({
   location: z.string().max(100).optional(),
   linkedin_url: z.string().url().max(500).optional().or(z.literal('')),
   summary_bullets: z.array(z.string().max(300)).max(7),
+  additional_context: z.string().max(2000).optional(),
   is_published: z.boolean(),
 });
 
@@ -34,6 +35,7 @@ export async function updateCandidateProfile(input: unknown) {
         location: parsed.location || null,
         linkedin_url: parsed.linkedin_url || null,
         summary_bullets: parsed.summary_bullets.filter(Boolean),
+        additional_context: parsed.additional_context || null,
         is_published: parsed.is_published,
         updated_at: new Date().toISOString(),
       })
