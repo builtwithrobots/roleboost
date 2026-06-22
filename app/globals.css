@@ -19,6 +19,9 @@
   --font-body:    var(--font-body), "Inter", sans-serif;
   --font-sans:    var(--font-body), "Inter", sans-serif;
   --font-mono:    var(--font-mono), "JetBrains Mono", monospace;
+  /* Marketing page font aliases */
+  --font-jakarta: var(--font-display), "Plus Jakarta Sans", sans-serif;
+  --font-inter:   var(--font-body), "Inter", sans-serif;
 
   /* ── Brand: Indigo-Violet gradient identity ─────────────────────
      Primary #4F46E5 — buttons, active nav, links, focus rings

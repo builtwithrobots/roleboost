@@ -1,28 +1,64 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
-import LandingPage from '@/components/landing/LandingPage';
+import Nav from '@/components/marketing/Nav';
+import HeroSection from '@/components/marketing/HeroSection';
+import SocialProofBar from '@/components/marketing/SocialProofBar';
+import ProblemSection from '@/components/marketing/ProblemSection';
+import AssetSuite from '@/components/marketing/AssetSuite';
+import HowItWorksCandidate from '@/components/marketing/HowItWorksCandidate';
+import HowItWorksEmployer from '@/components/marketing/HowItWorksEmployer';
+import AIChatbotSpotlight from '@/components/marketing/AIChatbotSpotlight';
+import TranscriptLoop from '@/components/marketing/TranscriptLoop';
+import PricingSection from '@/components/marketing/PricingSection';
+import DoneForYouSection from '@/components/marketing/DoneForYouSection';
+import FinalCTA from '@/components/marketing/FinalCTA';
+import Footer from '@/components/marketing/Footer';
 
 export default async function HomePage() {
   const { userId } = await auth();
 
-  if (!userId) {
-    return <LandingPage />;
+  if (userId) {
+    try {
+      const { data: user } = await (adminClient.from('users') as any)
+        .select('role')
+        .eq('clerk_user_id', userId)
+        .single();
+
+      if (!user) redirect('/onboarding');
+      if (user.role === 'candidate') redirect('/dashboard/profile');
+      if (user.role === 'employer') redirect('/dashboard/candidates');
+      if (user.role === 'admin') redirect('/admin');
+
+      redirect('/onboarding');
+    } catch {
+      redirect('/onboarding');
+    }
   }
 
-  try {
-    const { data: user } = await (adminClient.from('users') as any)
-      .select('role')
-      .eq('clerk_user_id', userId)
-      .single();
-
-    if (!user) redirect('/onboarding');
-    if (user.role === 'candidate') redirect('/dashboard/profile');
-    if (user.role === 'employer') redirect('/dashboard/candidates');
-    if (user.role === 'admin') redirect('/admin');
-
-    redirect('/onboarding');
-  } catch {
-    redirect('/onboarding');
-  }
+  return (
+    <div className="min-h-screen bg-[#FFFBF5]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[#1E3A5F] focus:text-white focus:font-jakarta focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+      <Nav />
+      <main id="main-content">
+        <HeroSection />
+        <SocialProofBar />
+        <ProblemSection />
+        <AssetSuite />
+        <HowItWorksCandidate />
+        <HowItWorksEmployer />
+        <AIChatbotSpotlight />
+        <TranscriptLoop />
+        <PricingSection />
+        <DoneForYouSection />
+        <FinalCTA />
+      </main>
+      <Footer />
+    </div>
+  );
 }
