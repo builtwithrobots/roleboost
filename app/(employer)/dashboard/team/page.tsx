@@ -5,7 +5,7 @@ import EmptyState from '@/components/ui/empty-state';
 
 export default function EmployerTeamPage() {
   return (
-    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
+    <DashboardPage className="min-h-full">
       <PageHeader
         title="Team"
         description="Invite colleagues to share your candidate pool, board, and transcripts."

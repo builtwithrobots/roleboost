@@ -5,7 +5,7 @@ import EmptyState from '@/components/ui/empty-state';
 
 export default function CandidateFeedbackPage() {
   return (
-    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
+    <DashboardPage className="min-h-full">
       <PageHeader
         title="Feedback"
         description="Notes and feedback that employers send you after viewing your profile."

@@ -165,7 +165,7 @@ export default function JobsTable({ jobs: initialJobs }: Props) {
   };
 
   return (
-    <div className="min-h-full bg-[var(--rb-bg-page)]">
+    <div className="min-h-full">
       {/* Header */}
       <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4 flex items-center justify-between gap-4">
         <div>

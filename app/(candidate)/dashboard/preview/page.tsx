@@ -5,7 +5,7 @@ import EmptyState from '@/components/ui/empty-state';
 
 export default function CandidatePreviewPage() {
   return (
-    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
+    <DashboardPage className="min-h-full">
       <PageHeader
         title="Preview"
         description="See your profile exactly as employers experience it."

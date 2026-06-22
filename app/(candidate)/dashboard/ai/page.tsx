@@ -5,7 +5,7 @@ import EmptyState from '@/components/ui/empty-state';
 
 export default function AIStudioPage() {
   return (
-    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
+    <DashboardPage className="min-h-full">
       <PageHeader
         title="AI Studio"
         description="Train and fine-tune the career AI that answers recruiters on your behalf."

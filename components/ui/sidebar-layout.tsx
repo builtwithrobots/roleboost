@@ -52,7 +52,7 @@ export function SidebarLayout({
   let [showSidebar, setShowSidebar] = useState(false)
 
   return (
-    <div className="relative isolate flex min-h-svh w-full max-lg:flex-col bg-[var(--rb-bg-page)]">
+    <div className="relative isolate flex min-h-svh w-full max-lg:flex-col bg-[var(--rb-bg-surface)]">
       {/* Sidebar on desktop */}
       <div className="fixed inset-y-0 left-0 w-64 max-lg:hidden border-r border-[var(--rb-border)] bg-[var(--rb-bg-sidebar)]">
         {sidebar}
@@ -75,7 +75,7 @@ export function SidebarLayout({
 
       {/* Content — full-bleed app canvas; each page supplies its own header band */}
       <main className="flex flex-1 flex-col lg:min-w-0 lg:pl-64">
-        <div className="grow bg-[var(--rb-bg-page)]">{children}</div>
+        <div className="grow bg-[var(--rb-bg-surface)]">{children}</div>
       </main>
     </div>
   )

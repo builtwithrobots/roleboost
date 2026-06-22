@@ -159,7 +159,7 @@ export default function CandidateGrid({ candidates }: Props) {
   }, [candidates, search, stageFilter]);
 
   return (
-    <div className="min-h-full bg-[var(--rb-bg-page)]">
+    <div className="min-h-full">
       {/* Header */}
       <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
         <div className="mx-auto max-w-6xl">
