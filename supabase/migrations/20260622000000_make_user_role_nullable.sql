@@ -1,0 +1,13 @@
+-- Allow users.role to be NULL so a user row can exist before onboarding.
+--
+-- The Clerk `user.created` webhook fires the moment a user signs up — before
+-- they reach the onboarding screen where they choose candidate vs employer.
+-- Previously the webhook defaulted every new user to 'candidate', which made
+-- the root router send them straight to the candidate dashboard and skip
+-- onboarding entirely. Now the webhook inserts the row with a NULL role and
+-- onboarding's setUserRole() fills it in.
+--
+-- The existing CHECK constraint (role IN ('candidate','employer','admin'))
+-- already permits NULL — a CHECK expression that evaluates to NULL is treated
+-- as satisfied — so only the NOT NULL constraint needs to be dropped.
+ALTER TABLE users ALTER COLUMN role DROP NOT NULL;

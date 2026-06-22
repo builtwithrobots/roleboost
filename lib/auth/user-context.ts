@@ -8,13 +8,13 @@ import type { UserRole, SubscriptionStatus, SubscriptionTier } from '@/lib/types
 export type { UserRole };
 
 export class AuthError extends Error {
-  constructor(public code: 'UNAUTHENTICATED' | 'NO_USER' | 'FORBIDDEN') {
+  constructor(public code: 'UNAUTHENTICATED' | 'NO_USER' | 'NO_ROLE' | 'FORBIDDEN') {
     super(code);
   }
 }
 
 type UserRecord = {
-  role: UserRole;
+  role: UserRole | null;
   is_admin: boolean;
   subscription_tier: SubscriptionTier | null;
   subscription_status: SubscriptionStatus;
@@ -46,6 +46,11 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   const user = result.data as UserRecord | null;
 
   if (!user) throw new AuthError('NO_USER');
+
+  // A row can exist before onboarding (the Clerk webhook creates it with a NULL
+  // role). Such a user hasn't chosen candidate vs employer yet — route them to
+  // onboarding rather than into a dashboard. Admins always have role 'admin'.
+  if (!user.role) throw new AuthError('NO_ROLE');
 
   // Admins can preview either dashboard role via a cookie set by the role-switcher.
   let effectiveRole: UserRole = user.role;
