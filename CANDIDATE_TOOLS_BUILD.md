@@ -28,12 +28,16 @@ migrations do NOT auto-apply to production (`gsilfhywebnzlxyyzbgq`). Each migrat
 - [x] `app/api/resume/generate/route.ts` (Node runtime) — render docx+pdf → store assets → status ready.
 - [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes (react-pdf/unpdf/docx compile on Next 16).
 
-## Phase 1b — Resume → ATS pipeline (UI)
-- [ ] `app/(candidate)/dashboard/assets/resume-actions.ts` — `saveCanonicalMarkdown`, `approveResume`.
-- [ ] Onboarding step 1 (resume upload): make `onboarding/page.tsx` 2-step for candidates.
-- [ ] `components/candidate/ResumeBuilderCard.tsx` at top of `dashboard/assets` (dropzone + markdown editor + approve).
-- [ ] Wire `assets/page.tsx` to load active `resume_documents`.
-- [ ] Gate + E2E: upload each format, generate, edit→regenerate, approve; RLS isolation.
+## Phase 1b — Resume → ATS pipeline (assets UI)  ✅ DONE
+- [x] `app/(candidate)/dashboard/assets/resume-actions.ts` — `generateResume`, `saveAndRegenerateResume` (re-parse edited markdown → regenerate), `approveResume`.
+- [x] `components/candidate/ResumeBuilderCard.tsx` at top of `dashboard/assets` (any-format dropzone → /api/resume/parse, Markdown editor, Save & regenerate, PDF/Word download, Approve).
+- [x] Wire `assets/page.tsx` to load active `resume_documents` + signed download URLs.
+- [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes.
+- Note: regeneration is an explicit **"Save & regenerate"** button (not autosave) to avoid a Sonnet call per blur.
+
+## Phase 1c — Onboarding entry point
+- [ ] Make `onboarding/page.tsx` a 2-step candidate flow (role → résumé upload → `/dashboard/assets?review=<id>`); employers skip step 2.
+- [ ] Ensure candidate `candidate_profiles` row exists before the résumé upload (parse route requires it).
 
 ## Phase 2 — Profile changes
 - [ ] Migration: `candidate_profiles.additional_context TEXT` (≤2000 CHECK).

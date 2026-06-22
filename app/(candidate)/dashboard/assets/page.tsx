@@ -4,6 +4,7 @@ import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
 import AssetsGrid from '@/components/candidate/AssetsGrid';
 import DashboardPage from '@/components/layout/DashboardPage';
 import PageHeader from '@/components/ui/page-header';
+import ResumeBuilderCard, { type ResumeDoc } from '@/components/candidate/ResumeBuilderCard';
 
 const ASSET_TYPES = ['audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume'] as const;
 type AssetType = typeof ASSET_TYPES[number];
@@ -59,6 +60,46 @@ export default async function CandidateAssetsPage() {
 
   const uploadedCount = Object.values(assetByType).filter(Boolean).length;
 
+  // Load the candidate's résumé document (if any) for the ATS builder, with
+  // fresh signed download URLs for the generated PDF/Word files.
+  const { data: rawResume } = await supabase
+    .from('resume_documents')
+    .select('id, status, canonical_markdown, docx_asset_id, pdf_asset_id')
+    .eq('clerk_user_id', userId)
+    .maybeSingle();
+
+  let resumeDoc: ResumeDoc | null = null;
+  if (rawResume) {
+    const r = rawResume as {
+      id: string;
+      status: ResumeDoc['status'];
+      canonical_markdown: string;
+      docx_asset_id: string | null;
+      pdf_asset_id: string | null;
+    };
+    const signFor = async (assetId: string | null): Promise<string | undefined> => {
+      if (!assetId) return undefined;
+      const { data: a } = await supabase
+        .from('candidate_assets')
+        .select('storage_bucket, storage_path')
+        .eq('id', assetId)
+        .single();
+      if (!a) return undefined;
+      try {
+        return await getSignedAssetUrl(a.storage_bucket as string, a.storage_path as string);
+      } catch {
+        return undefined;
+      }
+    };
+    resumeDoc = {
+      id: r.id,
+      status: r.status,
+      markdown: r.canonical_markdown,
+      docxUrl: await signFor(r.docx_asset_id),
+      pdfUrl: await signFor(r.pdf_asset_id),
+    };
+  }
+
   return (
     <DashboardPage className="min-h-full">
       <PageHeader
@@ -72,6 +113,9 @@ export default async function CandidateAssetsPage() {
           </>
         }
       />
+
+      {/* ATS résumé builder */}
+      <ResumeBuilderCard resume={resumeDoc} />
 
       {/* Asset grid (client component for motion) */}
       <AssetsGrid candidateProfileId={profile.id} assetByType={assetByType} />
