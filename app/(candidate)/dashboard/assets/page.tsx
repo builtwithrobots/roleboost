@@ -59,14 +59,14 @@ export default async function CandidateAssetsPage() {
   const uploadedCount = Object.values(assetByType).filter(Boolean).length;
 
   return (
-    <DashboardPage className="min-h-full bg-[--rb-bg-page]">
+    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
       {/* Header */}
-      <div className="border-b border-[--rb-border] bg-[--rb-bg-surface] px-6 py-4">
+      <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
         <div className="mx-auto max-w-5xl">
-          <h1 className="text-xl font-bold text-[--rb-text]">Career Assets</h1>
-          <p className="mt-1 text-sm text-[--rb-text-muted]">
+          <h1 className="text-xl font-bold text-[var(--rb-text)]">Career Assets</h1>
+          <p className="mt-1 text-sm text-[var(--rb-text-muted)]">
             Upload the media files that power your RoleBoost profile.{' '}
-            <span className="font-data text-[--rb-text-secondary]">{uploadedCount}</span>
+            <span className="font-data text-[var(--rb-text-secondary)]">{uploadedCount}</span>
             {' / '}
             <span className="font-data">{ASSET_TYPES.length}</span> uploaded.
           </p>
@@ -82,9 +82,9 @@ export default async function CandidateAssetsPage() {
 
       {/* Tip */}
       <div className="mx-auto max-w-5xl px-6 pb-12">
-        <div className="rounded-[--radius-xl] border border-[--rb-border-brand]/30 bg-[--rb-brand-subtle] px-5 py-4">
-          <p className="text-sm text-[--rb-text-secondary]">
-            <span className="font-semibold text-[--rb-text-brand]">Tip:</span>{' '}
+        <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
+          <p className="text-sm text-[var(--rb-text-secondary)]">
+            <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}
             Audio Overview and Debate Audio are produced by Google NotebookLM from your career documents.
             Upload them here after generating — they&apos;re the most-played content on RoleBoost.
           </p>

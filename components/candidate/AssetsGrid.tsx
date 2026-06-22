@@ -27,11 +27,11 @@ export default function AssetsGrid({ candidateProfileId, assetByType, uploadedCo
   return (
     <>
       {/* Progress bar */}
-      <div className="bg-[--rb-bg-surface] border-b border-[--rb-border] px-6 pb-4">
+      <div className="bg-[var(--rb-bg-surface)] border-b border-[var(--rb-border)] px-6 pb-4">
         <div className="mx-auto max-w-5xl">
-          <div className="h-1.5 rounded-full bg-[--rb-bg-surface-raised] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-[var(--rb-bg-surface-raised)] overflow-hidden">
             <motion.div
-              className="h-full bg-[--rb-brand] rounded-full"
+              className="h-full bg-[var(--rb-brand)] rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${(uploadedCount / ASSET_TYPES.length) * 100}%` }}
               transition={{ type: 'spring', stiffness: 120, damping: 20 }}

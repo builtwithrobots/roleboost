@@ -80,7 +80,7 @@ export default function AudioPlayer({ src, title }: Props) {
       <audio ref={audioRef} src={src} preload="metadata" />
 
       {title && (
-        <div className="text-center text-sm font-medium text-[--rb-text-secondary]">{title}</div>
+        <div className="text-center text-sm font-medium text-[var(--rb-text-secondary)]">{title}</div>
       )}
 
       {/* Time + progress */}
@@ -88,18 +88,18 @@ export default function AudioPlayer({ src, title }: Props) {
         <div
           ref={progressRef}
           onClick={handleProgressClick}
-          className="relative h-1.5 rounded-full bg-[--rb-bg-surface-raised] cursor-pointer group"
+          className="relative h-1.5 rounded-full bg-[var(--rb-bg-surface-raised)] cursor-pointer group"
         >
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-[--rb-brand] transition-all duration-[50ms]"
+            className="absolute inset-y-0 left-0 rounded-full bg-[var(--rb-brand)] transition-all duration-[50ms]"
             style={{ width: `${progress}%` }}
           />
           <div
-            className="absolute top-1/2 -translate-y-1/2 size-3.5 rounded-full bg-[--rb-brand] shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-1/2 -translate-y-1/2 size-3.5 rounded-full bg-[var(--rb-brand)] shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ left: `calc(${progress}% - 7px)` }}
           />
         </div>
-        <div className="flex justify-between text-xs font-data text-[--rb-text-muted]">
+        <div className="flex justify-between text-xs font-data text-[var(--rb-text-muted)]">
           <span>{formatTime(currentTime)}</span>
           <span>{isLoading ? '—:——' : formatTime(duration)}</span>
         </div>
@@ -109,7 +109,7 @@ export default function AudioPlayer({ src, title }: Props) {
       <div className="flex items-center justify-center gap-5">
         <button
           onClick={() => skip(-10)}
-          className="flex flex-col items-center gap-0.5 text-[--rb-text-muted] hover:text-[--rb-text] transition-colors"
+          className="flex flex-col items-center gap-0.5 text-[var(--rb-text-muted)] hover:text-[var(--rb-text)] transition-colors"
           aria-label="Back 10 seconds"
         >
           <SkipBack className="size-5" strokeWidth={1.5} />
@@ -119,7 +119,7 @@ export default function AudioPlayer({ src, title }: Props) {
         <button
           onClick={togglePlay}
           disabled={isLoading}
-          className="flex size-14 items-center justify-center rounded-full bg-[--rb-brand] text-white shadow-[0_4px_16px_rgb(79_70_229_/_0.35)] hover:bg-[--rb-brand-hover] hover:shadow-[0_6px_20px_rgb(79_70_229_/_0.45)] active:scale-95 transition-all duration-[--duration-fast] disabled:opacity-50"
+          className="flex size-14 items-center justify-center rounded-full bg-[var(--rb-brand)] text-white shadow-[0_4px_16px_rgb(79_70_229_/_0.35)] hover:bg-[var(--rb-brand-hover)] hover:shadow-[0_6px_20px_rgb(79_70_229_/_0.45)] active:scale-95 transition-all duration-[var(--duration-fast)] disabled:opacity-50"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
@@ -131,7 +131,7 @@ export default function AudioPlayer({ src, title }: Props) {
 
         <button
           onClick={() => skip(10)}
-          className="flex flex-col items-center gap-0.5 text-[--rb-text-muted] hover:text-[--rb-text] transition-colors"
+          className="flex flex-col items-center gap-0.5 text-[var(--rb-text-muted)] hover:text-[var(--rb-text)] transition-colors"
           aria-label="Forward 10 seconds"
         >
           <SkipForward className="size-5" strokeWidth={1.5} />

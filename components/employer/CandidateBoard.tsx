@@ -26,11 +26,11 @@ interface Props {
 }
 
 const STAGES: { key: Stage; label: string; accent: string; header: string }[] = [
-  { key: 'saved',     label: 'Saved',     accent: 'bg-[--color-stage-saved-bg]',     header: 'border-t-2 border-t-[--color-stage-saved]' },
-  { key: 'screening', label: 'Screening', accent: 'bg-[--color-stage-screening-bg]', header: 'border-t-2 border-t-[--color-stage-screening]' },
-  { key: 'interview', label: 'Interview', accent: 'bg-[--color-stage-interview-bg]', header: 'border-t-2 border-t-[--color-stage-interview]' },
-  { key: 'offer',     label: 'Offer',     accent: 'bg-[--color-stage-offer-bg]',     header: 'border-t-2 border-t-[--color-stage-offer]' },
-  { key: 'passed',    label: 'Passed',    accent: 'bg-[--color-stage-passed-bg]',    header: 'border-t-2 border-t-[--color-stage-passed]' },
+  { key: 'saved',     label: 'Saved',     accent: 'bg-[var(--color-stage-saved-bg)]',     header: 'border-t-2 border-t-[var(--color-stage-saved)]' },
+  { key: 'screening', label: 'Screening', accent: 'bg-[var(--color-stage-screening-bg)]', header: 'border-t-2 border-t-[var(--color-stage-screening)]' },
+  { key: 'interview', label: 'Interview', accent: 'bg-[var(--color-stage-interview-bg)]', header: 'border-t-2 border-t-[var(--color-stage-interview)]' },
+  { key: 'offer',     label: 'Offer',     accent: 'bg-[var(--color-stage-offer-bg)]',     header: 'border-t-2 border-t-[var(--color-stage-offer)]' },
+  { key: 'passed',    label: 'Passed',    accent: 'bg-[var(--color-stage-passed-bg)]',    header: 'border-t-2 border-t-[var(--color-stage-passed)]' },
 ];
 
 const STAGE_LABELS: Record<Stage, string> = {
@@ -48,12 +48,12 @@ function BoardCard({ candidate, onStageChange }: { candidate: Candidate; onStage
   return (
     <div className="rb-card p-3 text-sm">
       <div className="flex items-start gap-2.5 mb-2.5">
-        <div className="size-8 shrink-0 rounded-full bg-[--rb-brand] flex items-center justify-center text-white text-xs font-bold">
+        <div className="size-8 shrink-0 rounded-full bg-[var(--rb-brand)] flex items-center justify-center text-white text-xs font-bold">
           {getInitials(profile.fullName)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[--rb-text] truncate text-xs">{profile.fullName}</div>
-          <div className="text-[--rb-text-muted] truncate text-xs">
+          <div className="font-semibold text-[var(--rb-text)] truncate text-xs">{profile.fullName}</div>
+          <div className="text-[var(--rb-text-muted)] truncate text-xs">
             {profile.targetRole ?? profile.headline ?? '—'}
           </div>
         </div>
@@ -61,7 +61,7 @@ function BoardCard({ candidate, onStageChange }: { candidate: Candidate; onStage
           href={`/c/${profile.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 text-[--rb-text-muted] hover:text-[--rb-brand] transition-colors"
+          className="shrink-0 text-[var(--rb-text-muted)] hover:text-[var(--rb-brand)] transition-colors"
           aria-label="View profile"
         >
           <ExternalLink className="size-3.5" />
@@ -73,13 +73,13 @@ function BoardCard({ candidate, onStageChange }: { candidate: Candidate; onStage
         <select
           value={stage}
           onChange={(e) => onStageChange(savedId, e.target.value as Stage)}
-          className="w-full appearance-none rounded-[--radius-md] border border-[--rb-border] bg-[--rb-bg-surface-raised] pr-6 pl-2 py-1 text-xs text-[--rb-text] focus:outline-none focus:border-[--rb-border-focus] cursor-pointer"
+          className="w-full appearance-none rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] pr-6 pl-2 py-1 text-xs text-[var(--rb-text)] focus:outline-none focus:border-[var(--rb-border-focus)] cursor-pointer"
         >
           {STAGES.map((s) => (
             <option key={s.key} value={s.key}>{s.label}</option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-3 text-[--rb-text-muted]" />
+        <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-3 text-[var(--rb-text-muted)]" />
       </div>
     </div>
   );
@@ -110,22 +110,22 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
 
   if (totalCandidates === 0) {
     return (
-      <div className="min-h-full bg-[--rb-bg-page]">
-        <div className="border-b border-[--rb-border] bg-[--rb-bg-surface] px-6 py-4">
-          <h1 className="text-xl font-bold text-[--rb-text]">Board</h1>
-          <p className="mt-1 text-sm text-[--rb-text-muted]">Stage-based candidate pipeline.</p>
+      <div className="min-h-full bg-[var(--rb-bg-page)]">
+        <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
+          <h1 className="text-xl font-bold text-[var(--rb-text)]">Board</h1>
+          <p className="mt-1 text-sm text-[var(--rb-text-muted)]">Stage-based candidate pipeline.</p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 text-center px-6">
-          <div className="size-16 rounded-full bg-[--rb-brand-subtle] flex items-center justify-center mb-4">
-            <Columns3 className="size-8 text-[--rb-brand]" strokeWidth={1.5} />
+          <div className="size-16 rounded-full bg-[var(--rb-brand-subtle)] flex items-center justify-center mb-4">
+            <Columns3 className="size-8 text-[var(--rb-brand)]" strokeWidth={1.5} />
           </div>
-          <h2 className="text-lg font-semibold text-[--rb-text] mb-2">No candidates on your board</h2>
-          <p className="text-sm text-[--rb-text-muted] max-w-sm">
+          <h2 className="text-lg font-semibold text-[var(--rb-text)] mb-2">No candidates on your board</h2>
+          <p className="text-sm text-[var(--rb-text-muted)] max-w-sm">
             Save candidates from the Candidates page to move them through your pipeline here.
           </p>
           <Link
             href="/dashboard/candidates"
-            className="mt-4 text-sm font-medium text-[--rb-brand] hover:underline"
+            className="mt-4 text-sm font-medium text-[var(--rb-brand)] hover:underline"
           >
             Go to Candidates →
           </Link>
@@ -135,13 +135,13 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
   }
 
   return (
-    <div className="min-h-full bg-[--rb-bg-page] flex flex-col">
+    <div className="min-h-full bg-[var(--rb-bg-page)] flex flex-col">
       {/* Header */}
-      <div className="border-b border-[--rb-border] bg-[--rb-bg-surface] px-6 py-4 shrink-0">
-        <h1 className="text-xl font-bold text-[--rb-text]">Board</h1>
-        <p className="mt-1 text-sm text-[--rb-text-muted]">
+      <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4 shrink-0">
+        <h1 className="text-xl font-bold text-[var(--rb-text)]">Board</h1>
+        <p className="mt-1 text-sm text-[var(--rb-text-muted)]">
           Move candidates through your pipeline.{' '}
-          <span className={isPending ? 'text-[--rb-text-muted] italic' : 'hidden'}>Saving…</span>
+          <span className={isPending ? 'text-[var(--rb-text-muted)] italic' : 'hidden'}>Saving…</span>
         </p>
       </div>
 
@@ -155,12 +155,12 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
             return (
               <div
                 key={key}
-                className={`w-56 flex flex-col rounded-[--radius-xl] border border-[--rb-border] bg-[--rb-bg-surface] ${header} overflow-hidden`}
+                className={`w-56 flex flex-col rounded-[var(--radius-xl)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] ${header} overflow-hidden`}
               >
                 {/* Column header */}
                 <div className={`px-3 py-2.5 ${accent} flex items-center justify-between`}>
-                  <span className="text-xs font-semibold text-[--rb-text]">{label}</span>
-                  <span className="text-xs font-data font-medium text-[--rb-text-secondary]">
+                  <span className="text-xs font-semibold text-[var(--rb-text)]">{label}</span>
+                  <span className="text-xs font-data font-medium text-[var(--rb-text-secondary)]">
                     {stageCandidates.length}
                   </span>
                 </div>
@@ -176,7 +176,7 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
                   ))}
                   {stageCandidates.length === 0 && (
                     <div className="flex-1 flex items-center justify-center py-8">
-                      <span className="text-xs text-[--rb-text-muted]">Empty</span>
+                      <span className="text-xs text-[var(--rb-text-muted)]">Empty</span>
                     </div>
                   )}
                 </div>

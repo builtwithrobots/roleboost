@@ -84,16 +84,16 @@ export default async function CandidateProfilePage({ params }: Props) {
   });
 
   return (
-    <div className="min-h-screen bg-[--rb-bg-page]">
+    <div className="min-h-screen bg-[var(--rb-bg-page)]">
       {/* Slim brand header */}
-      <header className="sticky top-0 z-[--z-sticky] bg-[--rb-bg-surface]/90 backdrop-blur border-b border-[--rb-border] px-6 py-3">
+      <header className="sticky top-0 z-[var(--z-sticky)] bg-[var(--rb-bg-surface)]/90 backdrop-blur border-b border-[var(--rb-border)] px-6 py-3">
         <div className="mx-auto max-w-3xl flex items-center justify-between">
-          <span className="text-sm font-bold tracking-tight text-[--rb-text]">
-            Role<span className="text-[--rb-brand]">Boost</span>
+          <span className="text-sm font-bold tracking-tight text-[var(--rb-text)]">
+            Role<span className="text-[var(--rb-brand)]">Boost</span>
           </span>
           <Link
             href="/"
-            className="text-xs text-[--rb-brand] hover:underline font-medium"
+            className="text-xs text-[var(--rb-brand)] hover:underline font-medium"
           >
             Create your profile →
           </Link>

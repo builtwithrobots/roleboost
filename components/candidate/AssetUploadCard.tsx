@@ -174,13 +174,13 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
   return (
     <div className="rb-card flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-start gap-3 px-5 py-4 border-b border-[--rb-border]">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-[--radius-lg] bg-[--rb-brand-subtle] ring-1 ring-[--rb-border-brand]/40">
-          <Icon className="size-4.5 text-[--rb-brand]" strokeWidth={1.5} />
+      <div className="flex items-start gap-3 px-5 py-4 border-b border-[var(--rb-border)]">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--rb-brand-subtle)] ring-1 ring-[var(--rb-border-brand)]/40">
+          <Icon className="size-4.5 text-[var(--rb-brand)]" strokeWidth={1.5} />
         </div>
         <div>
-          <div className="text-sm font-semibold text-[--rb-text]">{meta.label}</div>
-          <div className="text-xs text-[--rb-text-muted] leading-relaxed mt-0.5">{meta.description}</div>
+          <div className="text-sm font-semibold text-[var(--rb-text)]">{meta.label}</div>
+          <div className="text-xs text-[var(--rb-text-muted)] leading-relaxed mt-0.5">{meta.description}</div>
         </div>
       </div>
 
@@ -188,11 +188,11 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
       <div className="flex-1 px-5 py-4 flex flex-col gap-4">
         {/* Existing asset */}
         {hasAsset && (
-          <div className="flex items-center gap-3 rounded-[--radius-lg] bg-[--rb-bg-surface-raised] px-3 py-2.5">
-            <CheckCircle2 className="size-4 shrink-0 text-[--color-success]" />
+          <div className="flex items-center gap-3 rounded-[var(--radius-lg)] bg-[var(--rb-bg-surface-raised)] px-3 py-2.5">
+            <CheckCircle2 className="size-4 shrink-0 text-[var(--color-success)]" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-[--rb-text] truncate">{localAsset!.file_name}</div>
-              <div className="flex items-center gap-2 text-xs text-[--rb-text-muted]">
+              <div className="text-xs font-medium text-[var(--rb-text)] truncate">{localAsset!.file_name}</div>
+              <div className="flex items-center gap-2 text-xs text-[var(--rb-text-muted)]">
                 {localAsset!.file_size_bytes && (
                   <span className="font-data">{formatBytes(localAsset!.file_size_bytes)}</span>
                 )}
@@ -206,7 +206,7 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
                 href={localAsset!.signed_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 flex items-center gap-1 rounded px-2 py-1 text-xs text-[--rb-brand] hover:bg-[--rb-brand-subtle] transition-colors"
+                className="shrink-0 flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--rb-brand)] hover:bg-[var(--rb-brand-subtle)] transition-colors"
               >
                 <Play className="size-3" />
                 Play
@@ -221,12 +221,12 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => uploadState !== 'uploading' && inputRef.current?.click()}
-          className={`flex flex-col items-center justify-center gap-2 rounded-[--radius-lg] border-2 border-dashed px-4 py-5 text-center cursor-pointer transition-all duration-[--duration-base] ${
+          className={`flex flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border-2 border-dashed px-4 py-5 text-center cursor-pointer transition-all duration-[var(--duration-base)] ${
             isDragging
-              ? 'border-[--rb-brand] bg-[--rb-brand-subtle]'
+              ? 'border-[var(--rb-brand)] bg-[var(--rb-brand-subtle)]'
               : uploadState === 'uploading'
-              ? 'border-[--rb-border] bg-[--rb-bg-surface-raised] cursor-wait'
-              : 'border-[--rb-border] hover:border-[--rb-border-brand] hover:bg-[--rb-brand-subtle]/40'
+              ? 'border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] cursor-wait'
+              : 'border-[var(--rb-border)] hover:border-[var(--rb-border-brand)] hover:bg-[var(--rb-brand-subtle)]/40'
           }`}
         >
           <AnimatePresence mode="wait">
@@ -240,26 +240,26 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
             >
               {uploadState === 'uploading' ? (
                 <>
-                  <Loader2 className="size-5 text-[--rb-brand] animate-spin" />
-                  <span className="text-xs text-[--rb-text-secondary]">Uploading…</span>
+                  <Loader2 className="size-5 text-[var(--rb-brand)] animate-spin" />
+                  <span className="text-xs text-[var(--rb-text-secondary)]">Uploading…</span>
                 </>
               ) : uploadState === 'success' ? (
                 <>
-                  <CheckCircle2 className="size-5 text-[--color-success]" />
-                  <span className="text-xs text-[--color-success] font-medium">Uploaded!</span>
+                  <CheckCircle2 className="size-5 text-[var(--color-success)]" />
+                  <span className="text-xs text-[var(--color-success)] font-medium">Uploaded!</span>
                 </>
               ) : (
                 <>
-                  <Upload className="size-5 text-[--rb-text-muted]" />
+                  <Upload className="size-5 text-[var(--rb-text-muted)]" />
                   <div>
-                    <span className="text-xs font-medium text-[--rb-text-secondary]">
+                    <span className="text-xs font-medium text-[var(--rb-text-secondary)]">
                       {hasAsset ? 'Drop to replace' : 'Drag & drop or '}
                     </span>
                     {!hasAsset && (
-                      <span className="text-xs font-medium text-[--rb-brand]">browse</span>
+                      <span className="text-xs font-medium text-[var(--rb-brand)]">browse</span>
                     )}
                   </div>
-                  <span className="text-xs text-[--rb-text-muted]">{meta.hint}</span>
+                  <span className="text-xs text-[var(--rb-text-muted)]">{meta.hint}</span>
                 </>
               )}
             </motion.div>
@@ -268,9 +268,9 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
 
         {/* Error */}
         {uploadState === 'error' && (
-          <div className="flex items-start gap-2 rounded-[--radius-md] bg-[--color-error-bg] px-3 py-2">
-            <AlertCircle className="size-3.5 shrink-0 text-[--color-error] mt-0.5" />
-            <span className="text-xs text-[--color-error]">{errorMsg}</span>
+          <div className="flex items-start gap-2 rounded-[var(--radius-md)] bg-[var(--color-error-bg)] px-3 py-2">
+            <AlertCircle className="size-3.5 shrink-0 text-[var(--color-error)] mt-0.5" />
+            <span className="text-xs text-[var(--color-error)]">{errorMsg}</span>
           </div>
         )}
 
@@ -285,10 +285,10 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
 
       {/* Footer actions */}
       {hasAsset && (
-        <div className="flex gap-2 px-5 py-3 border-t border-[--rb-border]">
+        <div className="flex gap-2 px-5 py-3 border-t border-[var(--rb-border)]">
           <button
             onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1.5 text-xs text-[--rb-text-secondary] hover:text-[--rb-brand] transition-colors"
+            className="flex items-center gap-1.5 text-xs text-[var(--rb-text-secondary)] hover:text-[var(--rb-brand)] transition-colors"
           >
             <RefreshCw className="size-3" />
             Replace

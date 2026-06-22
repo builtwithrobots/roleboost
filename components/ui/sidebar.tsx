@@ -17,7 +17,7 @@ export function SidebarHeader({ className, ...props }: React.ComponentPropsWitho
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-b border-[--rb-border] p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-b border-[var(--rb-border)] p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   )
@@ -41,7 +41,7 @@ export function SidebarFooter({ className, ...props }: React.ComponentPropsWitho
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-t border-[--rb-border] p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-t border-[var(--rb-border)] p-4 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   )
@@ -58,7 +58,7 @@ export function SidebarSection({ className, ...props }: React.ComponentPropsWith
 }
 
 export function SidebarDivider({ className, ...props }: React.ComponentPropsWithoutRef<'hr'>) {
-  return <hr {...props} className={clsx(className, 'my-4 border-t border-[--rb-border] lg:-mx-4')} />
+  return <hr {...props} className={clsx(className, 'my-4 border-t border-[var(--rb-border)] lg:-mx-4')} />
 }
 
 export function SidebarSpacer({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -67,7 +67,7 @@ export function SidebarSpacer({ className, ...props }: React.ComponentPropsWitho
 
 export function SidebarHeading({ className, ...props }: React.ComponentPropsWithoutRef<'h3'>) {
   return (
-    <h3 {...props} className={clsx(className, 'mb-1 px-2 text-xs/6 font-medium text-[--rb-text-muted]')} />
+    <h3 {...props} className={clsx(className, 'mb-1 px-2 text-xs/6 font-medium text-[var(--rb-text-muted)]')} />
   )
 }
 
@@ -85,19 +85,19 @@ export const SidebarItem = forwardRef(function SidebarItem(
 ) {
   let classes = clsx(
     // Base
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-[--rb-text] sm:py-2 sm:text-sm/5',
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-[var(--rb-text)] sm:py-2 sm:text-sm/5',
     // Leading icon/icon-only
-    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-[--rb-text-muted] sm:*:data-[slot=icon]:size-5',
+    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-[var(--rb-text-muted)] sm:*:data-[slot=icon]:size-5',
     // Trailing icon (down chevron or similar)
     '*:last:data-[slot=icon]:ml-auto *:last:data-[slot=icon]:size-5 sm:*:last:data-[slot=icon]:size-4',
     // Avatar
     '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 sm:*:data-[slot=avatar]:size-6',
     // Hover
-    'data-hover:bg-[--rb-bg-surface-raised] data-hover:*:data-[slot=icon]:fill-[--rb-brand]',
+    'data-hover:bg-[var(--rb-bg-surface-raised)] data-hover:*:data-[slot=icon]:fill-[var(--rb-brand)]',
     // Active
-    'data-active:bg-[--rb-bg-surface-raised] data-active:*:data-[slot=icon]:fill-[--rb-brand]',
+    'data-active:bg-[var(--rb-bg-surface-raised)] data-active:*:data-[slot=icon]:fill-[var(--rb-brand)]',
     // Current
-    'data-current:font-semibold data-current:text-[--rb-text] data-current:*:data-[slot=icon]:fill-[--rb-brand]'
+    'data-current:font-semibold data-current:text-[var(--rb-text)] data-current:*:data-[slot=icon]:fill-[var(--rb-brand)]'
   )
 
   return (
@@ -105,7 +105,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-[--rb-brand]"
+          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-[var(--rb-brand)]"
         />
       )}
       {typeof props.href === 'string' ? (

@@ -33,7 +33,7 @@ export default function UserMenu({ role }: { role: 'candidate' | 'employer' }) {
       <DropdownButton as={SidebarItem} className="w-full">
         <span
           data-slot="avatar"
-          className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[--rb-brand] text-xs font-bold text-white sm:size-6"
+          className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--rb-brand)] text-xs font-bold text-white sm:size-6"
           aria-hidden="true"
         >
           {initials}
