@@ -63,7 +63,6 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        width="max-w-5xl"
         description={
           <>
             Upload the media files that power your RoleBoost profile.{' '}
@@ -78,7 +77,7 @@ export default async function CandidateAssetsPage() {
       <AssetsGrid candidateProfileId={profile.id} assetByType={assetByType} />
 
       {/* Tip */}
-      <div className="mx-auto max-w-5xl px-6 pb-12">
+      <div className="mx-auto max-w-6xl px-6 pb-12">
         <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
           <p className="text-sm text-[var(--rb-text-secondary)]">
             <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}

@@ -118,11 +118,10 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
       {/* Header */}
       <PageHeader
         title="Share Hub"
-        width="max-w-4xl"
         description="Share your profile link, QR code, and digital badge."
       />
 
-      <div className="mx-auto max-w-4xl px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mx-auto max-w-6xl px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Panel 1: Profile Link */}
         <div className="rb-card p-6">

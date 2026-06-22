@@ -93,15 +93,16 @@ export default function ProfileEditor({ profile }: Props) {
   return (
     <div className="min-h-full">
       {/* Top bar */}
-      <div className="sticky top-0 z-[var(--z-sticky)] bg-[var(--rb-bg-surface)] border-b border-[var(--rb-border)] px-6 py-3 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-base font-semibold text-[var(--rb-text)]">Profile</h1>
-          <p className="text-xs text-[var(--rb-text-muted)]">
+      <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-bold tracking-tight text-[var(--rb-text)]">Profile</h1>
+          <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
             Your public career page · roleboost.com/c/{profile.slug}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           {/* Save status */}
           <AnimatePresence mode="wait">
             {saveStatus !== 'idle' && (
@@ -162,7 +163,8 @@ export default function ProfileEditor({ profile }: Props) {
             </a>
           )}
         </div>
-      </div>
+        </div>
+      </header>
 
       {/* Two-column layout */}
       <div className="mx-auto max-w-6xl px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
