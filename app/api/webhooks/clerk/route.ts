@@ -70,13 +70,21 @@ export async function POST(req: NextRequest) {
     case 'user.created': {
       const { id, email_addresses, primary_email_address_id, public_metadata } = event.data;
       const email = extractEmail(email_addresses, primary_email_address_id);
-      // email may be empty for OAuth sign-ups — user.updated will fill it in
-      const role = (public_metadata?.role as string) ?? 'candidate';
+      // email may be empty for OAuth sign-ups — user.updated will fill it in.
+      //
+      // Do NOT default the role here. The webhook fires before the user reaches
+      // onboarding, so we have no role yet — leave it NULL and let onboarding's
+      // setUserRole() set it. A pre-set role only exists when an admin provisions
+      // an account via Clerk public_metadata.
+      const role = (public_metadata?.role as string) ?? null;
 
+      // ignoreDuplicates: never overwrite an existing row. If onboarding already
+      // ran (or this event is a duplicate), we must not clobber a chosen role or
+      // reset subscription_status to 'free' for a paying user.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (adminClient.from('users') as any).upsert(
         { clerk_user_id: id, email, role, subscription_status: 'free' },
-        { onConflict: 'clerk_user_id' }
+        { onConflict: 'clerk_user_id', ignoreDuplicates: true }
       );
 
       if (error) {
