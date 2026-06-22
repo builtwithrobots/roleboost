@@ -2,6 +2,7 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { ensureCandidateProfile } from './actions';
 import ProfileEditor from '@/components/candidate/ProfileEditor';
+import DashboardPage from '@/components/layout/DashboardPage';
 import type { CandidateProfile } from '@/lib/types';
 
 export default async function CandidateProfilePage() {
@@ -50,5 +51,9 @@ export default async function CandidateProfilePage() {
     );
   }
 
-  return <ProfileEditor profile={profile} />;
+  return (
+    <DashboardPage>
+      <ProfileEditor profile={profile} />
+    </DashboardPage>
+  );
 }

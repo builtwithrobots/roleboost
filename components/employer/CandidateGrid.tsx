@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'motion/react';
+import { cardStagger, cardEnter } from '@/lib/motion-dashboard';
 import {
   Headphones,
   MessageSquare,
@@ -139,6 +141,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 }
 
 export default function CandidateGrid({ candidates }: Props) {
+  const prefersReduced = useReducedMotion();
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<Stage | 'all'>('all');
 
@@ -231,11 +234,18 @@ export default function CandidateGrid({ candidates }: Props) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            variants={cardStagger}
+            initial={prefersReduced ? false : 'hidden'}
+            animate="visible"
+          >
             {filtered.map((c) => (
-              <CandidateCard key={c.savedId} candidate={c} />
+              <motion.div key={c.savedId} variants={cardEnter}>
+                <CandidateCard candidate={c} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

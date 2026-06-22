@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { uploadStateFade } from '@/lib/motion-dashboard';
 import {
   Headphones,
   MessageSquare,
@@ -105,6 +107,7 @@ function formatDate(iso: string): string {
 export default function AssetUploadCard({ assetType, candidateProfileId, existingAsset, onUploadComplete }: Props) {
   const meta = ASSET_META[assetType];
   const Icon = meta.icon;
+  const prefersReduced = useReducedMotion();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -226,30 +229,41 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
               : 'border-[--rb-border] hover:border-[--rb-border-brand] hover:bg-[--rb-brand-subtle]/40'
           }`}
         >
-          {uploadState === 'uploading' ? (
-            <>
-              <Loader2 className="size-5 text-[--rb-brand] animate-spin" />
-              <span className="text-xs text-[--rb-text-secondary]">Uploading…</span>
-            </>
-          ) : uploadState === 'success' ? (
-            <>
-              <CheckCircle2 className="size-5 text-[--color-success]" />
-              <span className="text-xs text-[--color-success] font-medium">Uploaded!</span>
-            </>
-          ) : (
-            <>
-              <Upload className="size-5 text-[--rb-text-muted]" />
-              <div>
-                <span className="text-xs font-medium text-[--rb-text-secondary]">
-                  {hasAsset ? 'Drop to replace' : 'Drag & drop or '}
-                </span>
-                {!hasAsset && (
-                  <span className="text-xs font-medium text-[--rb-brand]">browse</span>
-                )}
-              </div>
-              <span className="text-xs text-[--rb-text-muted]">{meta.hint}</span>
-            </>
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={uploadState}
+              variants={uploadStateFade}
+              initial={prefersReduced ? false : 'hidden'}
+              animate="visible"
+              exit="exit"
+              className="flex flex-col items-center gap-2"
+            >
+              {uploadState === 'uploading' ? (
+                <>
+                  <Loader2 className="size-5 text-[--rb-brand] animate-spin" />
+                  <span className="text-xs text-[--rb-text-secondary]">Uploading…</span>
+                </>
+              ) : uploadState === 'success' ? (
+                <>
+                  <CheckCircle2 className="size-5 text-[--color-success]" />
+                  <span className="text-xs text-[--color-success] font-medium">Uploaded!</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="size-5 text-[--rb-text-muted]" />
+                  <div>
+                    <span className="text-xs font-medium text-[--rb-text-secondary]">
+                      {hasAsset ? 'Drop to replace' : 'Drag & drop or '}
+                    </span>
+                    {!hasAsset && (
+                      <span className="text-xs font-medium text-[--rb-brand]">browse</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-[--rb-text-muted]">{meta.hint}</span>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Error */}

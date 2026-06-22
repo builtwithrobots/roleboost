@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useTransition, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import { statusSlide } from '@/lib/motion-dashboard';
 import { updateCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
 import type { CandidateProfile } from '@/lib/types';
 import {
@@ -25,6 +27,7 @@ interface Props {
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function ProfileEditor({ profile }: Props) {
+  const prefersReduced = useReducedMotion();
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   const [headline, setHeadline] = useState(profile.headline ?? '');
   const [targetRole, setTargetRole] = useState(profile.target_role ?? '');
@@ -100,21 +103,28 @@ export default function ProfileEditor({ profile }: Props) {
 
         <div className="flex items-center gap-3">
           {/* Save status */}
-          <span
-            className={`text-xs transition-opacity duration-200 ${
-              saveStatus === 'idle' ? 'opacity-0' : 'opacity-100'
-            } ${
-              saveStatus === 'saving'
-                ? 'text-[--rb-text-muted]'
-                : saveStatus === 'saved'
-                ? 'text-[--color-success]'
-                : 'text-[--color-error]'
-            }`}
-          >
-            {saveStatus === 'saving' && 'Saving…'}
-            {saveStatus === 'saved' && '✓ Saved'}
-            {saveStatus === 'error' && 'Save failed'}
-          </span>
+          <AnimatePresence mode="wait">
+            {saveStatus !== 'idle' && (
+              <motion.span
+                key={saveStatus}
+                variants={statusSlide}
+                initial={prefersReduced ? false : 'hidden'}
+                animate="visible"
+                exit="exit"
+                className="text-xs"
+              >
+                {saveStatus === 'saving' && (
+                  <span className="text-[--rb-text-muted]">Saving…</span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="text-[--color-success]">✓ Saved</span>
+                )}
+                {saveStatus === 'error' && (
+                  <span className="text-[--color-error]">Save failed</span>
+                )}
+              </motion.span>
+            )}
+          </AnimatePresence>
 
           {/* Publish toggle */}
           <button

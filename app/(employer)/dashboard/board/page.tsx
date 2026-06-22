@@ -2,6 +2,7 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
 import CandidateBoard from '@/components/employer/CandidateBoard';
+import DashboardPage from '@/components/layout/DashboardPage';
 
 async function getEmployerAccountId(userId: string): Promise<string | null> {
   const { data } = await (adminClient.from('employer_members') as any)
@@ -58,5 +59,9 @@ export default async function EmployerBoardPage() {
       : null,
   }));
 
-  return <CandidateBoard candidates={candidates} />;
+  return (
+    <DashboardPage>
+      <CandidateBoard candidates={candidates} />
+    </DashboardPage>
+  );
 }

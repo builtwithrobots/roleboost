@@ -97,7 +97,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     // Active
     'data-active:bg-[--rb-bg-surface-raised] data-active:*:data-[slot=icon]:fill-[--rb-brand]',
     // Current
-    'data-current:*:data-[slot=icon]:fill-[--rb-brand]'
+    'data-current:font-semibold data-current:text-[--rb-text] data-current:*:data-[slot=icon]:fill-[--rb-brand]'
   )
 
   return (
