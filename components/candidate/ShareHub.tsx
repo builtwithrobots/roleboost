@@ -113,12 +113,12 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
   };
 
   return (
-    <div className="min-h-full bg-[--rb-bg-page]">
+    <div className="min-h-full bg-[var(--rb-bg-page)]">
       {/* Header */}
-      <div className="border-b border-[--rb-border] bg-[--rb-bg-surface] px-6 py-4">
+      <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-xl font-bold text-[--rb-text]">Share Hub</h1>
-          <p className="mt-1 text-sm text-[--rb-text-muted]">
+          <h1 className="text-xl font-bold text-[var(--rb-text)]">Share Hub</h1>
+          <p className="mt-1 text-sm text-[var(--rb-text-muted)]">
             Share your profile link, QR code, and digital badge.
           </p>
         </div>
@@ -128,27 +128,27 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
 
         {/* Panel 1: Profile Link */}
         <div className="rb-card p-6">
-          <h2 className="text-sm font-semibold text-[--rb-text] mb-1">Your Profile Link</h2>
-          <p className="text-xs text-[--rb-text-muted] mb-4">
+          <h2 className="text-sm font-semibold text-[var(--rb-text)] mb-1">Your Profile Link</h2>
+          <p className="text-xs text-[var(--rb-text-muted)] mb-4">
             Share this link with recruiters and hiring managers.
           </p>
 
           {!isPublished && (
-            <div className="flex items-center gap-2 rounded-[--radius-md] bg-[--color-warning-bg] border border-amber-200 px-3 py-2 mb-4">
-              <EyeOff className="size-3.5 shrink-0 text-[--color-warning]" />
-              <span className="text-xs text-[--color-warning] font-medium">
+            <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-amber-200 px-3 py-2 mb-4">
+              <EyeOff className="size-3.5 shrink-0 text-[var(--color-warning)]" />
+              <span className="text-xs text-[var(--color-warning)] font-medium">
                 Your profile is a draft. Publish it so employers can view this link.
               </span>
             </div>
           )}
 
           <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0 rounded-[--radius-md] border border-[--rb-border] bg-[--rb-bg-surface-raised] px-3 py-2 text-sm text-[--rb-text-secondary] font-data truncate">
+            <div className="flex-1 min-w-0 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] px-3 py-2 text-sm text-[var(--rb-text-secondary)] font-data truncate">
               getroleboost.com/c/{slug}
             </div>
             <button
               onClick={linkCopy.copy}
-              className="shrink-0 flex items-center gap-1.5 rounded-[--radius-md] bg-[--rb-brand] px-3 py-2 text-xs font-semibold text-white hover:bg-[--rb-brand-hover] transition-colors duration-[--duration-fast]"
+              className="shrink-0 flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--rb-brand-hover)] transition-colors duration-[var(--duration-fast)]"
             >
               {linkCopy.copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
               {linkCopy.copied ? 'Copied!' : 'Copy'}
@@ -160,7 +160,7 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
               href={profileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center gap-1.5 text-xs text-[--rb-brand] hover:underline"
+              className="mt-3 flex items-center gap-1.5 text-xs text-[var(--rb-brand)] hover:underline"
             >
               <Eye className="size-3" />
               Open your live profile
@@ -171,13 +171,13 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
 
         {/* Panel 2: QR Code */}
         <div className="rb-card p-6">
-          <h2 className="text-sm font-semibold text-[--rb-text] mb-1">QR Code</h2>
-          <p className="text-xs text-[--rb-text-muted] mb-4">
+          <h2 className="text-sm font-semibold text-[var(--rb-text)] mb-1">QR Code</h2>
+          <p className="text-xs text-[var(--rb-text-muted)] mb-4">
             Add to your resume or email signature. Scan to open your profile.
           </p>
 
           <div className="flex flex-col items-center gap-4">
-            <div className="rounded-[--radius-xl] border border-[--rb-border] p-3 bg-white">
+            <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border)] p-3 bg-white">
               <QRCanvas url={profileUrl} size={160} />
             </div>
 
@@ -187,10 +187,10 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
                 <button
                   key={s}
                   onClick={() => setQrSize(s)}
-                  className={`px-2.5 py-1 rounded-[--radius-sm] text-xs font-medium transition-all duration-[--duration-fast] ${
+                  className={`px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-medium transition-all duration-[var(--duration-fast)] ${
                     qrSize === s
-                      ? 'bg-[--rb-brand] text-white'
-                      : 'bg-[--rb-bg-surface-raised] text-[--rb-text-secondary] hover:bg-[--rb-border]'
+                      ? 'bg-[var(--rb-brand)] text-white'
+                      : 'bg-[var(--rb-bg-surface-raised)] text-[var(--rb-text-secondary)] hover:bg-[var(--rb-border)]'
                   }`}
                 >
                   {s}px
@@ -200,7 +200,7 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
 
             <button
               onClick={downloadQR}
-              className="flex items-center gap-2 rounded-[--radius-md] border border-[--rb-border] bg-[--rb-bg-surface] px-4 py-2 text-xs font-semibold text-[--rb-text-secondary] hover:border-[--rb-border-strong] hover:bg-[--rb-bg-surface-raised] transition-all duration-[--duration-fast]"
+              className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-4 py-2 text-xs font-semibold text-[var(--rb-text-secondary)] hover:border-[var(--rb-border-strong)] hover:bg-[var(--rb-bg-surface-raised)] transition-all duration-[var(--duration-fast)]"
             >
               <Download className="size-3.5" />
               Download PNG ({qrSize}×{qrSize})
@@ -210,8 +210,8 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
 
         {/* Panel 3: Digital Badge (full width) */}
         <div className="md:col-span-2 rb-card p-6">
-          <h2 className="text-sm font-semibold text-[--rb-text] mb-1">Digital Badge</h2>
-          <p className="text-xs text-[--rb-text-muted] mb-4">
+          <h2 className="text-sm font-semibold text-[var(--rb-text)] mb-1">Digital Badge</h2>
+          <p className="text-xs text-[var(--rb-text-muted)] mb-4">
             Add to your LinkedIn profile, email signature, or portfolio. Links directly to your RoleBoost profile.
           </p>
 
@@ -224,9 +224,9 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
             {/* Badge actions */}
             <div className="flex-1 flex flex-col gap-4">
               {/* LinkedIn instructions */}
-              <div className="rounded-[--radius-lg] bg-[--rb-bg-surface-raised] border border-[--rb-border] p-4">
-                <div className="text-xs font-semibold text-[--rb-text] mb-1">Add to LinkedIn</div>
-                <ol className="text-xs text-[--rb-text-secondary] space-y-1 list-decimal list-inside">
+              <div className="rounded-[var(--radius-lg)] bg-[var(--rb-bg-surface-raised)] border border-[var(--rb-border)] p-4">
+                <div className="text-xs font-semibold text-[var(--rb-text)] mb-1">Add to LinkedIn</div>
+                <ol className="text-xs text-[var(--rb-text-secondary)] space-y-1 list-decimal list-inside">
                   <li>Download the badge image below</li>
                   <li>Go to LinkedIn → Me → Edit Profile</li>
                   <li>Add the image to your Featured section</li>
@@ -237,16 +237,16 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
               {/* Embed code */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-medium text-[--rb-text-secondary]">HTML embed code</span>
+                  <span className="text-xs font-medium text-[var(--rb-text-secondary)]">HTML embed code</span>
                   <button
                     onClick={embedCopy.copy}
-                    className="flex items-center gap-1 text-xs text-[--rb-brand] hover:underline"
+                    className="flex items-center gap-1 text-xs text-[var(--rb-brand)] hover:underline"
                   >
                     <Code2 className="size-3" />
                     {embedCopy.copied ? 'Copied!' : 'Copy code'}
                   </button>
                 </div>
-                <pre className="text-xs bg-[--rb-bg-surface-sunken] border border-[--rb-border] rounded-[--radius-md] px-3 py-2.5 text-[--rb-text-secondary] font-mono overflow-x-auto whitespace-pre-wrap break-all">
+                <pre className="text-xs bg-[var(--rb-bg-surface-sunken)] border border-[var(--rb-border)] rounded-[var(--radius-md)] px-3 py-2.5 text-[var(--rb-text-secondary)] font-mono overflow-x-auto whitespace-pre-wrap break-all">
                   {embedCode}
                 </pre>
               </div>

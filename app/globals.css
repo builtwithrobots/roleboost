@@ -126,7 +126,8 @@
 /* ═══════════════════════════════════════════════════════════════════
    SEMANTIC COLOR TOKENS
    Light-mode defaults in :root — override in .dark
-   Reference in components as: bg-[--rb-bg-page], text-[--rb-text]
+   Reference in components as: bg-[var(--rb-bg-page)], text-[var(--rb-text)]
+   (Tailwind v4 requires the explicit var() wrapper — bare [--rb-*] does not resolve.)
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   /* Surfaces */
