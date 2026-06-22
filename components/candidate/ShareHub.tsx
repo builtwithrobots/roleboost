@@ -113,7 +113,7 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
   };
 
   return (
-    <div className="min-h-full bg-[var(--rb-bg-page)]">
+    <div className="min-h-full">
       {/* Header */}
       <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
         <div className="mx-auto max-w-4xl">

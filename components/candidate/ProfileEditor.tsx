@@ -91,7 +91,7 @@ export default function ProfileEditor({ profile }: Props) {
   const profileUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/c/${profile.slug}`;
 
   return (
-    <div className="min-h-full bg-[var(--rb-bg-page)]">
+    <div className="min-h-full">
       {/* Top bar */}
       <div className="sticky top-0 z-[var(--z-sticky)] bg-[var(--rb-bg-surface)] border-b border-[var(--rb-border)] px-6 py-3 flex items-center justify-between gap-4">
         <div>

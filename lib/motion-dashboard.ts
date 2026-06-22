@@ -6,14 +6,14 @@
 
 import type { Variants } from 'motion/react'
 
-// Page-level entrance -- every dashboard page fades and lifts on mount.
-// Subtler Y than marketing (12px vs 24px) -- tool UX, not storytelling.
+// Page-level entrance -- every dashboard page fades in on mount.
+// Fade only (no Y displacement) so the page header stays fixed and does not
+// shift/bounce when switching between dashboard menu items.
 export const pageEnter: Variants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
   },
 }
 

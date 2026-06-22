@@ -86,18 +86,18 @@ export const SidebarItem = forwardRef(function SidebarItem(
   let classes = clsx(
     // Base
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-[var(--rb-text)] sm:py-2 sm:text-sm/5',
-    // Leading icon/icon-only
-    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-[var(--rb-text-muted)] sm:*:data-[slot=icon]:size-5',
+    // Leading icon/icon-only — lucide icons are stroke-based, so color via text/currentColor
+    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:text-[var(--rb-text-muted)] sm:*:data-[slot=icon]:size-5',
     // Trailing icon (down chevron or similar)
     '*:last:data-[slot=icon]:ml-auto *:last:data-[slot=icon]:size-5 sm:*:last:data-[slot=icon]:size-4',
     // Avatar
     '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 sm:*:data-[slot=avatar]:size-6',
     // Hover
-    'data-hover:bg-[var(--rb-bg-surface-raised)] data-hover:*:data-[slot=icon]:fill-[var(--rb-brand)]',
+    'data-hover:bg-[var(--rb-bg-surface-raised)] data-hover:*:data-[slot=icon]:text-[var(--rb-brand)]',
     // Active
-    'data-active:bg-[var(--rb-bg-surface-raised)] data-active:*:data-[slot=icon]:fill-[var(--rb-brand)]',
+    'data-active:bg-[var(--rb-bg-surface-raised)] data-active:*:data-[slot=icon]:text-[var(--rb-brand)]',
     // Current
-    'data-current:font-semibold data-current:text-[var(--rb-text)] data-current:*:data-[slot=icon]:fill-[var(--rb-brand)]'
+    'data-current:font-semibold data-current:text-[var(--rb-text)] data-current:*:data-[slot=icon]:text-[var(--rb-brand)]'
   )
 
   return (

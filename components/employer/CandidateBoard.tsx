@@ -110,7 +110,7 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
 
   if (totalCandidates === 0) {
     return (
-      <div className="min-h-full bg-[var(--rb-bg-page)]">
+      <div className="min-h-full">
         <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
           <h1 className="text-xl font-bold text-[var(--rb-text)]">Board</h1>
           <p className="mt-1 text-sm text-[var(--rb-text-muted)]">Stage-based candidate pipeline.</p>
@@ -135,7 +135,7 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
   }
 
   return (
-    <div className="min-h-full bg-[var(--rb-bg-page)] flex flex-col">
+    <div className="min-h-full flex flex-col">
       {/* Header */}
       <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4 shrink-0">
         <h1 className="text-xl font-bold text-[var(--rb-text)]">Board</h1>

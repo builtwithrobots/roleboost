@@ -11,7 +11,7 @@ const STATS = [
 
 export default function CandidateAnalyticsPage() {
   return (
-    <DashboardPage className="min-h-full bg-[var(--rb-bg-page)]">
+    <DashboardPage className="min-h-full">
       <PageHeader
         title="Analytics"
         description="See who's viewing your profile and how they engage with your career story."
