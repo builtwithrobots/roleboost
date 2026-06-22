@@ -27,17 +27,11 @@ export default async function CandidateProfilePage() {
   let profile = rawProfile as CandidateProfile | null;
 
   if (!profile) {
-    // First visit after onboarding — bootstrap the profile row
-    await ensureCandidateProfile();
-    // Re-fetch after creation
-    const { data: created } = await supabase
-      .from('candidate_profiles')
-      .select(
-        'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, is_published, created_at, updated_at'
-      )
-      .eq('clerk_user_id', userId)
-      .single();
-    profile = created as CandidateProfile | null;
+    // First visit after onboarding — bootstrap the profile row and use the
+    // returned row directly. Re-querying here would be deduplicated by Next.js
+    // fetch memoization against the read above and return the stale empty
+    // result, so we rely on the row ensureCandidateProfile() returns.
+    profile = await ensureCandidateProfile();
   }
 
   if (!profile) {

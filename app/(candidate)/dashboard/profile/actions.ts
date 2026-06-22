@@ -5,6 +5,10 @@ import { revalidatePath } from 'next/cache';
 import { currentUser } from '@clerk/nextjs/server';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { adminClient } from '@/lib/supabase/admin';
+import type { CandidateProfile } from '@/lib/types';
+
+const PROFILE_COLUMNS =
+  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, is_published, created_at, updated_at';
 
 const ProfileInput = z.object({
   full_name: z.string().min(1).max(200),
@@ -49,7 +53,12 @@ export async function updateCandidateProfile(input: unknown) {
   }
 }
 
-export async function ensureCandidateProfile(): Promise<{ slug: string; full_name: string }> {
+// Bootstraps the candidate's profile row on first dashboard visit and returns
+// the created row. The caller must use the returned row directly — re-querying
+// candidate_profiles in the same render would hit Next.js fetch memoization and
+// return the pre-insert (empty) result, leaving the page thinking no profile
+// exists. Returning the row here avoids that second read entirely.
+export async function ensureCandidateProfile(): Promise<CandidateProfile> {
   const clerkUser = await currentUser();
   if (!clerkUser) throw new AuthError('UNAUTHENTICATED');
 
@@ -68,18 +77,30 @@ export async function ensureCandidateProfile(): Promise<{ slug: string; full_nam
   const slug = `${slugBase}-${suffix}`;
 
   // adminClient: bootstrapping the initial profile row before RLS row exists
-  const { error } = await (adminClient.from('candidate_profiles') as any).insert({
-    clerk_user_id: clerkUser.id,
-    slug,
-    full_name: fullName,
-    summary_bullets: [],
-    is_published: false,
-  });
+  const { data, error } = await (adminClient.from('candidate_profiles') as any)
+    .insert({
+      clerk_user_id: clerkUser.id,
+      slug,
+      full_name: fullName,
+      summary_bullets: [],
+      is_published: false,
+    })
+    .select(PROFILE_COLUMNS)
+    .single();
 
   if (error) {
+    // A concurrent first-load request may have already inserted the row
+    // (unique violation on clerk_user_id). Fetch and return the existing one.
+    if ((error as { code?: string }).code === '23505') {
+      const { data: existing } = await (adminClient.from('candidate_profiles') as any)
+        .select(PROFILE_COLUMNS)
+        .eq('clerk_user_id', clerkUser.id)
+        .single();
+      if (existing) return existing as CandidateProfile;
+    }
     console.error('ensureCandidateProfile: insert failed', clerkUser.id, error);
     throw new Error(error.message);
   }
 
-  return { slug, full_name: fullName };
+  return data as CandidateProfile;
 }
