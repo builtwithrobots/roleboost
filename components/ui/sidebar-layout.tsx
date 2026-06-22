@@ -54,7 +54,9 @@ export function SidebarLayout({
   return (
     <div className="relative isolate flex min-h-svh w-full max-lg:flex-col bg-[var(--rb-bg-page)]">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-0 w-64 max-lg:hidden bg-[var(--rb-bg-sidebar)]">{sidebar}</div>
+      <div className="fixed inset-y-0 left-0 w-64 max-lg:hidden border-r border-[var(--rb-border)] bg-[var(--rb-bg-sidebar)]">
+        {sidebar}
+      </div>
 
       {/* Sidebar on mobile */}
       <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
@@ -62,7 +64,7 @@ export function SidebarLayout({
       </MobileSidebar>
 
       {/* Navbar on mobile */}
-      <header className="flex items-center px-4 lg:hidden">
+      <header className="flex items-center gap-1 border-b border-[var(--rb-border)] bg-[var(--rb-bg-sidebar)] px-4 lg:hidden">
         <div className="py-2.5">
           <NavbarItem onClick={() => setShowSidebar(true)} aria-label="Open navigation">
             <OpenMenuIcon />
@@ -71,11 +73,9 @@ export function SidebarLayout({
         <div className="min-w-0 flex-1">{navbar}</div>
       </header>
 
-      {/* Content */}
-      <main className="flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 lg:pl-64">
-        <div className="grow p-6 lg:rounded-lg lg:bg-[var(--rb-bg-surface)] lg:p-10 lg:shadow-xs lg:ring-1 lg:ring-[var(--rb-border)]">
-          <div className="mx-auto max-w-6xl">{children}</div>
-        </div>
+      {/* Content — full-bleed app canvas; each page supplies its own header band */}
+      <main className="flex flex-1 flex-col lg:min-w-0 lg:pl-64">
+        <div className="grow bg-[var(--rb-bg-page)]">{children}</div>
       </main>
     </div>
   )
