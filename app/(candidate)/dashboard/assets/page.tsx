@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
 import AssetsGrid from '@/components/candidate/AssetsGrid';
 import DashboardPage from '@/components/layout/DashboardPage';
+import PageHeader from '@/components/ui/page-header';
 
 const ASSET_TYPES = ['audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume'] as const;
 type AssetType = typeof ASSET_TYPES[number];
@@ -60,25 +61,21 @@ export default async function CandidateAssetsPage() {
 
   return (
     <DashboardPage className="min-h-full">
-      {/* Header */}
-      <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="text-xl font-bold text-[var(--rb-text)]">Career Assets</h1>
-          <p className="mt-1 text-sm text-[var(--rb-text-muted)]">
+      <PageHeader
+        title="Career Assets"
+        width="max-w-5xl"
+        description={
+          <>
             Upload the media files that power your RoleBoost profile.{' '}
-            <span className="font-data text-[var(--rb-text-secondary)]">{uploadedCount}</span>
+            <span className="font-data">{uploadedCount}</span>
             {' / '}
             <span className="font-data">{ASSET_TYPES.length}</span> uploaded.
-          </p>
-        </div>
-      </div>
-
-      {/* Progress bar + asset grid (client component for motion) */}
-      <AssetsGrid
-        candidateProfileId={profile.id}
-        assetByType={assetByType}
-        uploadedCount={uploadedCount}
+          </>
+        }
       />
+
+      {/* Asset grid (client component for motion) */}
+      <AssetsGrid candidateProfileId={profile.id} assetByType={assetByType} />
 
       {/* Tip */}
       <div className="mx-auto max-w-5xl px-6 pb-12">

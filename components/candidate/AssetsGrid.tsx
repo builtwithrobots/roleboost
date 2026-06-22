@@ -18,28 +18,13 @@ interface ExistingAsset {
 interface Props {
   candidateProfileId: string;
   assetByType: Record<AssetType, ExistingAsset | null>;
-  uploadedCount: number;
 }
 
-export default function AssetsGrid({ candidateProfileId, assetByType, uploadedCount }: Props) {
+export default function AssetsGrid({ candidateProfileId, assetByType }: Props) {
   const prefersReduced = useReducedMotion();
 
   return (
     <>
-      {/* Progress bar */}
-      <div className="bg-[var(--rb-bg-surface)] border-b border-[var(--rb-border)] px-6 pb-4">
-        <div className="mx-auto max-w-5xl">
-          <div className="h-1.5 rounded-full bg-[var(--rb-bg-surface-raised)] overflow-hidden">
-            <motion.div
-              className="h-full bg-[var(--rb-brand)] rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${(uploadedCount / ASSET_TYPES.length) * 100}%` }}
-              transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Grid */}
       <motion.div
         className="mx-auto max-w-5xl px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
