@@ -19,21 +19,25 @@ export default async function HomePage() {
   const { userId } = await auth();
 
   if (userId) {
+    // Look up the stored role. Keep the redirect() calls OUTSIDE this try/catch:
+    // redirect() signals by throwing NEXT_REDIRECT, so catching here would swallow
+    // the role-based redirect and send every user to /onboarding on each login.
+    let role: string | null | undefined;
     try {
       const { data: user } = await (adminClient.from('users') as any)
         .select('role')
         .eq('clerk_user_id', userId)
         .single();
-
-      if (!user) redirect('/onboarding');
-      if (user.role === 'candidate') redirect('/dashboard/profile');
-      if (user.role === 'employer') redirect('/dashboard/candidates');
-      if (user.role === 'admin') redirect('/admin');
-
-      redirect('/onboarding');
+      role = user?.role ?? null;
     } catch {
-      redirect('/onboarding');
+      role = null;
     }
+
+    if (role === 'candidate') redirect('/dashboard/profile');
+    if (role === 'employer') redirect('/dashboard/candidates');
+    if (role === 'admin') redirect('/admin');
+
+    redirect('/onboarding');
   }
 
   return (
