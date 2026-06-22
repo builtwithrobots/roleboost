@@ -1,6 +1,7 @@
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import ShareHub from '@/components/candidate/ShareHub';
+import DashboardPage from '@/components/layout/DashboardPage';
 
 export default async function ShareHubPage() {
   let ctx;
@@ -25,12 +26,14 @@ export default async function ShareHubPage() {
   const profileUrl = `${appUrl}/c/${profile.slug}`;
 
   return (
-    <ShareHub
-      profileUrl={profileUrl}
-      slug={profile.slug}
-      fullName={profile.full_name}
-      headline={profile.headline ?? ''}
-      isPublished={profile.is_published}
-    />
+    <DashboardPage>
+      <ShareHub
+        profileUrl={profileUrl}
+        slug={profile.slug}
+        fullName={profile.full_name}
+        headline={profile.headline ?? ''}
+        isPublished={profile.is_published}
+      />
+    </DashboardPage>
   );
 }

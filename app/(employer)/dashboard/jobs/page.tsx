@@ -2,6 +2,7 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
 import JobsTable from '@/components/employer/JobsTable';
+import DashboardPage from '@/components/layout/DashboardPage';
 
 export default async function EmployerJobsPage() {
   let ctx;
@@ -49,5 +50,9 @@ export default async function EmployerJobsPage() {
     candidateCount: candidateCountByJob[j.id] ?? 0,
   }));
 
-  return <JobsTable jobs={jobsList} />;
+  return (
+    <DashboardPage>
+      <JobsTable jobs={jobsList} />
+    </DashboardPage>
+  );
 }

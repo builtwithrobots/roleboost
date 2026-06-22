@@ -1,7 +1,7 @@
 import type { SubscriptionTier, SubscriptionStatus } from '@/lib/types'
 
 const tierConfig: Record<NonNullable<SubscriptionTier> | 'free', { label: string; className: string }> = {
-  free:    { label: 'Free',    className: 'bg-[--rb-bg-surface-raised] text-[--rb-text-secondary]' },
+  free:    { label: 'Free',    className: 'bg-[#FEF3C7] text-[#92400E]' },
   pro:     { label: 'Pro',     className: 'bg-[--rb-brand-subtle] text-[--rb-text-brand]' },
   starter: { label: 'Starter', className: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
   growth:  { label: 'Growth',  className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' },

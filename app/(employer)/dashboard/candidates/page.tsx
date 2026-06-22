@@ -2,6 +2,7 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
 import CandidateGrid from '@/components/employer/CandidateGrid';
+import DashboardPage from '@/components/layout/DashboardPage';
 
 async function ensureEmployerAccount(userId: string): Promise<string> {
   // Check for existing membership
@@ -102,5 +103,9 @@ export default async function EmployerCandidatesPage() {
     assetTypes: assetsByProfile[sc.candidate_profiles?.id] ?? [],
   }));
 
-  return <CandidateGrid candidates={candidates} />;
+  return (
+    <DashboardPage>
+      <CandidateGrid candidates={candidates} />
+    </DashboardPage>
+  );
 }

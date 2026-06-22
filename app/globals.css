@@ -130,32 +130,32 @@
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   /* Surfaces */
-  --rb-bg-page:          #F8FAFC;   /* slate-50  — outermost bg  */
+  --rb-bg-page:          #F5F0E8;   /* Warm Gray — outermost bg  */
   --rb-bg-surface:       #FFFFFF;   /* cards, panels             */
-  --rb-bg-surface-raised:#F1F5F9;   /* slate-100 — hover, raised */
-  --rb-bg-surface-sunken:#E2E8F0;   /* slate-200 — inset areas   */
-  --rb-bg-sidebar:       #FFFFFF;   /* sidebar background        */
+  --rb-bg-surface-raised:#F5F0E8;   /* Warm hover, raised        */
+  --rb-bg-surface-sunken:#EDE7DC;   /* Warm inset areas          */
+  --rb-bg-sidebar:       #FFFBF5;   /* Warm White sidebar bg     */
   --rb-bg-modal:         #FFFFFF;   /* modal background          */
   --rb-bg-input:         #FFFFFF;   /* input field background    */
 
   /* Text */
-  --rb-text:             #0F172A;   /* slate-900 — primary text  */
-  --rb-text-secondary:   #475569;   /* slate-600 — secondary     */
-  --rb-text-muted:       #94A3B8;   /* slate-400 — placeholder   */
+  --rb-text:             #1E3A5F;   /* Deep Navy — primary text  */
+  --rb-text-secondary:   #4B6580;   /* Muted navy — secondary    */
+  --rb-text-muted:       #8FA3B8;   /* placeholder, readable     */
   --rb-text-inverse:     #FFFFFF;   /* on dark backgrounds       */
-  --rb-text-brand:       #4F46E5;   /* brand-colored text        */
+  --rb-text-brand:       #92400E;   /* Amber-800 brand text      */
 
   /* Borders */
-  --rb-border:           #E2E8F0;   /* slate-200 — default       */
-  --rb-border-strong:    #CBD5E1;   /* slate-300 — emphasis      */
-  --rb-border-brand:     #A5B4FC;   /* brand-200 — brand border  */
-  --rb-border-focus:     #4F46E5;   /* brand-600 — focus ring    */
+  --rb-border:           #E8E0D4;   /* Warm-toned default        */
+  --rb-border-strong:    #D4C8B8;   /* Warm emphasis border      */
+  --rb-border-brand:     #FCD34D;   /* Amber brand border        */
+  --rb-border-focus:     #D97706;   /* Amber focus ring          */
 
   /* Interactive */
-  --rb-brand:            #4F46E5;
-  --rb-brand-hover:      #4338CA;   /* brand-700 — darken        */
-  --rb-brand-subtle:     #EEF2FF;   /* brand-50  — subtle tint   */
-  --rb-brand-gradient:   linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --rb-brand:            #D97706;
+  --rb-brand-hover:      #B45309;   /* Amber dark — hover        */
+  --rb-brand-subtle:     #FEF3C7;   /* Amber-50  — subtle tint   */
+  --rb-brand-gradient:   linear-gradient(135deg, #D97706 0%, #B45309 100%);
 
   /* Playlist player */
   --rb-player-bg:        #0F172A;   /* slate-900 — Spotify-dark  */

@@ -1,7 +1,11 @@
+import DashboardPage from '@/components/layout/DashboardPage';
+
 export default function EmployerTeamPage() {
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">Team members</h1>
-    </main>
+    <DashboardPage>
+      <main className="p-8">
+        <h1 className="text-2xl font-bold">Team members</h1>
+      </main>
+    </DashboardPage>
   );
 }

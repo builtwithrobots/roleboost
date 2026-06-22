@@ -1,7 +1,8 @@
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
-import AssetUploadCard from '@/components/candidate/AssetUploadCard';
+import AssetsGrid from '@/components/candidate/AssetsGrid';
+import DashboardPage from '@/components/layout/DashboardPage';
 
 const ASSET_TYPES = ['audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume'] as const;
 type AssetType = typeof ASSET_TYPES[number];
@@ -58,7 +59,7 @@ export default async function CandidateAssetsPage() {
   const uploadedCount = Object.values(assetByType).filter(Boolean).length;
 
   return (
-    <div className="min-h-full bg-[--rb-bg-page]">
+    <DashboardPage className="min-h-full bg-[--rb-bg-page]">
       {/* Header */}
       <div className="border-b border-[--rb-border] bg-[--rb-bg-surface] px-6 py-4">
         <div className="mx-auto max-w-5xl">
@@ -72,29 +73,12 @@ export default async function CandidateAssetsPage() {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="bg-[--rb-bg-surface] border-b border-[--rb-border] px-6 pb-4">
-        <div className="mx-auto max-w-5xl">
-          <div className="h-1.5 rounded-full bg-[--rb-bg-surface-raised] overflow-hidden">
-            <div
-              className="h-full bg-[--rb-brand] rounded-full transition-all duration-500"
-              style={{ width: `${(uploadedCount / ASSET_TYPES.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Grid */}
-      <div className="mx-auto max-w-5xl px-6 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {ASSET_TYPES.map((type) => (
-          <AssetUploadCard
-            key={type}
-            assetType={type}
-            candidateProfileId={profile.id}
-            existingAsset={assetByType[type] ?? undefined}
-          />
-        ))}
-      </div>
+      {/* Progress bar + asset grid (client component for motion) */}
+      <AssetsGrid
+        candidateProfileId={profile.id}
+        assetByType={assetByType}
+        uploadedCount={uploadedCount}
+      />
 
       {/* Tip */}
       <div className="mx-auto max-w-5xl px-6 pb-12">
@@ -106,6 +90,6 @@ export default async function CandidateAssetsPage() {
           </p>
         </div>
       </div>
-    </div>
+    </DashboardPage>
   );
 }

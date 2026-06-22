@@ -74,8 +74,8 @@ function BadgeSVG({ fullName, headline }: { fullName: string; headline: string }
     >
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#4F46E5" />
-          <stop offset="100%" stopColor="#7C3AED" />
+          <stop offset="0%" stopColor="#D97706" />
+          <stop offset="100%" stopColor="#B45309" />
         </linearGradient>
       </defs>
       <rect width="320" height="80" rx="12" fill="url(#bg)" />
