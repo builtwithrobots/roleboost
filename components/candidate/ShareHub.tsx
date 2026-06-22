@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Copy, Check, ExternalLink, Download, Eye, EyeOff, Code2 } from 'lucide-react';
+import PageHeader from '@/components/ui/page-header';
 
 interface Props {
   profileUrl: string;
@@ -115,14 +116,11 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
   return (
     <div className="min-h-full">
       {/* Header */}
-      <div className="border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="text-xl font-bold text-[var(--rb-text)]">Share Hub</h1>
-          <p className="mt-1 text-sm text-[var(--rb-text-muted)]">
-            Share your profile link, QR code, and digital badge.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Share Hub"
+        width="max-w-4xl"
+        description="Share your profile link, QR code, and digital badge."
+      />
 
       <div className="mx-auto max-w-4xl px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 
