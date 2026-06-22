@@ -35,9 +35,11 @@ migrations do NOT auto-apply to production (`gsilfhywebnzlxyyzbgq`). Each migrat
 - [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes.
 - Note: regeneration is an explicit **"Save & regenerate"** button (not autosave) to avoid a Sonnet call per blur.
 
-## Phase 1c — Onboarding entry point
-- [ ] Make `onboarding/page.tsx` a 2-step candidate flow (role → résumé upload → `/dashboard/assets?review=<id>`); employers skip step 2.
-- [ ] Ensure candidate `candidate_profiles` row exists before the résumé upload (parse route requires it).
+## Phase 1c — Onboarding entry point  ✅ DONE
+- [x] `onboarding/page.tsx` is now a 2-step candidate flow (role → résumé upload → `/dashboard/assets?review=<id>`, with "Skip for now" → `/dashboard/profile`); employers route straight to `/dashboard/candidates`.
+- [x] `ensureCandidateProfile()` is called after candidate role selection so the parse route finds a profile row.
+- [x] `components/onboarding/ResumeUploadStep.tsx` (dropzone → /api/resume/parse).
+- [x] Gate: `tsc` clean, `lint` 0 errors, `build` passes.
 
 ## Phase 2 — Profile changes
 - [ ] Migration: `candidate_profiles.additional_context TEXT` (≤2000 CHECK).

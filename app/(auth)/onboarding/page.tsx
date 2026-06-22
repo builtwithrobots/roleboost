@@ -4,8 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useTransition, useState } from 'react';
 import { UserRound, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
 import { setUserRole } from './actions';
+import { ensureCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
+import ResumeUploadStep from '@/components/onboarding/ResumeUploadStep';
 
 type Role = 'candidate' | 'employer';
+type Step = 'role' | 'resume';
 
 const ROLES: {
   role: Role;
@@ -32,20 +35,44 @@ export default function OnboardingPage() {
   const [isPending, startTransition] = useTransition();
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>('role');
 
   const handleSelect = (role: Role) => {
     setError(null);
     setPendingRole(role);
     startTransition(async () => {
       const result = await setUserRole(role);
-      if (result.ok) {
-        router.push(role === 'candidate' ? '/dashboard/profile' : '/dashboard/candidates');
-      } else {
+      if (!result.ok) {
         setError('Something went wrong. Please try again.');
         setPendingRole(null);
+        return;
       }
+      if (role === 'employer') {
+        router.push('/dashboard/candidates');
+        return;
+      }
+      // Candidate: ensure the profile row exists (the résumé parse route needs
+      // it), then advance to the résumé upload step.
+      try {
+        await ensureCandidateProfile();
+      } catch {
+        // Non-fatal — the profile page will bootstrap it on first visit.
+      }
+      setStep('resume');
+      setPendingRole(null);
     });
   };
+
+  if (step === 'resume') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--rb-bg-page)] px-6 py-12">
+        <ResumeUploadStep
+          onParsed={(id) => router.push(`/dashboard/assets?review=${id}`)}
+          onSkip={() => router.push('/dashboard/profile')}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--rb-bg-page)] px-6 py-12">
