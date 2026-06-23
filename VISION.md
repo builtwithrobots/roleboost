@@ -1,5 +1,5 @@
 # RoleBoost -- Vision Document
-**Version 3.0 | June 2026 | Rob Ramos, Founder**
+**Version 3.1 | June 2026 | Rob Ramos, Founder**
 
 ---
 
@@ -42,6 +42,28 @@ Not to game the system. Not to polish the document. To make sure the candidate's
 You build your context once. Your AI handles the hard questions forever.
 
 That is not a feature. That is RoleBoost empowering your voice to be heard before the algorithm decides you are not worth a conversation.
+
+---
+
+## The AI Mirror
+
+There is a gap that nobody in hiring technology has addressed -- and it sits at the very beginning of the candidate's journey.
+
+Most candidates have a meaningful disconnect between how they perceive their own career and what their documented experience actually shows. The story they tell in interviews is often bigger, more polished, or differently framed than what appears on paper. Sometimes it is the opposite: a candidate undersells because their resume was never built to reflect the full scope of what they actually did.
+
+RoleBoost uses AI to create a non-biased mirror.
+
+When a candidate uploads their resume and career context, the platform reads what is actually there -- without ego, without the narrative the candidate has been telling themselves for years, without the inflation of a sales pitch or the deflation of imposter syndrome. It makes a clear, evidence-based determination of who this person is based on what they have documented.
+
+That honest read does three things:
+
+First, it produces a narrative that is credible. Not inflated. Not undersold. Grounded in what the evidence supports. Recruiters who have been burned by overpromising candidates trust it.
+
+Second, it gives the candidate something they rarely get: an objective reflection of how their career actually reads to someone who does not know them. Most candidates have never seen themselves from that angle. It is often the most clarifying moment in the process.
+
+Third, it trains the AI chatbot on the same honest read. So when a recruiter asks the chatbot anything -- at any hour, before any call -- they get a consistent, grounded answer in the candidate's voice that matches what the evidence supports. Not the inflated pitch. Not the thin resume. The real person.
+
+This is not a feature. It is the foundation of trust that makes the entire platform work -- for candidates, for recruiters, and for the employers who need to make real hiring decisions.
 
 ---
 
@@ -305,4 +327,4 @@ Where the best candidate actually gets found -- and where recruiters know exactl
 
 ---
 
-*Document version 3.0 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
+*Document version 3.1 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
