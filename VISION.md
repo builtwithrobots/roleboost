@@ -49,9 +49,9 @@ That is not a feature. That is RoleBoost empowering your voice to be heard befor
 
 There is a gap that nobody in hiring technology has addressed -- and it sits at the very beginning of the candidate's journey.
 
-The data is stark. An Express Employment Professionals / Harris Poll study from February 2026 found that 80% of hiring managers say candidates' resumes don't match their real-world skills at least sometimes -- with 34% saying it happens all the time or often. A separate finding from the same period: only 22% of job seekers admit to listing skills they don't actually have. The gap between those two numbers tells the whole story. Candidates are inflating more than they realize, or more than they will admit. Recruiters are catching it. Trust is collapsing on both sides.
+The data is stark. An [Express Employment Professionals / Harris Poll study from February 2026](https://www.prnewswire.com/news-releases/86-of-us-hiring-managers-say-ai-makes-it-too-easy-to-exaggerate-skills-on-resumes-302682962.html) found that 80% of hiring managers say candidates' resumes don't match their real-world skills at least sometimes -- with 34% saying it happens all the time or often. A separate finding from the same period: only 22% of job seekers admit to listing skills they don't actually have. The gap between those two numbers tells the whole story. Candidates are inflating more than they realize, or more than they will admit. Recruiters are catching it. Trust is collapsing on both sides.
 
-The industry has named this the "resume illusion" -- AI-polished documents that pass ATS screening but fall apart the moment a real conversation begins. Recruiters are responding by conducting more interviews to verify authenticity, leaning harder on behavioral questions, and becoming more skeptical of every document that crosses their desk.
+The industry has named this the ["resume illusion"](https://blog.theinterviewguys.com/why-ai-resumes-are-backfiring-in-2026/) -- AI-polished documents that pass ATS screening but fall apart the moment a real conversation begins. Recruiters are responding by conducting more interviews to verify authenticity, leaning harder on behavioral questions, and becoming more skeptical of every document that crosses their desk.
 
 Every tool in the market is making this worse. AI resume builders help candidates optimize, polish, and keyword-match -- which produces more look-alike documents with less signal and more risk of inflation. The candidate who uses these tools gains a short-term ATS advantage and a long-term credibility problem.
 
@@ -207,13 +207,13 @@ Hiring managers build candidate pipelines -- organized, searchable, collaborativ
 
 ## The Market
 
-- AI resume spam has reached crisis level -- LinkedIn sees 11,000 applications submitted every minute
-- 97.8% of Fortune 500 companies use ATS -- candidates are invisible to humans until a system says yes
-- 80% of hiring managers say candidates' resumes don't match their real-world skills at least sometimes -- 34% say it happens all the time or often (Express Employment Professionals / Harris Poll, February 2026)
-- The "resume illusion" is now a named problem in recruiting: AI-polished resumes pass ATS screening, then collapse in interviews when candidates cannot back up what they claimed
-- 39% of hiring managers are conducting more interviews than before specifically to verify candidate authenticity -- adding cost and time to every hire (HR Dive, 2026)
-- 39% of candidates admit to using AI during the application process to craft resumes and cover letters -- recruiters are aware and growing more skeptical of every document (Gartner, December 2024)
-- 91% of US hiring managers have caught or suspected AI-driven candidate misrepresentation (Greenhouse 2026)
+- AI resume spam has reached crisis level -- [LinkedIn sees 11,000 applications submitted every minute](https://www.linkedin.com/business/talent/blog/talent-acquisition/linkedin-talent-solutions-reinventing-hiring) (LinkedIn, 2025)
+- [97.8% of Fortune 500 companies use ATS](https://www.jobscan.co/blog/fortune-500-use-applicant-tracking-systems/) -- candidates are invisible to humans until a system says yes (Jobscan, 2025)
+- [80% of hiring managers say candidates' resumes don't match their real-world skills](https://www.prnewswire.com/news-releases/86-of-us-hiring-managers-say-ai-makes-it-too-easy-to-exaggerate-skills-on-resumes-302682962.html) at least sometimes -- 34% say it happens all the time or often; 86% say AI makes it too easy to embellish (Express Employment Professionals / Harris Poll, February 2026)
+- [The "resume illusion" is now a named problem in recruiting](https://blog.theinterviewguys.com/why-ai-resumes-are-backfiring-in-2026/) -- AI-polished resumes pass ATS screening, then collapse in interviews when candidates cannot back up what they claimed
+- [39% of hiring managers are conducting more in-person interviews](https://www.greenhouse.com/newsroom/an-ai-trust-crisis-70-of-hiring-managers-trust-ai-to-make-faster-and-better-hiring-decisions-only-8-of-job-seekers-call-it-fair) than before specifically to verify candidate authenticity -- adding cost and time to every hire (Greenhouse, 2025)
+- [91% of recruiters have spotted candidate deception](https://www.prnewswire.com/news-releases/an-ai-trust-crisis-70-of-hiring-managers-trust-ai-to-make-faster-and-better-hiring-decisions-only-8-of-job-seekers-call-it-fair-302619511.html) during the hiring process -- resume exaggeration, fake references, AI-assisted interview responses (Greenhouse 2025 AI in Hiring Report)
+- [39% of candidates admit to using AI during the application process](https://www.unleash.ai/talent-acquisition/ai-in-hiring-the-growing-trust-gap-between-employers-and-job-candidates/) to craft resumes and cover letters -- recruiters are aware and growing more skeptical of every document (Gartner, December 2024)
 - 55% of Americans listen to podcasts monthly -- audio consumption is at an all-time high
 - Phone screening takes 30 minutes per candidate -- AI chat takes 5 minutes
 - No platform today combines multi-format AI career narratives with a personal career chatbot, resume intelligence coaching, and full transcript delivery
