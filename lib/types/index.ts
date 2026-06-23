@@ -28,6 +28,7 @@ export interface CandidateProfile {
   location: string | null;
   linkedin_url: string | null;
   summary_bullets: string[];
+  additional_context: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;

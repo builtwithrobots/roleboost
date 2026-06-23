@@ -16,6 +16,7 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
+  MessageSquare,
   Globe,
   ExternalLink,
 } from 'lucide-react';
@@ -33,6 +34,7 @@ export default function ProfileEditor({ profile }: Props) {
   const [targetRole, setTargetRole] = useState(profile.target_role ?? '');
   const [location, setLocation] = useState(profile.location ?? '');
   const [linkedinUrl, setLinkedinUrl] = useState(profile.linkedin_url ?? '');
+  const [additionalContext, setAdditionalContext] = useState(profile.additional_context ?? '');
   const [bullets, setBullets] = useState<string[]>(
     profile.summary_bullets?.length ? profile.summary_bullets : ['']
   );
@@ -50,9 +52,10 @@ export default function ProfileEditor({ profile }: Props) {
       location,
       linkedin_url: linkedinUrl,
       summary_bullets: bullets.filter((b) => b.trim()),
+      additional_context: additionalContext,
       is_published: isPublished,
     }),
-    [fullName, headline, targetRole, location, linkedinUrl, bullets, isPublished]
+    [fullName, headline, targetRole, location, linkedinUrl, bullets, additionalContext, isPublished]
   );
 
   const save = useCallback(
@@ -324,6 +327,40 @@ export default function ProfileEditor({ profile }: Props) {
                 Add highlight
               </button>
             )}
+          </section>
+
+          {/* Additional Context */}
+          <section className="rb-card p-6">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)] mb-1">
+              <MessageSquare className="size-4 text-[var(--rb-brand)]" />
+              Additional Context
+              <span className="ml-1 text-xs font-normal text-[var(--rb-text-muted)]">(optional)</span>
+            </h2>
+            <p className="text-xs text-[var(--rb-text-muted)] mb-4">
+              Your freeform pitch — anything that makes you unique that the rest of your profile doesn&apos;t capture.
+            </p>
+            <div>
+              <textarea
+                value={additionalContext}
+                onChange={(e) => setAdditionalContext(e.target.value)}
+                onBlur={() => save()}
+                placeholder="Share anything else recruiters should know — your story, what you're looking for, what you care about…"
+                rows={4}
+                maxLength={2000}
+                className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)] resize-none"
+              />
+              <div className="flex justify-end mt-1">
+                <span
+                  className={`text-xs font-data ${
+                    additionalContext.length >= 1800
+                      ? 'text-[var(--color-warning)]'
+                      : 'text-[var(--rb-text-muted)]'
+                  }`}
+                >
+                  {additionalContext.length} / 2000
+                </span>
+              </div>
+            </div>
           </section>
 
           {/* Profile Link */}

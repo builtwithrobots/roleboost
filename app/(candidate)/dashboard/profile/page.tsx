@@ -19,7 +19,7 @@ export default async function CandidateProfilePage() {
   const { data: rawProfile } = await supabase
     .from('candidate_profiles')
     .select(
-      'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, is_published, created_at, updated_at'
+      'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, created_at, updated_at'
     )
     .eq('clerk_user_id', userId)
     .single();
