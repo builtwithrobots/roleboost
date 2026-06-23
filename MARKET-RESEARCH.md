@@ -1,5 +1,5 @@
 # RoleBoost -- Supporting Market Research
-**Version:** 1.0
+**Version:** 1.1
 **Date:** June 2026
 **Purpose:** Evidence base for RoleBoost product, vision, and investor conversations
 
@@ -19,6 +19,7 @@ This document compiles supporting market research for every major claim in the R
 8. Skills-Based Hiring Shift
 9. The Resume as a Broken Tool
 10. The RoleBoost Opportunity Gap
+11. Employment Gaps and RIF Explanations -- What the Research Says
 
 ---
 
@@ -630,6 +631,119 @@ These are precisely the candidate profiles RoleBoost's eight example personas re
 
 ---
 
+## 11. Employment Gaps and RIF Explanations -- What the Research Says
+
+**The old rule was to hide gaps. The research in 2026 says the opposite -- but with important nuance depending on gap length and cause. This directly informs the Resume Intelligence feature and the resume formatting decisions across the RoleBoost example personas.**
+
+---
+
+**Claim: An unexplained gap is a red flag. An explained gap is not.**
+
+> "A gap itself is not a red flag in 2026. An unexplained gap is. The average resume a hiring manager reviews now includes at least one gap of three months or longer. Recruiters know this. A well-structured resume with a gap will outperform a continuous but poorly optimized one every time."
+
+Source: Resume Optimizer Pro, How to Address Employment Gaps on Your Resume 2026
+URL: https://resumeoptimizerpro.com/blog/how-to-address-employment-gaps
+
+---
+
+**Claim: 91% of hiring managers are now open to candidates with career breaks.**
+
+> "Resume gaps are no longer deal-breakers in 2026. With 91% of hiring managers now open to candidates with career breaks, the key is addressing gaps directly while showcasing growth."
+
+Source: Scale.jobs, Resume Gaps 2026: How to Explain Them Without Getting Rejected
+URL: https://scale.jobs/blog/resume-gaps-how-to-explain-without-getting-rejected
+
+---
+
+**Claim: 47% of American workers have experienced a career gap at some point.**
+
+> "According to the 2025 Career Gaps Report from MyPerfectResume, 47% of American workers have experienced a gap in their careers at some point."
+
+Source: NCOA, How Older Adults Can Explain Employment Gaps on a Resume (citing MyPerfectResume 2025)
+URL: https://www.ncoa.org/article/how-to-explain-gaps-in-your-resume-what-mature-workers-should-know/
+
+---
+
+**Claim: Laid-off candidates actually interview at a higher rate than currently employed candidates in 2026.**
+
+> "Job seekers who had been laid off under three months earlier interviewed at 5.74%. The currently employed interviewed at 4.97%. The people with a fresh layoff gap got slightly more interviews, not fewer. Layoffs in 2026 are common and well understood -- 32% of job seekers with a gap cite a layoff as the cause, so a recruiter reading a resume assumes a layoff long before they assume a performance problem."
+
+Source: ResumeAdapter, How to Explain an Employment Gap on Your Resume (citing Huntr Q1 2026 Job Search Trends Report, n=58,814 applications, 1,773 users)
+URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
+
+---
+
+**Claim: For short gaps under six months, year-only dates make the gap disappear without hiding anything.**
+
+> "Use year-only dates rather than month and year. A role listed as 2021 to 2023 next to one listed as 2023 to 2025 reads as continuous, even if there were three months between them. This is not deception: the years are accurate, and a four-month gap inside a calendar year simply does not appear. Format does more work than wording."
+
+Source: ResumeAdapter, How to Explain an Employment Gap on Your Resume
+URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
+
+---
+
+**Claim: For gaps over six months, a dedicated "Career Break" entry is the correct approach -- and ATS systems parse it as a work experience entry.**
+
+> "For gaps longer than six months, include a dedicated Career Break entry in your work history section with dates and a concise description. Gap-filling entries are parsed by ATS systems like any other role. A 'Family Caregiver' or 'Professional Sabbatical' entry with dates fills the timeline gap."
+
+Source: Resume Optimizer Pro, How to Address Employment Gaps on Your Resume 2026
+URL: https://resumeoptimizerpro.com/blog/how-to-address-employment-gaps
+
+Corroborating source: Scale.jobs, Resume Gaps 2026
+URL: https://scale.jobs/blog/resume-gaps-how-to-explain-without-getting-rejected
+
+---
+
+**Claim: 51% of employers are more likely to call back a candidate when they understand career-break context.**
+
+Source: ResumeAdapter (citing LinkedIn Career Break data)
+URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
+
+---
+
+**Claim: Hiding a gap is riskier than explaining it -- background checks will surface it anyway.**
+
+> "Never lie or change your employment dates. It is a huge risk that is not worth taking. A background check can expose it and get you disqualified. Trying to hide a gap will only damage your application and give recruiters even more reason to believe you have something to hide."
+
+Source: Gainrep, How to Explain Employment Gaps and Get Hired in 2026
+URL: https://www.gainrep.com/resources/how-to-explain-employment-gaps/
+
+Corroborating source: Novoresume, Employment Gap on a Resume
+URL: https://novoresume.com/career-blog/employment-gap-in-resume
+
+---
+
+**Claim: LLM-based ATS screening in 2026 evaluates narrative coherence -- making a well-written gap explanation more valuable than ever.**
+
+> "In 2026, many companies augment ATS with AI screening that reads your resume more holistically. These systems evaluate narrative coherence, so a well-written gap explanation is even more valuable than it was with keyword-only ATS."
+
+Source: Resume Optimizer Pro, How to Address Employment Gaps on Your Resume 2026
+URL: https://resumeoptimizerpro.com/blog/how-to-address-employment-gaps
+
+---
+
+**Claim: For RIF layoffs specifically, one neutral sentence in the summary is sufficient -- no apology, no over-explanation.**
+
+> "One neutral, factual sentence is enough: 'My position was eliminated in a company-wide restructuring in early 2025.' That is it. No apology, no over-explanation, no defensiveness. Naming the layoff plainly removes the question from the recruiter's mind and signals that you are unbothered by it, which is exactly the read you want."
+
+Source: ResumeAdapter, How to Explain an Employment Gap on Your Resume
+URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
+
+---
+
+**How this applies to RoleBoost example personas:**
+
+| Persona | Gap Type | Gap Length | Resume Treatment | AI Chatbot Role |
+|---|---|---|---|---|
+| Ryan Kowalski | RIF / layoff | 4 months | Year-only dates; one neutral sentence in summary | Handles the full story in recruiter's voice before the call |
+| Claire Hutchins | Caregiving | 20 months | Explicit labeled "Career Pause" entry with dates in experience section | Addresses the gap with context, what she maintained, why it does not diminish her record |
+
+**The key insight for RoleBoost:** The resume handles the structural requirement of acknowledging the gap. The AI chatbot handles the human story behind it. These are two different jobs, and trying to do both on the resume creates an over-explained document. The correct split is: resume acknowledges, AI contextualizes.
+
+---
+
+---
+
 ## Summary Statistics Table
 
 | Stat | Value | Source |
@@ -661,8 +775,14 @@ These are precisely the candidate profiles RoleBoost's eight example personas re
 | AI recruitment market size (2025) | $704M | DemandSage 2025 |
 | AI resume screening market (2025) | $1.62B | Mordor Intelligence 2025 |
 | AI resume screening market (2031 projected) | $4.16B | Mordor Intelligence |
+| Hiring managers open to career breaks | 91% | Scale.jobs / 2026 |
+| Workers who have experienced a career gap | 47% | MyPerfectResume 2025 |
+| Laid-off candidates interview rate | 5.74% | Huntr Q1 2026 (n=58,814) |
+| Currently employed candidates interview rate | 4.97% | Huntr Q1 2026 (n=58,814) |
+| Employers more likely to call back with gap context | 51% | LinkedIn via ResumeAdapter |
+| Companies filtering on employment gaps via ATS | 50%+ | Harvard/Accenture Hidden Workers |
 
 ---
 
-*Document version 1.0 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
-*Research compiled June 2026*
+*Document version 1.1 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
+*Research compiled June 2026 | Updated June 2026 -- added Section 11: Employment Gaps and RIF Explanations*
