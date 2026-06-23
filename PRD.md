@@ -1,18 +1,19 @@
-# PRD.md — RoleBoost Product Requirements Document
+# PRD.md -- RoleBoost Product Requirements Document
 
-**Version:** 1.0
+**Version:** 3.0
 **Last updated:** June 2026
 **Author:** Rob Ramos
+**Domain:** getroleboost.com
 
 ---
 
 ## 1. Overview
 
-RoleBoost is a two-sided SaaS platform replacing the resume with a rich, shareable candidate narrative. Candidates upload their assets and get a hosted profile page with a pop-up modal experience. Employers save candidates, manage job postings, assign stages, collaborate with their team, and send feedback.
+RoleBoost empowers the candidate's voice to be heard before easy or automatic elimination by algorithm. Candidates upload their resume and career context, receive a full suite of AI-produced career assets, and get a personal career AI chatbot that represents them to recruiters 24/7. Resume Intelligence analyzes the resume and coaches candidates on exactly what context to add so their AI is armed before the first recruiter question. Every AI conversation generates a transcript delivered by email to both sides. Candidates fine-tune their AI over time. Employers get a candidate management dashboard with pipeline tracking, job postings, stage assignment, team collaboration, and AI chat access.
 
 **Core user types:**
-- **Candidate** -- job seeker uploading career assets and sharing their profile link
-- **Employer** -- hiring manager or recruiter saving candidates and managing their pipeline
+- **Candidate** -- job seeker uploading career assets, managing their AI, and sharing their profile link
+- **Employer** -- hiring manager or recruiter saving candidates, managing pipeline, and chatting with candidate AIs
 
 ---
 
@@ -21,8 +22,8 @@ RoleBoost is a two-sided SaaS platform replacing the resume with a rich, shareab
 ### 2.1 Sign Up and Sign In
 
 - Clerk handles all authentication
-- Sign up supports email/password and Google OAuth
-- Single sign-up flow -- role is NOT declared on the sign-up page
+- Email/password and Google OAuth supported
+- Single sign-up flow -- role declared in onboarding, not on sign-up page
 
 **Acceptance criteria:**
 - [ ] User can sign up with email and password
@@ -30,26 +31,26 @@ RoleBoost is a two-sided SaaS platform replacing the resume with a rich, shareab
 - [ ] User can sign in with email and password
 - [ ] User can sign in with Google
 - [ ] Successful sign-up redirects to onboarding
-- [ ] Successful sign-in redirects to the correct dashboard based on role
+- [ ] Successful sign-in redirects to correct dashboard based on role
 
 ### 2.2 Onboarding -- Role Selection
 
-After first sign-up, every user lands on the onboarding screen before they see any dashboard.
+After first sign-up, every user lands on the onboarding screen before any dashboard.
 
 **Screen:** "How are you using RoleBoost?"
 
-Two options displayed as large, tappable cards:
-- "I am looking for my next role" → sets role to `candidate`
-- "I am hiring for my team" → sets role to `employer`
+Two large tappable cards:
+- "I am looking for my next role" -- sets role to `candidate`
+- "I am hiring for my team" -- sets role to `employer`
 
 On selection:
-- Insert row into `users` table with `clerk_user_id`, `email`, `role`
+- Insert row into `users` with `clerk_user_id`, `email`, `role`
 - Candidate: redirect to candidate onboarding (2.3)
 - Employer: redirect to employer onboarding (2.4)
 
 **Acceptance criteria:**
-- [ ] Onboarding screen shown on first login only
-- [ ] Both options visible, keyboard accessible, minimum 44px touch target
+- [ ] Shown on first login only
+- [ ] Both options keyboard accessible, minimum 44px touch target
 - [ ] Role stored in `users.role` in Supabase
 - [ ] Correct redirect after selection
 
@@ -60,7 +61,7 @@ Three-step flow before reaching the dashboard.
 **Step 1 -- Basic info:**
 - Full name (required)
 - Location (city, state) (required)
-- Target role / job title (required)
+- Target role (required)
 - LinkedIn URL (optional)
 
 **Step 2 -- Career headline:**
@@ -69,8 +70,8 @@ Three-step flow before reaching the dashboard.
 
 **Step 3 -- Profile slug:**
 - Auto-generated from full name (e.g. `robert-ramos`)
-- Editable -- must be unique, lowercase, alphanumeric and hyphens only
-- Show live preview of their public URL: `roleboost.com/c/[slug]`
+- Editable -- unique, lowercase, alphanumeric and hyphens only
+- Live preview: `getroleboost.com/c/[slug]`
 
 On completion:
 - Insert row into `candidate_profiles`
@@ -78,11 +79,12 @@ On completion:
 
 **Acceptance criteria:**
 - [ ] Three-step flow with progress indicator
-- [ ] Validation on all required fields
+- [ ] All required fields validated
 - [ ] Slug auto-generated and editable
 - [ ] Slug uniqueness checked in real time
 - [ ] Public URL preview shown before confirmation
 - [ ] Profile row created in Supabase on completion
+- [ ] Redirect to `/dashboard/profile`
 
 ### 2.4 Employer Onboarding
 
@@ -105,228 +107,279 @@ On completion:
 **Acceptance criteria:**
 - [ ] Two-step flow with progress indicator
 - [ ] Company name required
-- [ ] employer_accounts and employer_members rows created
-- [ ] User is set as account owner
+- [ ] `employer_accounts` and `employer_members` rows created
+- [ ] User set as account owner
+- [ ] Redirect to `/dashboard/candidates`
 
 ---
 
 ## 3. Candidate Features
 
-### 3.1 Candidate Dashboard -- Profile Tab
+### 3.1 Profile Tab
 
-The main hub for candidates to manage their profile and assets.
-
-**Layout:**
-- Left sidebar: navigation (Profile, Assets, Preview, Analytics, Feedback)
-- Main content: profile editor
+The main hub for managing profile content and sharing.
 
 **Profile editor sections:**
 - Basic info (name, location, target role, LinkedIn)
 - Headline
-- AI bullet summary (5-7 bullet points -- manually entered or pasted from NotebookLM output)
+- AI bullet summary (5-7 bullets -- manually entered or pasted from NotebookLM output)
 - Profile visibility toggle (Published / Draft)
 
-**Shareable link section:**
-- Displays their full public URL: `roleboost.com/c/[slug]`
-- Copy to clipboard button
-- Shows view count badge if on Basic or Pro tier
+**Shareable assets section:**
+- Full public URL: `getroleboost.com/c/[slug]`
+- Copy link button with confirmation toast
+- QR code download button
+- RoleBoost badge download button
 
 **Acceptance criteria:**
-- [ ] All profile fields editable and auto-saved on blur
-- [ ] AI bullet summary supports up to 7 bullet points
-- [ ] Bullet points can be added, edited, reordered, and deleted
+- [ ] All fields editable and auto-saved on blur
+- [ ] AI bullet summary supports up to 7 bullets, add/edit/reorder/delete
 - [ ] Published/Draft toggle updates `candidate_profiles.is_published`
-- [ ] Unpublished profiles return 404 on the public URL
-- [ ] Copy link button copies URL to clipboard with confirmation toast
-- [ ] View count shown for paid tiers only
+- [ ] Unpublished profiles return 404 on public URL
+- [ ] Copy link copies URL to clipboard with confirmation toast
+- [ ] QR code generates correctly and links to profile
+- [ ] Badge downloads as PNG
 
-### 3.2 Candidate Dashboard -- Assets Tab
+### 3.2 Assets Tab
 
-Where candidates upload their career assets produced in NotebookLM.
+Where candidates upload career assets produced in NotebookLM.
 
-**Asset types and accepted formats:**
+**Asset types:**
 
-| Asset | Type | Accepted Formats | Max Size |
-|---|---|---|---|
-| Audio Overview | audio | MP3, M4A, WAV | 50MB |
-| Video Overview | video | MP4, MOV, WEBM | 500MB |
-| Slide Deck | document | PDF | 25MB |
-| Career Infographic | image | PNG, JPG, WEBP | 10MB |
-| ATS Resume | document | PDF | 5MB |
+| Asset | Accepted Formats | Max Size |
+|---|---|---|
+| Audio Overview | MP3, M4A, WAV | 50MB |
+| Debate Audio | MP3, M4A, WAV | 50MB |
+| Video Overview | MP4, MOV, WEBM | 500MB |
+| Slide Deck | PDF | 25MB |
+| Career Infographic | PNG, JPG, WEBP | 10MB |
+| ATS Resume | PDF | 5MB |
 
-**Per asset:**
-- Upload button with drag and drop support
-- File name displayed after upload
-- File size and upload date shown
-- Replace button (replaces the existing asset)
-- Delete button (with confirmation)
-- Asset preview (audio player, video player, image preview, PDF embed)
-
-**Free tier limit:** 1 asset slot total. Upgrade prompt shown when attempting to add a second asset.
+Per asset: upload, preview, replace, delete. All candidates can upload all asset types.
 
 **Acceptance criteria:**
-- [ ] All five asset types uploadable
+- [ ] All six asset types uploadable
 - [ ] File type and size validation before upload
-- [ ] Upload progress indicator
+- [ ] Upload progress indicator shown
 - [ ] Asset stored in correct Supabase Storage bucket
 - [ ] Asset record created in `candidate_assets` table
-- [ ] Replace replaces the file and updates the storage path
-- [ ] Delete removes the file from storage and the database record
-- [ ] Free tier limited to 1 active asset -- upgrade prompt shown at limit
-- [ ] All asset previews functional in the dashboard
+- [ ] Replace updates file and storage path
+- [ ] Delete removes from storage and database
+- [ ] All asset previews functional
 
-### 3.3 Candidate Dashboard -- Preview Tab
+### 3.3 AI Tab -- Career AI Management
 
-Shows the candidate exactly what employers see when they click their profile link.
+The core candidate AI management interface. This is where candidates arm their chatbot.
 
-- Renders the full modal component in a preview frame
-- "This is how employers see your profile" label at top
-- Shows "Draft -- not visible to employers" banner if profile is unpublished
+**Resume Intelligence Panel (top of AI tab):**
+
+Shown after resume upload. Analyzes the resume for what recruiters and ATS systems will flag and returns targeted context recommendations. See Section 8A for full spec.
+
+- Displays flagged items ordered by severity (high / medium / low)
+- Each flag shows: what a recruiter will notice, what to add, and a direct link to the relevant context field
+- Completion bar tracks how many flags have been addressed
+- Re-analyze available when target role changes or resume is updated
+
+**Context form -- Career Intelligence:**
+
+Guided by Resume Intelligence recommendations. Fields listed below. All optional except resume text and key wins.
+
+- Resume text (required -- paste or upload)
+- Top 5 career wins with specific numbers (required)
+- Target role and target company type
+- Leadership philosophy
+- How you handle an underperforming team member
+- Ideal team and work environment
+- What you need from a manager to do your best work
+- Why you left each of your last 3 roles
+- Biggest professional challenge and what you did about it
+- What you are not good at -- honest answer
+- Questions you wish recruiters would ask you
+- What defines your career in one sentence
+
+**Custom answers:**
+- List of question-answer pairs the candidate has refined based on recruiter transcript patterns
+- Add, edit, and delete custom answers
+- Custom answers are injected into the system prompt with highest priority
+
+**Privacy controls:**
+- Toggle: AI chat enabled / disabled for this profile
+- Topics to redirect to direct conversation (add/remove list)
+- Example redirects: salary expectations, references, availability date
+
+**Testing interface:**
+- "Test your AI" sandbox
+- Candidate asks their own AI questions
+- Sees exactly how it responds before going live
+- Preview mode label: "This is how your AI responds to recruiters"
+
+**Pattern insights (shown after first recruiter conversations):**
+- Most asked questions this week
+- Questions your AI redirected
+- Suggestions for new custom answers based on patterns
 
 **Acceptance criteria:**
-- [ ] Modal renders identically to the public `/c/[slug]` experience
+- [ ] Resume Intelligence panel visible after resume upload
+- [ ] Flags displayed ordered by severity
+- [ ] Each flag CTA links directly to the relevant context field
+- [ ] Completion bar updates as context fields are filled in
+- [ ] All context fields saved to `candidate_profiles`
+- [ ] Custom QA pairs stored as JSONB in `custom_qa_pairs`
+- [ ] Privacy toggle updates `ai_enabled`
+- [ ] Redirect topics stored in `redirect_topics` array
+- [ ] Testing interface calls the same chat endpoint as recruiter chat
+- [ ] Pattern insights shown after minimum 1 completed session
+- [ ] All changes reflected immediately in AI responses
+
+### 3.4 Transcripts Tab
+
+Full history of all recruiter AI conversations.
+
+**List view:**
+- Company name (if employer logged in) or "Anonymous recruiter"
+- Date and time
+- Number of questions asked
+- Duration
+- Link to full transcript
+
+**Full transcript view:**
+- Every question asked and every AI answer
+- Timestamp per message
+- Link to fine-tune a specific answer
+
+**Acceptance criteria:**
+- [ ] All chat sessions shown reverse chronological
+- [ ] Company name shown when employer was logged in
+- [ ] Anonymous shown for unauthenticated viewers
+- [ ] Full transcript readable inline
+- [ ] Direct link from each question to AI fine-tuning interface
+
+### 3.5 Analytics Tab
+
+**Metrics:**
+- Total profile views all time
+- Views in last 7 days / 30 days
+- Total AI chat sessions
+- Average questions per session
+- Asset play counts by type
+- Most viewed time of day
+
+**Acceptance criteria:**
+- [ ] All metrics pulled from `profile_views` and `chat_sessions` tables
+- [ ] Asset play counts tracked per asset type
+- [ ] Anonymous views shown separately from employer views
+
+### 3.6 Preview Tab
+
+Shows the candidate exactly what recruiters see.
+
+- Full modal rendered in preview frame
+- "This is how recruiters see your profile" label
+- Draft banner if profile is unpublished
+- Chat tab functional in preview using candidate's own AI
+
+**Acceptance criteria:**
+- [ ] Modal renders identically to public `/c/[slug]`
+- [ ] Chat interface functional in preview mode
 - [ ] Draft banner shown for unpublished profiles
-- [ ] Preview updates immediately after any asset or profile change
-
-### 3.4 Candidate Dashboard -- Analytics Tab
-
-Available on Basic and Pro tiers only.
-
-**Metrics shown:**
-- Total profile views (all time)
-- Views in the last 7 days
-- Views in the last 30 days
-- Average engagement duration (seconds)
-- Asset play counts by type (how many times audio was played, video played, etc.)
-- Recent views list (date, employer company name if known, duration)
-
-**Free tier:** Analytics tab visible but locked. Upgrade prompt shown.
-
-**Acceptance criteria:**
-- [ ] All metrics pulled from `profile_views` table
-- [ ] Views list shows last 20 views
-- [ ] Employer company name shown when the viewer was a logged-in employer
-- [ ] Anonymous views shown as "Anonymous viewer"
-- [ ] Free tier sees locked state with upgrade CTA
-- [ ] Basic and Pro tiers see full analytics
-
-### 3.5 Candidate Dashboard -- Feedback Tab
-
-Available on Pro tier only.
-
-**Feedback inbox:**
-- List of feedback messages from employers
-- Each item shows: company name, message preview, date received, read/unread status
-- Click to open full message
-- Mark as read on open
-
-**Free and Basic tiers:** Tab visible but locked. Upgrade prompt shown.
-
-**Acceptance criteria:**
-- [ ] Feedback pulled from `feedback` table filtered by candidate
-- [ ] Unread count shown in sidebar navigation
-- [ ] Mark as read updates `feedback.is_read`
-- [ ] Free and Basic tiers see locked state with upgrade CTA
 
 ---
 
 ## 4. Public Candidate Profile -- The Modal
 
-The core employer-facing experience. Accessible at `/c/[slug]`.
+Core recruiter-facing experience at `/c/[slug]`.
 
-### 4.1 Modal Trigger Behavior
+### 4.1 Modal Behavior
 
-- The URL `/c/[slug]` loads a full page with a dark overlay background
-- The modal appears centered on the page -- no separate "trigger" element needed
-- On desktop: modal is 640px wide, centered
-- On mobile: modal is full screen
+- Full page with dark overlay background
+- Modal centered -- 640px wide desktop, full screen mobile
+- No login required to view
+- Returns 404 for unpublished profiles
 
 ### 4.2 Modal Header
 
-- Candidate initials avatar (generated from full name, colored circle)
+- Candidate initials avatar (colored circle, generated from name)
 - Full name
 - Headline
 - Location and target role
 
-### 4.3 AI Summary Panel
+### 4.3 AI Bullet Summary Panel
 
-Immediately below the header. Always visible without clicking any tab.
-
-- Displays the candidate's bullet summary points
-- Maximum 7 bullets shown
+- Always visible below header, no tab click required
+- 5-7 career snapshot bullets
 - Labeled "Career snapshot"
 
 ### 4.4 Media Tabs
 
-Four tabs: Audio | Video | Deck | Infographic
+Tabs: Audio | Debate | Video | Deck | Infographic | Resume
 
-Only tabs with uploaded assets are shown. If a candidate has no video, the Video tab does not appear.
+Only tabs with uploaded assets are shown.
 
-**Audio tab:**
-- Custom audio player (not browser default)
-- Play/pause button
-- Progress bar with click-to-seek
-- Current time / total duration
-- File name or "Career narrative" label
-- Audio streams from signed Supabase Storage URL
+**Audio tab:** Custom player, play/pause, progress bar, seek, current time / total duration
+**Debate tab:** Same custom player -- labeled "Hiring committee debate"
+**Video tab:** Embedded player, play/pause, progress, fullscreen
+**Deck tab:** PDF embed, scrollable, download button
+**Infographic tab:** Full-width image, download button
+**Resume tab:** "ATS-Ready Resume" label, download PDF button
 
-**Video tab:**
-- Embedded video player
-- Play/pause, progress bar, fullscreen button
-- Video streams from signed Supabase Storage URL
+All assets stream from signed Supabase Storage URLs (1-hour TTL, generated server-side).
 
-**Deck tab:**
-- PDF embed (scrollable)
-- Download button
-- PDF served via signed Supabase Storage URL
+### 4.5 Chat Tab -- Career AI
 
-**Infographic tab:**
-- Full-width image display
-- Download button
-- Image served via signed Supabase Storage URL
+The AI chat interface embedded in the modal.
 
-### 4.5 Resume Tab
+**Interface:**
+- "Ask [Name]'s career AI anything" header
+- Message input field
+- Send button
+- Conversation history in chat bubbles
+- "Powered by RoleBoost AI" footer label
+- Disclaimer: "This AI represents [Name]'s career history and may not reflect all details"
 
-Always shown as the last tab if a resume asset exists.
+**Behavior:**
+- Chat session created on first message
+- All messages logged to `chat_messages`
+- System prompt built from candidate's career data and custom QA pairs
+- Claude Haiku generates all responses (fast, cheap, conversational)
+- Session ends on modal close or 30 minutes of inactivity
+- Transcript delivered by email to both sides on session end
 
-- "ATS-Ready Resume" label
-- Download PDF button
-- Brief description: "Formatted for applicant tracking systems"
-
-### 4.6 Employer Actions (shown when employer is logged in)
-
-- **Save button** -- saves candidate to employer's pool. Changes to "Saved" with a filled icon after saving.
-- **Connect button** -- opens a compose interface to send a message/feedback to the candidate
-- **Status dropdown** -- assign candidate to a stage (only shown if candidate is already in employer's pool)
-- **Share button** -- copies the candidate's public URL to clipboard
-
-**Unauthenticated employer actions:**
-- Save and Connect buttons still visible
-- Clicking prompts employer to sign up or sign in first, then returns to complete the action
-
-### 4.7 View Tracking
-
-Every modal open logs a view in `profile_views`:
-- `candidate_profile_id`
-- `viewer_clerk_user_id` (null if not logged in)
-- `employer_account_id` (null if not logged in or not an employer)
-- `viewed_at`
-- Duration tracked via a timer that stops when the modal is closed
+**If AI disabled by candidate:**
+- Chat tab hidden entirely
 
 **Acceptance criteria:**
-- [ ] Modal renders at `/c/[slug]`
-- [ ] Returns 404 for unpublished profiles
-- [ ] All tabs render correctly with correct asset
-- [ ] Tabs only shown when asset exists
-- [ ] Audio player functional with progress bar
-- [ ] Video player functional
-- [ ] PDF deck renders inline
-- [ ] Infographic image renders full width
-- [ ] Resume download works
-- [ ] Save button functional for logged-in employers
-- [ ] Connect button opens feedback compose
-- [ ] View logged on every open
+- [ ] Chat interface loads when Chat tab clicked
+- [ ] Messages send and receive correctly
+- [ ] Conversation history persists within session
+- [ ] Session logged to `chat_sessions`
+- [ ] All messages logged to `chat_messages`
+- [ ] Transcript email sent to candidate after session ends
+- [ ] Transcript email sent to logged-in employer after session ends
+- [ ] Tab hidden if candidate has disabled AI
+- [ ] Fully keyboard navigable
+- [ ] Screen reader accessible
+
+### 4.6 Employer Actions
+
+Shown when employer is logged in:
+- Save button -- saves to pool, changes to Saved with filled icon
+- Connect button -- opens feedback compose
+- Status dropdown -- assign stage (shown if already saved)
+- Share button -- copies public URL
+
+Unauthenticated viewers see Save and Connect -- clicking prompts sign up first.
+
+### 4.7 View and Chat Tracking
+
+Every modal open logs a view in `profile_views`.
+Every chat session logs to `chat_sessions` with `employer_account_id` if logged in.
+Duration tracked on modal close.
+
+**Acceptance criteria:**
+- [ ] View logged on every modal open
 - [ ] Duration tracked on close
+- [ ] Chat session created on first message
+- [ ] Session closed and transcript triggered on modal close
 - [ ] Fully keyboard navigable
 - [ ] Focus trapped while open
 - [ ] ESC closes modal
@@ -336,133 +389,537 @@ Every modal open logs a view in `profile_views`:
 
 ## 5. Employer Features
 
-### 5.1 Employer Dashboard -- Candidates Tab
+### 5.1 Candidates Tab
 
-The main candidate pool view. All candidates saved by anyone on the employer's account.
+Saved candidate pool. Grid of candidate cards.
 
-**Layout:**
-- Grid of candidate cards (3 columns desktop, 1 column mobile)
-- Filter bar: by job posting, by stage, by date saved
-- Search bar: search by name or headline
+**Card shows:** Avatar, name, headline, stage badge, job posting, asset indicators, date saved
 
-**Candidate card shows:**
-- Initials avatar
-- Full name
-- Headline
-- Stage badge (colored by stage)
-- Job posting name (if attached)
-- Assets available (icon indicators for audio, video, deck, infographic, resume)
-- Date saved
-- Click anywhere on card to open candidate modal
+**Filters:** By job posting, by stage, by date saved
+**Search:** By name or headline
+
+Clicking card opens candidate modal inline.
 
 **Acceptance criteria:**
-- [ ] All saved candidates shown in grid
-- [ ] Cards show all required fields
-- [ ] Filter by job posting works
-- [ ] Filter by stage works
-- [ ] Search by name and headline works
-- [ ] Clicking card opens candidate modal inline (not a new tab)
-- [ ] Free tier limited to 5 saved candidates -- upgrade prompt shown at limit
+- [ ] All saved candidates shown
+- [ ] Filter and search functional
+- [ ] Modal opens inline on card click
+- [ ] Free tier limited to 5 saved candidates
 
-### 5.2 Employer Dashboard -- Jobs Tab
+### 5.2 Jobs Tab
 
-Manage job postings.
+**Job postings list:** Title, department, location, candidate count, active status
 
-**Job postings list:**
-- Table showing: title, department, location, number of candidates attached, date created, active/inactive status
-- Create new posting button
-
-**Create / Edit Job Posting form:**
-- Title (required)
-- Department (optional)
-- Location (optional)
-- Description (optional, rich text)
-- Active toggle
+**Create/Edit form:** Title (required), department, location, description, active toggle
 
 **Acceptance criteria:**
-- [ ] List shows all job postings for the employer account
-- [ ] Create form validates title required
-- [ ] Edit updates existing posting
-- [ ] Active toggle updates `job_postings.is_active`
-- [ ] Delete available with confirmation dialog
-- [ ] Free tier limited to 1 job posting -- upgrade prompt at limit
+- [ ] All postings shown for employer account
+- [ ] Create and edit functional
+- [ ] Free tier limited to 1 posting
 
-### 5.3 Employer Dashboard -- Board Tab
+### 5.3 Board Tab
 
-Filtered view of the candidate pool attached to a specific job posting. Candidates shown in a list grouped by stage.
+Candidate pool filtered by job posting, grouped by stage.
 
-**Layout:**
-- Job posting selector dropdown at top
-- List of candidates grouped by stage: Saved / Screening / Interview / Offer / Passed
-- Each candidate row shows: name, headline, assets available, date added, stage dropdown
+**Per candidate row:** Name, headline, asset indicators, date added, stage dropdown, notes field
 
-**Stage assignment:**
-- Dropdown on each candidate row
-- Options: Saved / Screening / Interview / Offer / Passed
-- Updates `saved_candidates.stage` on change
-- Change confirmation toast
+Stage dropdown: Saved / Screening / Interview / Offer / Passed -- updates `saved_candidates.stage`
 
-**Candidate notes:**
-- Notes field on each candidate row (inline, auto-saves on blur)
-- Notes are per employer account per candidate -- not shared with candidate
+Notes auto-save on blur. Visible to all team members.
 
 **Acceptance criteria:**
-- [ ] Board shows candidates for selected job posting only
-- [ ] Candidates grouped by stage
-- [ ] Stage dropdown updates stage in database
-- [ ] Notes field auto-saves
-- [ ] Notes visible to all team members on the account
-- [ ] Clicking candidate name opens their modal inline
+- [ ] Board shows candidates for selected posting only
+- [ ] Stage dropdown updates database
+- [ ] Notes auto-save
+- [ ] Clicking name opens modal inline
 
-### 5.4 Employer Dashboard -- Team Tab
+### 5.4 Transcripts Tab
 
-Available on Growth and Scale tiers only.
+History of all AI chat conversations by employer team members.
 
-**Team member list:**
-- Table showing: name, email, role (owner/member), date added
-- Invite team member button
-
-**Invite flow:**
-- Email input field
-- Send invite button
-- Invited user receives email (Clerk handles invite email)
-- On sign-up, invited user is automatically added to the employer account as a member
+**List view:** Candidate name, team member who chatted, date, question count
+**Full transcript:** All questions and answers, link to save candidate, link to send feedback
 
 **Acceptance criteria:**
-- [ ] Team list shows all employer_members for the account
-- [ ] Invite sends email via Clerk
-- [ ] Invited users automatically added to account on sign-up
-- [ ] Owner can remove members
-- [ ] Owners cannot remove themselves
+- [ ] All chat sessions shown for employer account
+- [ ] Full transcript readable
+- [ ] Save candidate and send feedback CTAs functional
+
+### 5.5 Team Tab
+
+Available on Growth and Scale tiers.
+
+**Team list:** Name, email, role, date added
+**Invite flow:** Email input, Clerk invite email, auto-add on sign-up
+
+**Acceptance criteria:**
+- [ ] All `employer_members` shown
+- [ ] Invite sends via Clerk
+- [ ] Owner can remove members but not self
 - [ ] Free and Starter tiers see locked state with upgrade CTA
 
-### 5.5 Employer -- Sending Feedback
+### 5.6 Sending Feedback
 
-Employers can send feedback to candidates from two places:
-- The candidate modal (Connect button)
-- The candidate card in the pool (right-click or action menu)
+From candidate modal (Connect button) or candidate card action menu.
 
-**Feedback compose:**
-- Text area (required, max 1000 characters)
-- Send button
-- Inserts row into `feedback` table
-- Candidate sees it in their Feedback tab
+**Compose:** Text area (max 1000 chars) with character counter, send button
 
 **Acceptance criteria:**
-- [ ] Compose accessible from modal and candidate card
-- [ ] Text area has character counter
+- [ ] Compose accessible from modal and card
 - [ ] Send creates feedback row
+- [ ] Candidate receives email notification
 - [ ] Candidate sees feedback in their dashboard
-- [ ] Employer sees confirmation toast on send
+- [ ] Employer sees confirmation toast
 
 ---
 
-## 6. Database Schema
+## 6. Email Delivery -- Transcript System
 
-All tables with full column definitions and constraints.
+### 6.1 Chat Session Lifecycle
+
+1. Recruiter opens modal and sends first message -- `chat_sessions` row created
+2. Messages logged in real time to `chat_messages`
+3. Session ends when modal closes OR 30 minutes of inactivity
+4. `POST /api/transcripts/deliver` called
+5. Transcript built from all `chat_messages` in session
+6. Email sent to candidate via Resend
+7. Email sent to employer if logged in via Resend
+8. `chat_sessions.transcript_sent` set to true
+
+### 6.2 Candidate Transcript Email
+
+**Subject:** A recruiter just chatted with your RoleBoost AI
+
+**Body:**
+- Company name (or "An anonymous recruiter") viewed your profile
+- Date and time, number of questions asked
+- Full conversation transcript
+- Pattern insight if same question asked 3+ times this week
+- CTA: Fine-tune your AI
+- CTA: View full analytics
+
+### 6.3 Employer Transcript Email
+
+**Subject:** Your RoleBoost conversation with [Candidate Name]
+
+**Body:**
+- Summary -- N questions asked, duration
+- Full conversation transcript
+- CTA: View full profile
+- CTA: Save candidate
+- CTA: Send feedback
+
+### 6.4 Feedback Notification Email
+
+**Subject:** You have new feedback from [Company Name] on RoleBoost
+
+**Body:**
+- Company name and message preview
+- CTA: Read full feedback
+
+**Acceptance criteria:**
+- [ ] Transcript email sent to candidate after every session
+- [ ] Transcript email sent to logged-in employer after every session
+- [ ] Feedback email sent to candidate on every feedback submission
+- [ ] All emails from `transcripts@getroleboost.com`
+- [ ] Email templates mobile responsive
+- [ ] Unsubscribe link included per CAN-SPAM
+
+---
+
+## 7. AI Chatbot System
+
+### 7.1 System Prompt Construction
+
+Built from `candidate_profiles` fields:
+
+```
+You are the career AI for [full_name]. You represent them professionally to recruiters
+and hiring managers. Answer only from the career information provided below. If asked
+something outside this data, redirect to direct conversation.
+
+Never invent, embellish, or extrapolate beyond what is provided. If you do not know
+the answer from the provided data, say so honestly and suggest the recruiter connect
+directly.
+
+CAREER INFORMATION:
+[resume_text]
+
+CAREER CONTEXT:
+Target Role: [target_role]
+Leadership Philosophy: [leadership_philosophy]
+Key Wins: [key_wins]
+Departure Reasons: [departure_reasons]
+Biggest Challenge: [biggest_challenge]
+Ideal Environment: [ideal_environment]
+Manager Needs: [manager_needs]
+Honest Weaknesses: [honest_weaknesses]
+Wish Questions: [wish_questions]
+
+CUSTOM ANSWERS (candidate-refined, highest priority):
+[custom_qa_pairs formatted as Q: / A: pairs]
+
+TOPICS TO REDIRECT:
+[redirect_topics -- respond: "I would recommend connecting directly with [name]
+to discuss this. You can reach them via the Connect button on their profile."]
+
+Keep responses concise, warm, and grounded. No corporate speak.
+Let the career data speak for itself.
+```
+
+### 7.2 Chat API
+
+`POST /api/chat`
+
+Request: `{ candidateSlug, message, sessionId, conversationHistory }`
+Response: `{ answer, sessionId }`
+
+Model: `claude-haiku-4-5-20251001` -- fast, cheap, conversational. Max tokens 500.
+
+### 7.3 Fine-Tuning Data Model
+
+`custom_qa_pairs` stored as JSONB array in `candidate_profiles`:
+
+```json
+[
+  {
+    "question": "Why did you leave Bedgear?",
+    "answer": "The role was a startup build that I completed successfully. I established
+    the systems, hired and trained the team, and handed off a running operation. I am most
+    energized by building from zero and that chapter was complete."
+  }
+]
+```
+
+Custom answers injected into system prompt above base career data -- they take priority.
+
+### 7.4 Privacy Controls
+
+`redirect_topics` stored as `TEXT[]` in `candidate_profiles`.
+
+`ai_enabled` BOOLEAN -- when false, Chat tab hidden entirely from modal.
+
+---
+
+## 8. Candidate Context Form -- Deep Career Questions
+
+The intake form that trains the AI. Shown after initial onboarding. Guided by Resume Intelligence recommendations so candidates know which fields matter most for their specific resume.
+
+**Section 1 -- Career highlights:**
+- Paste your full resume or upload it (required)
+- Top 5 career wins with specific numbers (required)
+- Target role and target company type (required)
+
+**Section 2 -- Leadership and work style:**
+- Describe your leadership philosophy in your own words
+- How do you handle an underperforming team member?
+- What does your ideal team look like?
+- What do you need from a manager to do your best work?
+
+**Section 3 -- Honest answers recruiters appreciate:**
+- Why did you leave each of your last 3 roles?
+- What is your biggest professional failure and what did you learn?
+- What are you not good at -- be honest?
+- What question do you wish recruiters would ask you?
+
+**Section 4 -- Your story:**
+- What defines your career in one sentence?
+- What gets you out of bed in the morning professionally?
+- Where do you want to be in 5 years?
+
+**Acceptance criteria:**
+- [ ] All fields optional except resume text and key wins
+- [ ] Auto-saves on blur
+- [ ] Preview AI responses immediately after saving each section
+- [ ] Progress indicator showing completion percentage
+- [ ] Completion nudges shown -- "Your AI gives better answers with leadership context"
+- [ ] Resume Intelligence panel visible above form after resume upload
+
+---
+
+## 8A. Resume Intelligence -- AI-Powered Context Recommendations
+
+### 8A.1 Overview
+
+Resume Intelligence is the layer between resume upload and the context form. When a candidate uploads or pastes their resume, Claude Sonnet analyzes it through the lens of what recruiters and ATS systems flag -- gaps, short tenures, career pivots, layoffs, missing degrees, title mismatches, skills without evidence, missing metrics -- and returns a targeted set of context-building recommendations.
+
+The output is not a resume score. It is a prioritized list of questions the candidate's AI chatbot needs to be able to answer, derived directly from what is in the resume.
+
+The framing to the candidate:
+
+**"Based on your resume, here are the questions recruiters are likely to ask. Let's make sure your AI has the answers before they do."**
+
+This is what empowers the candidate's voice to be heard before easy or automatic elimination by algorithm. Every context field filled in based on a Resume Intelligence recommendation is one fewer time a candidate has to answer that question defensively on a screening call.
+
+### 8A.2 How It Works
+
+**Trigger:** Candidate uploads or pastes resume text for the first time, or re-uploads an updated resume.
+
+**Process:**
+1. Resume text extracted from uploaded PDF or taken from paste field
+2. `POST /api/resume-intelligence` with resume text and target role
+3. Claude Sonnet analyzes resume against the recruiter and ATS flag rubric (see 8A.4)
+4. Returns structured JSON containing flagged items and recommended context fields
+5. Recommendations displayed in AI tab as prioritized list
+6. Each recommendation links directly to the relevant context field
+7. Completed recommendations marked with checkmark as candidate fills in context
+8. Recommendations persist and update when candidate uploads a new resume
+
+**API endpoint:** `POST /api/resume-intelligence`
+
+**Request:**
+```typescript
+{
+  resumeText: string,
+  targetRole: string,
+  candidateProfileId: string
+}
+```
+
+**Response:**
+```typescript
+{
+  flags: ResumeFlag[],
+  completionScore: number,
+  generatedAt: string
+}
+
+type ResumeFlag = {
+  id: string,
+  category: FlagCategory,
+  severity: 'high' | 'medium' | 'low',
+  title: string,
+  explanation: string,
+  recommendation: string,
+  contextField: string,
+  isAddressed: boolean
+}
+
+type FlagCategory =
+  | 'employment_gap'
+  | 'career_pivot'
+  | 'layoff_or_rif'
+  | 'no_degree'
+  | 'short_tenure'
+  | 'title_mismatch'
+  | 'skills_without_evidence'
+  | 'missing_metrics'
+  | 'departure_reason'
+  | 'overqualification'
+  | 'underqualification'
+  | 'returning_to_workforce'
+```
+
+### 8A.3 The Analysis Prompt
+
+Claude Sonnet receives the following system prompt:
+
+```
+You are a senior recruiter and ATS specialist reviewing a candidate's resume. Your job
+is to identify the specific things that will get flagged by ATS systems and human
+recruiters during the screening process -- not to critique the candidate, but to help
+them prepare their AI chatbot to answer these questions confidently before a recruiter
+ever asks.
+
+Analyze the resume against the following categories. For each flag identified, return
+a structured object with: the category, severity, a plain-language title, an explanation
+of what a recruiter or ATS will notice, a specific recommendation for what context to
+add, and which context field that recommendation belongs in.
+
+FLAG CATEGORIES:
+
+employment_gap -- Any gap of 3+ months between roles. Severity: high if 12+ months,
+medium if 6-12 months, low if 3-6 months. Context field: departure_reasons.
+
+career_pivot -- Significant change in industry, function, or level unexplained by the
+resume. Severity: high if unexplained and recent. Context fields: leadership_philosophy,
+biggest_challenge.
+
+layoff_or_rif -- Indication of reduction in force, company closure, or involuntary
+separation. Severity: high (asked in first 60 seconds of every screening call).
+Context field: departure_reasons.
+
+no_degree -- Absence of degree where target role typically requires one.
+Severity: high if degree commonly required, medium otherwise. Context field: key_wins.
+
+short_tenure -- Any role under 18 months, especially if pattern of multiple.
+Severity: medium to high. Context field: departure_reasons.
+
+title_mismatch -- Gap between most recent title and target role -- significant step up
+or step down. Severity: medium. Context fields: key_wins, leadership_philosophy.
+
+skills_without_evidence -- Skills listed not supported by specific examples or outcomes.
+Severity: medium. Context fields: key_wins, biggest_challenge.
+
+missing_metrics -- Work experience describes responsibilities without quantified outcomes
+in roles where numbers are expected. Severity: medium. Context field: key_wins.
+
+departure_reason -- Role where departure reason is not obvious and likely to be asked.
+Severity: medium. Context field: departure_reasons.
+
+overqualification -- Candidate appears significantly more experienced than target role
+requires. Severity: low to medium. Context fields: ideal_environment, manager_needs.
+
+returning_to_workforce -- Out of workforce 12+ months, re-entering.
+Severity: high. Context field: departure_reasons.
+
+RULES:
+- Return only flags genuinely present. Do not invent flags.
+- Maximum 6 flags. Prioritize by severity and recruiter impact.
+- High severity: recruiter asks in first 60 seconds of screening call.
+- Medium severity: recruiter likely asks at some point.
+- Low severity: ATS may flag but recruiter may not always ask.
+- Keep explanations plain and direct. No hedging.
+- Return valid JSON only. No preamble, no markdown fences.
+```
+
+### 8A.4 UI -- Resume Intelligence Panel
+
+**Location:** AI tab, above the context form.
+
+**States:**
+- Not analyzed (no resume): muted panel with CTA to upload resume
+- Analyzing: skeleton loader, "Analyzing your resume..."
+- Results: prioritized flag cards with completion bar
+- All addressed: green completion state
+
+**Each flag card:**
+- Severity dot (red = high, amber = medium, gray = low)
+- Title
+- Explanation (what a recruiter will notice)
+- Recommendation (what to add)
+- "Add context" CTA linking directly to the relevant context field
+- Checkmark when context field is filled in (50+ characters)
+
+**Completion bar:** "X of Y recruiter questions covered" -- fills as candidate addresses flags.
+
+### 8A.5 Data Model Additions
 
 ```sql
--- Users (all roles share this table)
+ALTER TABLE candidate_profiles
+  ADD COLUMN IF NOT EXISTS resume_intelligence_flags JSONB DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS resume_intelligence_score INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS resume_intelligence_run_at TIMESTAMPTZ;
+```
+
+A flag is considered addressed when its linked `contextField` in `candidate_profiles` is non-null and contains more than 50 characters. Score recalculates on every context field save.
+
+### 8A.6 Trigger Points
+
+- First resume upload: runs automatically
+- Resume replacement: runs automatically, replaces prior flags
+- Manual re-run: available from AI tab when target role changes
+
+### 8A.7 Model and Cost
+
+Model: `claude-sonnet-4-6` -- one-time generation per resume, not real-time chat.
+Estimated cost: ~$0.02 per analysis (1,500 tokens input + 800 tokens output at Sonnet pricing).
+
+### 8A.8 Acceptance Criteria
+
+- [ ] Resume Intelligence panel visible in AI tab after resume upload
+- [ ] Panel shows loading state during Claude API call
+- [ ] Flags displayed ordered by severity
+- [ ] Each flag card shows title, explanation, recommendation, and CTA
+- [ ] CTA links to relevant context field and scrolls to it
+- [ ] Completion bar updates as context fields are filled in
+- [ ] Flags marked addressed when linked field has 50+ characters
+- [ ] Panel shows completion state when all flags addressed
+- [ ] Re-analysis available when target role changes
+- [ ] New resume upload triggers automatic re-analysis
+- [ ] Results stored in `candidate_profiles.resume_intelligence_flags`
+- [ ] Score stored in `candidate_profiles.resume_intelligence_score`
+- [ ] All UI meets WCAG 2.1 AA
+
+### 8A.9 Phase and Priority
+
+**Phase 3** -- builds on top of the context form and Claude API integration.
+Build after the base context form is live and chat endpoint is working.
+This is an enhancement layer, not a prerequisite.
+
+---
+
+## 9. Pricing and Feature Gates
+
+### Candidate Tiers
+
+Pricing TBD. Candidates generate real API costs at two points:
+- Resume Intelligence (Claude Sonnet): approximately $0.02 per resume upload/re-analysis
+- AI chatbot (Claude Haiku): approximately $0.0008 per recruiter chat session
+
+The supply-side economics favor keeping candidates free or near-free to maximize profile volume and employer-side value. Final structure will be determined once usage patterns are understood from Fiverr validation.
+
+| Feature | Free | Pro (TBD) |
+|---|---|---|
+| Full profile and all media assets | Yes | Yes |
+| Shareable link, QR code, badge | Yes | Yes |
+| Resume Intelligence | Yes | Yes |
+| Basic AI chatbot | Yes | Yes |
+| Transcript delivery by email | Yes | Yes |
+| Basic fine-tuning -- edit custom answers | Yes | Yes |
+| Advanced conversation analytics | No | Yes |
+| Pattern recognition -- most asked questions | No | Yes |
+| Custom chatbot personality settings | No | Yes |
+| Priority profile placement | No | Yes |
+
+### Employer Tiers
+
+| Feature | Free | Starter $49 | Growth $99 | Scale $249 |
+|---|---|---|---|---|
+| AI chat with candidates | Yes | Yes | Yes | Yes |
+| Transcript delivery by email | Yes | Yes | Yes | Yes |
+| Saved candidates | 5 | 50 | Unlimited | Unlimited |
+| Job postings | 1 | 5 | Unlimited | Unlimited |
+| Transcript history in dashboard | No | Yes | Yes | Yes |
+| Pipeline notes | No | Yes | Yes | Yes |
+| Team collaboration | No | No | Yes | Yes |
+| Chat analytics | No | No | Yes | Yes |
+| API access | No | No | No | Yes |
+| Priority support | No | No | No | Yes |
+
+---
+
+## 10. Paddle Integration
+
+Candidate tier pricing TBD -- Paddle setup for candidate billing deferred until tier structure is finalized.
+
+Employer billing active from launch.
+
+| Variable | Tier |
+|---|---|
+| `PADDLE_EMPLOYER_STARTER_PRICE_ID` | Employer Starter $49/mo |
+| `PADDLE_EMPLOYER_GROWTH_PRICE_ID` | Employer Growth $99/mo |
+| `PADDLE_EMPLOYER_SCALE_PRICE_ID` | Employer Scale $249/mo |
+
+Webhook handler at `/api/webhooks/paddle`.
+
+Events: `subscription.created`, `subscription.updated`, `subscription.cancelled`, `subscription.payment.failed`
+
+Always verify Paddle webhook signature before processing. Free tier limits enforced server-side on every relevant Server Action.
+
+---
+
+## 11. Storage
+
+All buckets private. Signed URLs with 1-hour TTL generated server-side.
+
+| Bucket | Max Size | Types |
+|---|---|---|
+| `candidate-audio` | 50MB | audio/mpeg, audio/mp4, audio/wav |
+| `candidate-video` | 500MB | video/mp4, video/quicktime, video/webm |
+| `candidate-documents` | 25MB | application/pdf |
+| `candidate-images` | 10MB | image/png, image/jpeg, image/webp |
+
+File path: `{clerk_user_id}/{timestamp}-{sanitized-filename}`
+
+Signed URLs generated in Server Component on every modal load. Modal client receives pre-signed URLs -- never calls Supabase Storage directly.
+
+---
+
+## 12. Database Schema
+
+```sql
+-- Users
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_user_id TEXT NOT NULL UNIQUE,
@@ -472,7 +929,7 @@ CREATE TABLE users (
   subscription_status TEXT NOT NULL DEFAULT 'free'
     CHECK (subscription_status IN ('free', 'active', 'cancelled', 'past_due')),
   subscription_tier TEXT
-    CHECK (subscription_tier IN ('basic', 'pro', 'starter', 'growth', 'scale')),
+    CHECK (subscription_tier IN ('pro', 'starter', 'growth', 'scale')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -487,14 +944,31 @@ CREATE POLICY users_self ON users
 CREATE TABLE candidate_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_user_id TEXT NOT NULL UNIQUE REFERENCES users(clerk_user_id) ON DELETE CASCADE,
-  slug TEXT NOT NULL UNIQUE
-    CHECK (slug ~ '^[a-z0-9-]+$'),
+  slug TEXT NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9-]+$'),
   full_name TEXT NOT NULL,
   headline TEXT CHECK (char_length(headline) <= 200),
   target_role TEXT,
   location TEXT,
   linkedin_url TEXT,
+  resume_text TEXT,
   summary_bullets TEXT[] DEFAULT '{}',
+  -- AI context fields
+  leadership_philosophy TEXT,
+  key_wins TEXT,
+  departure_reasons TEXT,
+  biggest_challenge TEXT,
+  ideal_environment TEXT,
+  manager_needs TEXT,
+  honest_weaknesses TEXT,
+  wish_questions TEXT,
+  custom_qa_pairs JSONB DEFAULT '[]',
+  redirect_topics TEXT[] DEFAULT '{}',
+  ai_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  -- Resume Intelligence fields
+  resume_intelligence_flags JSONB DEFAULT '[]',
+  resume_intelligence_score INTEGER DEFAULT 0,
+  resume_intelligence_run_at TIMESTAMPTZ,
+  -- Profile settings
   is_published BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -505,8 +979,6 @@ CREATE POLICY candidate_profiles_owner ON candidate_profiles
   FOR ALL TO authenticated
   USING (clerk_user_id = requesting_user_id())
   WITH CHECK (clerk_user_id = requesting_user_id());
-
--- Allow public read of published profiles (for /c/[slug] route)
 CREATE POLICY candidate_profiles_public_read ON candidate_profiles
   FOR SELECT TO anon
   USING (is_published = TRUE);
@@ -517,7 +989,7 @@ CREATE TABLE candidate_assets (
   candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
   clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
   asset_type TEXT NOT NULL
-    CHECK (asset_type IN ('audio', 'video', 'deck', 'infographic', 'resume')),
+    CHECK (asset_type IN ('audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume')),
   storage_bucket TEXT NOT NULL,
   storage_path TEXT NOT NULL,
   file_name TEXT NOT NULL,
@@ -532,6 +1004,62 @@ CREATE POLICY candidate_assets_owner ON candidate_assets
   FOR ALL TO authenticated
   USING (clerk_user_id = requesting_user_id())
   WITH CHECK (clerk_user_id = requesting_user_id());
+
+-- AI chat sessions
+CREATE TABLE chat_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  viewer_clerk_user_id TEXT REFERENCES users(clerk_user_id) ON DELETE SET NULL,
+  employer_account_id UUID REFERENCES employer_accounts(id) ON DELETE SET NULL,
+  employer_company_name TEXT,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ,
+  transcript_sent BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY chat_sessions_candidate_read ON chat_sessions
+  FOR SELECT TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+CREATE POLICY chat_sessions_employer_read ON chat_sessions
+  FOR SELECT TO authenticated
+  USING (
+    employer_account_id IN (
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+CREATE POLICY chat_sessions_insert ON chat_sessions
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (TRUE);
+
+-- AI chat messages
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chat_session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY chat_messages_session_access ON chat_messages
+  FOR ALL TO anon, authenticated
+  USING (
+    chat_session_id IN (
+      SELECT id FROM chat_sessions
+      WHERE
+        candidate_profile_id IN (
+          SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+        )
+        OR employer_account_id IN (
+          SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
+        )
+    )
+  );
 
 -- Employer accounts
 CREATE TABLE employer_accounts (
@@ -548,8 +1076,7 @@ CREATE POLICY employer_accounts_members ON employer_accounts
   FOR ALL TO authenticated
   USING (
     id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
     )
   );
 
@@ -558,8 +1085,7 @@ CREATE TABLE employer_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
   clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id) ON DELETE CASCADE,
-  role TEXT NOT NULL DEFAULT 'member'
-    CHECK (role IN ('owner', 'member')),
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
   invited_by TEXT REFERENCES users(clerk_user_id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(employer_account_id, clerk_user_id)
@@ -570,8 +1096,7 @@ CREATE POLICY employer_members_same_account ON employer_members
   FOR ALL TO authenticated
   USING (
     employer_account_id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
     )
   );
 
@@ -594,12 +1119,11 @@ CREATE POLICY job_postings_employer_account ON job_postings
   FOR ALL TO authenticated
   USING (
     employer_account_id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
     )
   );
 
--- Saved candidates (the employer candidate pool)
+-- Saved candidates
 CREATE TABLE saved_candidates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
@@ -619,12 +1143,11 @@ CREATE POLICY saved_candidates_employer_account ON saved_candidates
   FOR ALL TO authenticated
   USING (
     employer_account_id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
     )
   );
 
--- Feedback (employer to candidate)
+-- Feedback
 CREATE TABLE feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employer_account_id UUID NOT NULL REFERENCES employer_accounts(id) ON DELETE CASCADE,
@@ -636,36 +1159,30 @@ CREATE TABLE feedback (
 );
 
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
--- Employers can insert and read their own feedback
 CREATE POLICY feedback_employer ON feedback
   FOR ALL TO authenticated
   USING (
     employer_account_id IN (
-      SELECT employer_account_id FROM employer_members
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT employer_account_id FROM employer_members WHERE clerk_user_id = requesting_user_id()
     )
   );
--- Candidates can read feedback sent to their profile
 CREATE POLICY feedback_candidate_read ON feedback
   FOR SELECT TO authenticated
   USING (
     candidate_profile_id IN (
-      SELECT id FROM candidate_profiles
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
     )
   );
--- Candidates can mark feedback as read
 CREATE POLICY feedback_candidate_update ON feedback
   FOR UPDATE TO authenticated
   USING (
     candidate_profile_id IN (
-      SELECT id FROM candidate_profiles
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
     )
   )
   WITH CHECK (TRUE);
 
--- Profile view analytics
+-- Profile views
 CREATE TABLE profile_views (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
@@ -676,16 +1193,13 @@ CREATE TABLE profile_views (
 );
 
 ALTER TABLE profile_views ENABLE ROW LEVEL SECURITY;
--- Only the candidate can read their own view data
 CREATE POLICY profile_views_candidate_read ON profile_views
   FOR SELECT TO authenticated
   USING (
     candidate_profile_id IN (
-      SELECT id FROM candidate_profiles
-      WHERE clerk_user_id = requesting_user_id()
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
     )
   );
--- Anyone (including anon) can insert a view
 CREATE POLICY profile_views_insert ON profile_views
   FOR INSERT TO anon, authenticated
   WITH CHECK (TRUE);
@@ -693,185 +1207,107 @@ CREATE POLICY profile_views_insert ON profile_views
 
 ---
 
-## 7. Paddle Integration
+## 13. Accessibility Requirements
 
-### 7.1 Subscription Tiers
-
-Paddle products and prices are configured in the Paddle dashboard. Price IDs are stored in environment variables.
-
-| Variable | Tier |
-|---|---|
-| `PADDLE_CANDIDATE_BASIC_PRICE_ID` | Candidate Basic $9/mo |
-| `PADDLE_CANDIDATE_PRO_PRICE_ID` | Candidate Pro $19/mo |
-| `PADDLE_EMPLOYER_STARTER_PRICE_ID` | Employer Starter $49/mo |
-| `PADDLE_EMPLOYER_GROWTH_PRICE_ID` | Employer Growth $99/mo |
-| `PADDLE_EMPLOYER_SCALE_PRICE_ID` | Employer Scale $249/mo |
-
-### 7.2 Checkout Flow
-
-- User clicks upgrade button
-- Paddle Checkout overlay opens (Paddle.js)
-- On success, Paddle fires `subscription.created` webhook
-- Webhook handler updates `users.subscription_status` and `users.subscription_tier`
-
-### 7.3 Webhook Handler
-
-Located at `/api/webhooks/paddle`.
-
-Events handled:
-- `subscription.created` -- set status to `active`, set tier from price ID
-- `subscription.updated` -- update tier (plan change)
-- `subscription.cancelled` -- set status to `cancelled`
-- `subscription.payment.failed` -- set status to `past_due`
-
-Always verify Paddle webhook signature before processing. Use `PADDLE_WEBHOOK_SECRET`.
-
-### 7.4 Free Tier Limits (enforced server-side)
-
-| Resource | Free Limit | Checked in |
-|---|---|---|
-| Candidate assets | 1 | Asset upload Server Action |
-| Employer saved candidates | 5 | Save candidate Server Action |
-| Employer job postings | 1 | Create job posting Server Action |
-| Employer team members | 0 (owner only) | Team invite Server Action |
-
----
-
-## 8. Storage
-
-### 8.1 Supabase Storage Buckets
-
-All buckets are private. Assets are served via signed URLs with 1-hour TTL.
-
-| Bucket | Max File Size | Accepted Types |
-|---|---|---|
-| `candidate-audio` | 50MB | audio/mpeg, audio/mp4, audio/wav |
-| `candidate-video` | 500MB | video/mp4, video/quicktime, video/webm |
-| `candidate-documents` | 25MB | application/pdf |
-| `candidate-images` | 10MB | image/png, image/jpeg, image/webp |
-
-File path pattern: `{clerk_user_id}/{timestamp}-{sanitized-filename}`
-
-### 8.2 Signed URL Generation
-
-Signed URLs are generated server-side in the Server Component that renders the modal. The modal client receives pre-signed URLs -- it never talks to Supabase Storage directly.
-
-```typescript
-// lib/storage/signed-urls.ts
-export async function getSignedAssetUrl(bucket: string, path: string): Promise<string> {
-  const supabase = await getRequestClient();
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(path, 3600); // 1 hour TTL
-  if (error) throw error;
-  return data.signedUrl;
-}
-```
-
----
-
-## 9. Feature Flags by Tier
-
-| Feature | Free | Basic | Pro | Starter | Growth | Scale |
-|---|---|---|---|---|---|---|
-| Hosted profile | ✓ | ✓ | ✓ | -- | -- | -- |
-| 1 asset slot | ✓ | -- | -- | -- | -- | -- |
-| All asset slots | -- | ✓ | ✓ | -- | -- | -- |
-| View analytics | -- | ✓ | ✓ | -- | -- | -- |
-| Feedback inbox | -- | -- | ✓ | -- | -- | -- |
-| 5 saved candidates | -- | -- | -- | -- (note: free employer gets 5) | -- | -- |
-| 50 saved candidates | -- | -- | -- | ✓ | -- | -- |
-| Unlimited saved | -- | -- | -- | -- | ✓ | ✓ |
-| 1 job posting | -- | -- | -- | -- (free gets 1) | -- | -- |
-| 5 job postings | -- | -- | -- | ✓ | -- | -- |
-| Unlimited postings | -- | -- | -- | -- | ✓ | ✓ |
-| Team collaboration | -- | -- | -- | -- | ✓ | ✓ |
-| Priority support | -- | -- | -- | -- | -- | ✓ |
-
----
-
-## 10. Accessibility Requirements
-
-All UI must meet WCAG 2.1 AA. This is non-negotiable and applies to every component.
+All UI must meet WCAG 2.1 AA. Non-negotiable.
 
 - Minimum 44px touch targets on mobile
 - Minimum 4.5:1 contrast ratio for normal text
 - Minimum 3:1 for large text and UI components
 - All interactive elements keyboard accessible
-- All images have meaningful alt text or `aria-hidden="true"` for decorative images
+- All images have meaningful alt text or `aria-hidden="true"` for decorative
 - Focus indicators visible on all focusable elements
 - Focus trapped inside modal while open
 - ESC closes modal and returns focus to trigger
 - All form inputs have associated `<label>` elements
-- Error messages programmatically associated with inputs via `aria-describedby`
+- Error messages associated with inputs via `aria-describedby`
 - No information conveyed by color alone
 
 ---
 
-## 11. Build Phases
+## 14. Build Phases
 
 ### Phase 0 -- Foundation (Week 1-2)
-- [ ] Initialize Next.js project with TypeScript and Tailwind
+- [ ] Initialize Next.js with TypeScript and Tailwind
 - [ ] Configure Clerk
 - [ ] Configure Supabase with Clerk third-party auth
-- [ ] Run database migrations (all tables from Section 6)
+- [ ] Run all database migrations (all tables from Section 12)
 - [ ] Create Supabase Storage buckets
-- [ ] Set up Vercel deployment under `builtwithrobots`
-- [ ] Configure environment variables in Vercel
+- [ ] Configure Resend domain and sending address
+- [ ] Set up Vercel under `builtwithrobots`
+- [ ] Configure all environment variables
 
-### Phase 1 -- Candidate Side (Week 2-4)
-- [ ] Sign up / sign in pages
+### Phase 1 -- Candidate Profiles and Modal (Week 2-4)
 - [ ] Onboarding -- role selection
-- [ ] Candidate onboarding flow (3 steps)
+- [ ] Candidate onboarding -- 3 steps
 - [ ] Candidate dashboard layout and navigation
 - [ ] Profile editor (Section 3.1)
 - [ ] Asset upload (Section 3.2)
-- [ ] Public modal at `/c/[slug]` (Section 4)
+- [ ] Public modal at `/c/[slug]` (Section 4, without chat tab)
 - [ ] View tracking
+- [ ] QR code generation
+- [ ] Badge download
 
-### Phase 2 -- Employer Side (Week 4-7)
-- [ ] Employer onboarding flow (2 steps)
-- [ ] Employer dashboard layout and navigation
-- [ ] Candidate pool -- Candidates tab (Section 5.1)
+### Phase 2 -- Employer Dashboard (Week 4-7)
+- [ ] Employer onboarding -- 2 steps
+- [ ] Employer dashboard layout
+- [ ] Candidates tab (Section 5.1)
 - [ ] Save candidate from modal
-- [ ] Job postings -- Jobs tab (Section 5.2)
-- [ ] Candidate board -- Board tab (Section 5.3)
+- [ ] Jobs tab (Section 5.2)
+- [ ] Board tab (Section 5.3)
 - [ ] Stage assignment
-- [ ] Candidate notes
-- [ ] Feedback compose and send (Section 5.5)
+- [ ] Notes
+- [ ] Feedback compose and send (Section 5.6)
+- [ ] Feedback notification email via Resend
 
-### Phase 3 -- Collaboration and Polish (Week 7-10)
-- [ ] Team member invites -- Team tab (Section 5.4)
-- [ ] Candidate analytics tab (Section 3.4)
-- [ ] Feedback inbox for candidates (Section 3.5)
-- [ ] Profile preview tab (Section 3.3)
+### Phase 3 -- AI Chatbot, Transcripts, Resume Intelligence (Week 7-10)
+- [ ] Candidate context form (Section 8)
+- [ ] Resume Intelligence -- Claude Sonnet analysis (Section 8A)
+- [ ] Resume Intelligence panel UI in AI tab
+- [ ] System prompt builder -- `lib/ai/build-system-prompt.ts`
+- [ ] Claude Haiku chat endpoint -- `/api/chat`
+- [ ] Chat UI in modal -- Chat tab (Section 4.5)
+- [ ] Chat session and message logging
+- [ ] Candidate AI tab -- full management interface (Section 3.3)
+- [ ] Fine-tuning interface -- custom QA pairs
+- [ ] Privacy controls -- redirect topics and `ai_enabled` toggle
+- [ ] Testing sandbox -- candidate tests their own AI
+- [ ] Transcript delivery endpoint -- `/api/transcripts/deliver`
+- [ ] Candidate transcript email template
+- [ ] Employer transcript email template
+- [ ] Transcripts tab for candidates (Section 3.4)
+- [ ] Transcripts tab for employers (Section 5.4)
+- [ ] Pattern recognition -- most asked questions
 - [ ] Mobile responsive audit
-- [ ] WCAG 2.1 AA full audit
-- [ ] Error states and empty states for all screens
-- [ ] Loading states and skeleton screens
+- [ ] WCAG 2.1 AA audit
 
-### Phase 4 -- Payments (Week 10-12)
-- [ ] Paddle JS integration
-- [ ] Upgrade prompts at free tier limits
+### Phase 4 -- Payments and Polish (Week 10-12)
+- [ ] Paddle JS integration for employer tiers
+- [ ] Employer upgrade prompts at free tier limits
 - [ ] Checkout flow
-- [ ] Paddle webhook handler (Section 7.3)
+- [ ] Paddle webhook handler (Section 10)
 - [ ] Subscription status gates on features
-- [ ] Billing management (Paddle customer portal link)
+- [ ] Billing management via Paddle customer portal
+- [ ] Error states and empty states for all screens
+- [ ] Loading and skeleton screens
+- [ ] Analytics tab (Section 3.5)
+- [ ] Candidate pricing decision and tier implementation (TBD)
 
 ---
 
-## 12. Out of Scope for MVP
+## 15. Out of Scope for MVP
 
-Do not build these. Push back if asked.
+Do not build. Push back if asked.
 
-- AI generation on the platform (NotebookLM does the generation -- RoleBoost is hosting and delivery)
-- Drag and drop Kanban board (dropdown stage assignment in MVP)
-- Employer candidate browse/search directory (employers save via shared links only)
-- Resume parsing or ATS keyword optimization
+- AI asset generation on platform -- NotebookLM is the production engine
+- Drag and drop Kanban -- dropdown stage assignment only
+- Employer candidate browse directory -- save via shared links only
+- Resume parsing or ATS keyword optimization (distinct from Resume Intelligence)
 - Video or audio recording in browser
-- Real-time notifications (polling or manual refresh only)
+- Real-time chat notifications -- email transcripts are the delivery mechanism
+- Voice cloning for AI chatbot
+- Multi-language support
 - Native mobile app
-- Social features, endorsements, or recommendations
-- Integration with external ATS systems (Workday, Greenhouse, Lever)
-- Advanced analytics beyond view counts and engagement duration
-- Email newsletter or marketing automation
+- Social features or endorsements
+- External ATS integrations (Workday, Greenhouse, Lever)
+- Job description gap analysis feature -- post-MVP, pending Claude API candidate-paste flow
