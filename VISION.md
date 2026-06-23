@@ -1,5 +1,5 @@
 # RoleBoost -- Vision Document
-**Version 3.1 | June 2026 | Rob Ramos, Founder**
+**Version 3.2 | June 2026 | Rob Ramos, Founder**
 
 ---
 
@@ -49,6 +49,14 @@ That is not a feature. That is RoleBoost empowering your voice to be heard befor
 
 There is a gap that nobody in hiring technology has addressed -- and it sits at the very beginning of the candidate's journey.
 
+The data is stark. An Express Employment Professionals / Harris Poll study from February 2026 found that 80% of hiring managers say candidates' resumes don't match their real-world skills at least sometimes -- with 34% saying it happens all the time or often. A separate finding from the same period: only 22% of job seekers admit to listing skills they don't actually have. The gap between those two numbers tells the whole story. Candidates are inflating more than they realize, or more than they will admit. Recruiters are catching it. Trust is collapsing on both sides.
+
+The industry has named this the "resume illusion" -- AI-polished documents that pass ATS screening but fall apart the moment a real conversation begins. Recruiters are responding by conducting more interviews to verify authenticity, leaning harder on behavioral questions, and becoming more skeptical of every document that crosses their desk.
+
+Every tool in the market is making this worse. AI resume builders help candidates optimize, polish, and keyword-match -- which produces more look-alike documents with less signal and more risk of inflation. The candidate who uses these tools gains a short-term ATS advantage and a long-term credibility problem.
+
+RoleBoost goes the opposite direction.
+
 Most candidates have a meaningful disconnect between how they perceive their own career and what their documented experience actually shows. The story they tell in interviews is often bigger, more polished, or differently framed than what appears on paper. Sometimes it is the opposite: a candidate undersells because their resume was never built to reflect the full scope of what they actually did.
 
 RoleBoost uses AI to create a non-biased mirror.
@@ -57,13 +65,13 @@ When a candidate uploads their resume and career context, the platform reads wha
 
 That honest read does three things:
 
-First, it produces a narrative that is credible. Not inflated. Not undersold. Grounded in what the evidence supports. Recruiters who have been burned by overpromising candidates trust it.
+First, it produces a narrative that is credible. Not inflated. Not undersold. Grounded in what the evidence supports. In a market where 80% of hiring managers expect resumes to misrepresent candidates, a grounded AI read is a competitive advantage, not a limitation.
 
-Second, it gives the candidate something they rarely get: an objective reflection of how their career actually reads to someone who does not know them. Most candidates have never seen themselves from that angle. It is often the most clarifying moment in the process.
+Second, it gives the candidate something they rarely get: an objective reflection of how their career actually reads to someone who does not know them. Most candidates have never seen themselves from that angle. It is often the most clarifying moment in the process -- and it is the starting point for building a story that holds up under scrutiny.
 
 Third, it trains the AI chatbot on the same honest read. So when a recruiter asks the chatbot anything -- at any hour, before any call -- they get a consistent, grounded answer in the candidate's voice that matches what the evidence supports. Not the inflated pitch. Not the thin resume. The real person.
 
-This is not a feature. It is the foundation of trust that makes the entire platform work -- for candidates, for recruiters, and for the employers who need to make real hiring decisions.
+This is not a feature. It is the foundation of trust that makes the entire platform work -- for candidates, for recruiters, and for the employers who need to make real hiring decisions. In a market drowning in AI-generated noise, the honest candidate is the differentiated one. RoleBoost makes that possible.
 
 ---
 
@@ -199,12 +207,17 @@ Hiring managers build candidate pipelines -- organized, searchable, collaborativ
 
 ## The Market
 
-- AI resume spam has reached crisis level -- LinkedIn sees 11,000 applications per minute
+- AI resume spam has reached crisis level -- LinkedIn sees 11,000 applications submitted every minute
 - 97.8% of Fortune 500 companies use ATS -- candidates are invisible to humans until a system says yes
+- 80% of hiring managers say candidates' resumes don't match their real-world skills at least sometimes -- 34% say it happens all the time or often (Express Employment Professionals / Harris Poll, February 2026)
+- The "resume illusion" is now a named problem in recruiting: AI-polished resumes pass ATS screening, then collapse in interviews when candidates cannot back up what they claimed
+- 39% of hiring managers are conducting more interviews than before specifically to verify candidate authenticity -- adding cost and time to every hire (HR Dive, 2026)
+- 39% of candidates admit to using AI during the application process to craft resumes and cover letters -- recruiters are aware and growing more skeptical of every document (Gartner, December 2024)
 - 91% of US hiring managers have caught or suspected AI-driven candidate misrepresentation (Greenhouse 2026)
 - 55% of Americans listen to podcasts monthly -- audio consumption is at an all-time high
 - Phone screening takes 30 minutes per candidate -- AI chat takes 5 minutes
 - No platform today combines multi-format AI career narratives with a personal career chatbot, resume intelligence coaching, and full transcript delivery
+- No platform addresses the resume illusion from the candidate side -- every tool in the market helps candidates inflate further; none creates an honest, evidence-based read first
 
 The gap is real. The timing is right. The tools exist today to build this.
 
@@ -327,4 +340,4 @@ Where the best candidate actually gets found -- and where recruiters know exactl
 
 ---
 
-*Document version 3.1 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
+*Document version 3.2 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
