@@ -141,12 +141,16 @@ Two complete prompt sets -- one for Narrative Angle A, one for Narrative Angle B
 Each prompt follows the v1.1 format from `RoleBoost_NotebookLM_Prompt_Library.md`. Audio prompts (Deep Dive and Brief) use this structure:
 
 **Audio prompt format (tested and confirmed working):**
-- First line: "You are a single host." -- this tells NotebookLM to use one voice, not two
-- Second line: "Your literal first words are: 'This is a Boost on [candidate full name].' Say that line out loud before anything else. Then go directly into the content with no additional intro phrase." -- this produces the correct spoken opening
-- Prompt body follows immediately with candidate-specific content woven in
+- First line: "You are a single host speaking directly to a hiring manager." -- establishes one voice, one audience
+- Second line: "Your literal first words are: 'This is a Boost on [candidate full name].' Say that line out loud before anything else. Then go directly into the content with no additional intro phrase. Do not say 'we' at any point." -- produces the correct spoken opening and prevents the host from defaulting to a two-person framing mid-script
+- Prompt body follows immediately with candidate-specific content woven in, written as direct address to one hiring manager
 - Ends with Do NOT instructions (what to avoid, length limits, tone guardrails)
 
-Every audio prompt must include this Do NOT line in its closing instructions: "Do NOT use casual or informal language, analogies, or editorial commentary -- the tone is confident and professional throughout, like a trusted colleague briefing a hiring manager, not a podcast host." NotebookLM defaults to a casual podcast tone without this constraint; it produces analogies, filler phrases, and informal asides that undermine the credibility of the asset.
+Every audio prompt must include these Do NOT lines in its closing instructions:
+- "Do NOT say 'we' or any language that implies more than one speaker."
+- "Do NOT use casual or informal language, analogies, or editorial commentary -- the tone is confident and direct, like a trusted colleague briefing a hiring manager, not a podcast host."
+
+NotebookLM has two failure modes without these constraints: it defaults to a two-host conversational frame (fixed by the single host instruction), and it defaults to casual podcast tone with analogies and filler phrases (fixed by the tone Do NOT line). Both have been tested and confirmed.
 
 **Infographic prompt format:**
 - Opens with a one-line framing that describes the candidate and their story angle
