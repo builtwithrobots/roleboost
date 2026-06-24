@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.0 | June 2026 | Rob Ramos, Founder**
+**Version 1.1 | June 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -138,10 +138,22 @@ A table showing which prompts from the RoleBoost NotebookLM Elite Prompt Library
 
 Two complete prompt sets -- one for Narrative Angle A, one for Narrative Angle B. Each set contains three prompts: one Deep Dive, one Brief, one Infographic. All prompts are fully written out with the candidate's name, specialty, and relevant specifics already filled in. They are ready to copy and paste directly into NotebookLM with no editing required.
 
-Each prompt follows the v1.1 format from `RoleBoost_NotebookLM_Prompt_Library.md`:
-- Opens with "This is a Boost on [candidate full name] --" followed by a specific one-line framing
-- Includes the full prompt body with candidate-specific details woven in
-- Ends with the standard Do NOT instructions
+Each prompt follows the v1.1 format from `RoleBoost_NotebookLM_Prompt_Library.md`. Audio prompts (Deep Dive and Brief) use this structure:
+
+**Audio prompt format (tested and confirmed working):**
+- First line: "You are a single host." -- this tells NotebookLM to use one voice, not two
+- Second line: "Your literal first words are: 'This is a Boost on [candidate full name].' Say that line out loud before anything else. Then go directly into the content with no additional intro phrase." -- this produces the correct spoken opening
+- Prompt body follows immediately with candidate-specific content woven in
+- Ends with Do NOT instructions (what to avoid, length limits, tone guardrails)
+
+Every audio prompt must include this Do NOT line in its closing instructions: "Do NOT use casual or informal language, analogies, or editorial commentary -- the tone is confident and professional throughout, like a trusted colleague briefing a hiring manager, not a podcast host." NotebookLM defaults to a casual podcast tone without this constraint; it produces analogies, filler phrases, and informal asides that undermine the credibility of the asset.
+
+**Infographic prompt format:**
+- Opens with a one-line framing that describes the candidate and their story angle
+- Prompt body specifies layout, hero stats, color scheme, and visual hierarchy with candidate-specific details woven in
+- Ends with Do NOT instructions
+
+All prompts must have candidate's name, specific stats, and relevant details already filled in. No placeholders. A prompt that still contains "[candidate name]" is not finished.
 
 Label each prompt clearly:
 
@@ -220,4 +232,4 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.0 -- getroleboost.com -- Built by Rob Ramos*
+*RoleBoost Candidate Asset Production Skill v1.1 -- getroleboost.com -- Built by Rob Ramos*
