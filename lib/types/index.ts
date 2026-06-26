@@ -81,6 +81,10 @@ export interface ChatMessage {
   chat_session_id: string;
   role: ChatRole;
   content: string;
+  // Phase B model + validation tracking (populated on assistant turns).
+  model_used: string | null;
+  was_complex: boolean;
+  was_validated: boolean;
   created_at: string;
 }
 
