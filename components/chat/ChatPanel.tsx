@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useId } from 'react';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, X } from 'lucide-react';
 import type { ChatTurn } from '@/lib/types';
 
 interface Props {
@@ -13,6 +13,14 @@ interface Props {
   onExchange?: (question: string, answer: string) => void;
   /** Push a question in from outside (e.g. a sandbox library chip). Bump nonce to resend. */
   externalQuestion?: { text: string; nonce: number };
+  /** One-tap opener chips shown in the empty state (calling-card hero). */
+  suggestedQuestions?: string[];
+  /** Focus the input on mount (used inside the chat overlay). */
+  autoFocus?: boolean;
+  /** Fill the parent height and drop the card chrome (used inside the overlay). */
+  fill?: boolean;
+  /** Render a close button in the header (used inside the overlay). */
+  onClose?: () => void;
 }
 
 const HISTORY_LIMIT = 20;
@@ -23,6 +31,10 @@ export default function ChatPanel({
   mode = 'live',
   onExchange,
   externalQuestion,
+  suggestedQuestions,
+  autoFocus,
+  fill,
+  onClose,
 }: Props) {
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState('');
@@ -31,6 +43,7 @@ export default function ChatPanel({
 
   const inputId = useId();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const firstName = candidateName.split(' ')[0] || candidateName;
 
@@ -44,6 +57,10 @@ export default function ChatPanel({
     if (externalQuestion?.text) void send(externalQuestion.text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalQuestion?.nonce]);
+
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
 
   async function send(explicitMessage?: string) {
     const trimmed = (explicitMessage ?? input).trim();
@@ -98,24 +115,39 @@ export default function ChatPanel({
 
   return (
     <div
-      className="rb-card flex flex-col overflow-hidden"
-      style={{ height: 'min(70vh, 560px)' }}
+      className={
+        fill
+          ? 'flex h-full flex-col overflow-hidden bg-[var(--rb-bg-surface)]'
+          : 'rb-card flex flex-col overflow-hidden'
+      }
+      style={fill ? undefined : { height: 'min(70vh, 560px)' }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-[var(--rb-border)] px-4 py-3">
-        <span className="flex size-7 items-center justify-center rounded-full bg-[var(--rb-brand)] text-white">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--rb-brand)] text-white">
           <Sparkles className="size-4" strokeWidth={1.75} />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-[var(--rb-text)]">
             {mode === 'preview'
               ? 'This is how your AI responds to recruiters'
               : `Ask ${firstName}'s career AI anything`}
           </p>
-          {mode === 'preview' && (
+          {mode === 'preview' ? (
             <p className="text-xs text-[var(--rb-text-muted)]">Private test — nothing is sent.</p>
+          ) : (
+            <p className="text-xs text-[var(--rb-text-muted)]">Honest by design · you both get the transcript</p>
           )}
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close conversation"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full text-[var(--rb-text-muted)] transition-colors hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--rb-text)]"
+          >
+            <X className="size-5" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
@@ -127,12 +159,25 @@ export default function ChatPanel({
         className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
       >
         {messages.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center text-center">
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
             <p className="max-w-xs text-sm text-[var(--rb-text-muted)]">
               {mode === 'preview'
                 ? `Try a hard recruiter question and see how ${firstName}'s AI answers.`
                 : `Ask about ${firstName}'s experience, decisions, and what they're looking for next.`}
             </p>
+            {suggestedQuestions && suggestedQuestions.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {suggestedQuestions.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => void send(q)}
+                    className="rounded-full border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-3 py-1.5 text-xs text-[var(--rb-text-secondary)] transition-colors hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)]"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -181,6 +226,7 @@ export default function ChatPanel({
           </label>
           <textarea
             id={inputId}
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}

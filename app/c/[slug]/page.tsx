@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
-import CandidateModal from '@/components/modal/CandidateModal';
+import CallingCard from '@/components/modal/CallingCard';
 import type { Metadata } from 'next';
 
 interface Props {
@@ -100,7 +100,7 @@ export default async function CandidateProfilePage({ params }: Props) {
         </div>
       </header>
 
-      <CandidateModal
+      <CallingCard
         slug={slug}
         fullName={profileData.full_name}
         headline={profileData.headline}
