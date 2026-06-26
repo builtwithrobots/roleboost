@@ -9,11 +9,21 @@ interface Props {
   candidateName: string;
   /** 'live' = public recruiter view. 'preview' = candidate testing their own AI. */
   mode?: 'live' | 'preview';
+  /** Fired after each assistant answer with the question + answer (sandbox analysis). */
+  onExchange?: (question: string, answer: string) => void;
+  /** Push a question in from outside (e.g. a sandbox library chip). Bump nonce to resend. */
+  externalQuestion?: { text: string; nonce: number };
 }
 
 const HISTORY_LIMIT = 20;
 
-export default function ChatPanel({ candidateSlug, candidateName, mode = 'live' }: Props) {
+export default function ChatPanel({
+  candidateSlug,
+  candidateName,
+  mode = 'live',
+  onExchange,
+  externalQuestion,
+}: Props) {
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,13 +39,19 @@ export default function ChatPanel({ candidateSlug, candidateName, mode = 'live' 
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
 
-  async function send() {
-    const trimmed = input.trim();
+  // A sandbox library chip can push a question in; the bumped nonce resends it.
+  useEffect(() => {
+    if (externalQuestion?.text) void send(externalQuestion.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalQuestion?.nonce]);
+
+  async function send(explicitMessage?: string) {
+    const trimmed = (explicitMessage ?? input).trim();
     if (!trimmed || loading) return;
 
     const history = messages.slice(-HISTORY_LIMIT);
     setMessages((m) => [...m, { role: 'user', content: trimmed }]);
-    setInput('');
+    if (explicitMessage === undefined) setInput('');
     setLoading(true);
 
     try {
@@ -56,7 +72,9 @@ export default function ChatPanel({ candidateSlug, candidateName, mode = 'live' 
       }
 
       if (data.sessionId) setSessionId(data.sessionId);
-      setMessages((m) => [...m, { role: 'assistant', content: data.answer as string }]);
+      const assistantAnswer = data.answer as string;
+      setMessages((m) => [...m, { role: 'assistant', content: assistantAnswer }]);
+      onExchange?.(trimmed, assistantAnswer);
     } catch {
       setMessages((m) => [
         ...m,
