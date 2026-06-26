@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { adminClient } from '@/lib/supabase/admin';
 import { isEmailConfigured } from '@/lib/email/client';
 import { sendTranscriptEmails } from '@/lib/email/transcript';
+import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
+import { analyzeTranscriptGaps } from '@/lib/ai/analyze-transcript';
 import type { ChatTurn } from '@/lib/types';
 
 // Public endpoint -- triggered by the chat surface on close (sendBeacon), so the
@@ -89,6 +91,39 @@ export async function POST(req: NextRequest) {
     }
   } else {
     console.warn('transcript deliver: RESEND_API_KEY not set; skipping send', sessionId);
+  }
+
+  // Post-session: analyze the transcript against the brain and store gaps for the
+  // prompt bot. Best-effort -- never fail delivery over this.
+  try {
+    const brain = await getCandidateBrainBySlug(profile.slug);
+    if (brain) {
+      const gaps = await analyzeTranscriptGaps({
+        candidate: brain.candidate,
+        resumeMarkdown: brain.resumeMarkdown,
+        messages,
+      });
+      for (const g of gaps) {
+        const { count } = await (adminClient.from('transcript_gaps') as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('candidate_profile_id', session.candidate_profile_id)
+          .eq('category', g.category);
+        const patternCount = (count ?? 0) + 1;
+        await (adminClient.from('transcript_gaps') as any).insert({
+          candidate_profile_id: session.candidate_profile_id,
+          chat_session_id: sessionId,
+          question_asked: g.questionAsked,
+          chatbot_answer: g.chatbotAnswer,
+          gap_type: g.gapType,
+          suggested_prompt: g.suggestedPrompt,
+          category: g.category,
+          priority: patternCount >= 3 ? 'high' : g.priority,
+          pattern_count: patternCount,
+        });
+      }
+    }
+  } catch (e) {
+    console.error('transcript deliver: gap analysis failed', sessionId, e);
   }
 
   return NextResponse.json({ ok: true });

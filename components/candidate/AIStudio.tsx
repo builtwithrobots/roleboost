@@ -19,11 +19,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
 import SandboxPanel from '@/components/candidate/SandboxPanel';
+import PromptBot from './PromptBot';
 import IntakeInterview from './IntakeInterview';
-import type { CandidateProfile, CustomQAPair } from '@/lib/types';
+import type { CandidateProfile, CustomQAPair, TranscriptGap } from '@/lib/types';
 
 interface Props {
   profile: CandidateProfile;
+  /** Open gaps from real recruiter conversations, surfaced by the prompt bot. */
+  gaps?: TranscriptGap[];
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -82,7 +85,7 @@ const TEXT_FIELDS = [
 
 type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
-export default function AIStudio({ profile }: Props) {
+export default function AIStudio({ profile, gaps }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
     leadership_philosophy: profile.leadership_philosophy ?? '',
@@ -209,6 +212,9 @@ export default function AIStudio({ profile }: Props) {
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
             1 · Build your brain
           </p>
+
+          {/* Prompt bot: gaps found in real recruiter conversations */}
+          {gaps && gaps.length > 0 && <PromptBot gaps={gaps} focusBrainField={focusBrainField} />}
 
           {/* Guided interview launcher */}
           <section className="rb-card flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
