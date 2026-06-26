@@ -219,3 +219,47 @@ export interface TranscriptGap {
   pattern_count: number;
   created_at: string;
 }
+
+// ── External transcript hardening (Phase E3) ────────────────────────────────
+
+export type HardeningSource = 'paste' | 'file';
+export type CoverageVerdict = 'strong' | 'adequate' | 'weak' | 'missing';
+
+/** A question pulled from an external transcript, judged against the brain. */
+export interface TranscriptHardeningGap {
+  questionFromTranscript: string;
+  brainCoverageVerdict: CoverageVerdict;
+  expansionPrompt: string;
+  /** A brain field key, or 'custom_qa'. */
+  brainFieldTarget: string;
+  priority: GapPriority;
+}
+
+/** One prioritized step in the hardening plan. */
+export interface HardeningAction {
+  priority: number;
+  action: string;
+  brainFieldTarget: string;
+  expansionPrompt: string;
+}
+
+/** The analyzer's full result for one transcript (also the API response body). */
+export interface BrainHardeningResult {
+  questionsFound: number;
+  gapsIdentified: TranscriptHardeningGap[];
+  strongCoverageConfirmed: string[];
+  hardeningPlan: HardeningAction[];
+}
+
+export interface BrainHardeningSession {
+  id: string;
+  candidate_profile_id: string;
+  transcript_source: HardeningSource;
+  source_context: string | null;
+  questions_found: number;
+  gaps_identified: number;
+  gaps_addressed: number;
+  hardening_plan: HardeningAction[];
+  created_at: string;
+  last_reanalyzed_at: string | null;
+}

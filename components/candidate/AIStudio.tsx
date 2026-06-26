@@ -20,13 +20,16 @@ import { useRouter } from 'next/navigation';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
 import SandboxPanel from '@/components/candidate/SandboxPanel';
 import PromptBot from './PromptBot';
+import HardenPanel from './HardenPanel';
 import IntakeInterview from './IntakeInterview';
-import type { CandidateProfile, CustomQAPair, TranscriptGap } from '@/lib/types';
+import type { CandidateProfile, CustomQAPair, TranscriptGap, BrainHardeningSession } from '@/lib/types';
 
 interface Props {
   profile: CandidateProfile;
   /** Open gaps from real recruiter conversations, surfaced by the prompt bot. */
   gaps?: TranscriptGap[];
+  /** Past external-transcript hardening sessions (most recent first). */
+  hardeningSessions?: BrainHardeningSession[];
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -85,7 +88,7 @@ const TEXT_FIELDS = [
 
 type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
-export default function AIStudio({ profile, gaps }: Props) {
+export default function AIStudio({ profile, gaps, hardeningSessions }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
     leadership_philosophy: profile.leadership_philosophy ?? '',
@@ -413,6 +416,24 @@ export default function AIStudio({ profile, gaps }: Props) {
               Turn your AI on to test it. While it is off, the chat tab is hidden from recruiters.
             </div>
           )}
+        </div>
+
+        {/* ── Harden ────────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+              3 · Harden with real conversations
+            </p>
+            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
+              Bring transcripts from real recruiter calls or practice sessions — the AI finds the
+              exact gaps real questions exposed.
+            </p>
+          </div>
+          <HardenPanel
+            candidateSlug={profile.slug}
+            focusBrainField={focusBrainField}
+            sessions={hardeningSessions ?? []}
+          />
         </div>
       </div>
 

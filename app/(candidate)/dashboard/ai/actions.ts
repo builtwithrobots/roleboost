@@ -86,3 +86,52 @@ export async function markGapAddressed(input: unknown) {
     throw e;
   }
 }
+
+const SessionIdInput = z.object({ sessionId: z.string().uuid() });
+
+export async function deleteHardeningSession(input: unknown) {
+  try {
+    const { supabase } = await getUserContext('candidate');
+    const { sessionId } = SessionIdInput.parse(input);
+
+    // RLS scopes the delete to the candidate's own hardening sessions.
+    const { error } = await supabase
+      .from('brain_hardening_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/ai');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
+
+export async function clearHardeningHistory() {
+  try {
+    const { supabase, userId } = await getUserContext('candidate');
+
+    const { data: profile } = await supabase
+      .from('candidate_profiles')
+      .select('id')
+      .eq('clerk_user_id', userId)
+      .single();
+    if (!profile) return { ok: false as const, error: { code: 'NOT_FOUND' } };
+
+    // RLS scopes this too; the explicit filter keeps it indexed and clear.
+    const { error } = await supabase
+      .from('brain_hardening_sessions')
+      .delete()
+      .eq('candidate_profile_id', (profile as { id: string }).id);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/ai');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}

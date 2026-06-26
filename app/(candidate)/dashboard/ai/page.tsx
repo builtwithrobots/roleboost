@@ -3,10 +3,13 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { ensureCandidateProfile } from '../profile/actions';
 import AIStudio from '@/components/candidate/AIStudio';
 import DashboardPage from '@/components/layout/DashboardPage';
-import type { CandidateProfile, TranscriptGap } from '@/lib/types';
+import type { CandidateProfile, TranscriptGap, BrainHardeningSession } from '@/lib/types';
 
 const GAP_COLUMNS =
   'id, candidate_profile_id, chat_session_id, question_asked, chatbot_answer, gap_type, suggested_prompt, category, priority, is_addressed, pattern_count, created_at';
+
+const HARDENING_COLUMNS =
+  'id, candidate_profile_id, transcript_source, source_context, questions_found, gaps_identified, gaps_addressed, hardening_plan, created_at, last_reanalyzed_at';
 
 const AI_COLUMNS =
   'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, created_at, updated_at';
@@ -73,9 +76,18 @@ export default async function AIStudioPage() {
     .limit(8);
   const gaps = (gapsData ?? []) as unknown as TranscriptGap[];
 
+  // Past external-transcript hardening sessions (plan + counts only; never the transcript).
+  const { data: hardeningData } = await supabase
+    .from('brain_hardening_sessions')
+    .select(HARDENING_COLUMNS)
+    .eq('candidate_profile_id', profile.id)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  const hardeningSessions = (hardeningData ?? []) as unknown as BrainHardeningSession[];
+
   return (
     <DashboardPage>
-      <AIStudio profile={profile} gaps={gaps} />
+      <AIStudio profile={profile} gaps={gaps} hardeningSessions={hardeningSessions} />
     </DashboardPage>
   );
 }
