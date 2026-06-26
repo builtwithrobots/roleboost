@@ -52,6 +52,8 @@ export interface CandidateProfile extends CandidateBrain {
   summary_bullets: string[];
   ai_enabled: boolean;
   is_published: boolean;
+  intake_completed?: boolean;
+  brain_readiness_score?: number;
   created_at: string;
   updated_at: string;
 }
@@ -145,4 +147,45 @@ export interface SandboxSession {
   expansion_prompt: string | null;
   pattern_signal: boolean;
   created_at: string;
+}
+
+// ── AI intake interview (Phase D) ───────────────────────────────────────────
+
+export type IntakeSeverity = 'high' | 'medium' | 'low';
+
+export interface IntakeInconsistency {
+  id: string;
+  sourceA: string;
+  sourceB: string;
+  description: string;
+  severity: IntakeSeverity;
+}
+
+export interface IntakeQuestion {
+  id: string;
+  question: string;
+  /** Why this is being asked -- shown under the question. */
+  context: string;
+  /** Brain field key the answer feeds (e.g. 'departure_reasons'). */
+  category: string;
+  pass: number;
+}
+
+export interface IntakeAnswer {
+  questionId: string;
+  questionText: string;
+  answerText: string;
+  category: string;
+  pass: number;
+}
+
+/** A source document fed to the analysis (résumé, LinkedIn paste, etc.). */
+export interface IntakeDocument {
+  label: string;
+  text: string;
+}
+
+export interface BrainReadiness {
+  overall: number; // 0-100
+  categories: { label: string; score: number }[];
 }

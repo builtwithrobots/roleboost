@@ -16,8 +16,10 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
 import SandboxPanel from '@/components/candidate/SandboxPanel';
+import IntakeInterview from './IntakeInterview';
 import type { CandidateProfile, CustomQAPair } from '@/lib/types';
 
 interface Props {
@@ -99,6 +101,8 @@ export default function AIStudio({ profile }: Props) {
   );
   const [aiEnabled, setAiEnabled] = useState(profile.ai_enabled ?? true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [interviewOpen, setInterviewOpen] = useState(false);
+  const router = useRouter();
   const [, startTransition] = useTransition();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -205,6 +209,41 @@ export default function AIStudio({ profile }: Props) {
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
             1 · Build your brain
           </p>
+
+          {/* Guided interview launcher */}
+          <section className="rb-card flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="rb-icon-amber flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-md)]">
+                <Sparkles className="size-4" />
+              </span>
+              <div>
+                <h2 className="text-sm font-semibold text-[var(--rb-text)]">Build with a guided interview</h2>
+                <p className="mt-0.5 text-xs text-[var(--rb-text-muted)]">
+                  Let the AI read your résumé and interview you — it fills the fields below for you.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 self-end sm:self-auto">
+              {typeof profile.brain_readiness_score === 'number' && profile.brain_readiness_score > 0 && (
+                <div className="text-right">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+                    Readiness
+                  </p>
+                  <p className="font-data text-sm font-semibold text-[var(--rb-text)]">
+                    {profile.brain_readiness_score}%
+                  </p>
+                </div>
+              )}
+              <button
+                onClick={() => setInterviewOpen(true)}
+                className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <Sparkles className="size-4" />
+                {profile.intake_completed ? 'Redo interview' : 'Start interview'}
+              </button>
+            </div>
+          </section>
+
           <section className="rb-card p-6">
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
               <Sparkles className="size-4 text-[var(--rb-brand)]" />
@@ -370,6 +409,12 @@ export default function AIStudio({ profile }: Props) {
           )}
         </div>
       </div>
+
+      <IntakeInterview
+        open={interviewOpen}
+        onClose={() => setInterviewOpen(false)}
+        onComplete={() => router.refresh()}
+      />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import DashboardPage from '@/components/layout/DashboardPage';
 import type { CandidateProfile } from '@/lib/types';
 
 const AI_COLUMNS =
-  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, created_at, updated_at';
+  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, created_at, updated_at';
 
 export default async function AIStudioPage() {
   let ctx;
