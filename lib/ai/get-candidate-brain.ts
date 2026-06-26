@@ -1,0 +1,106 @@
+import 'server-only';
+import { adminClient } from '@/lib/supabase/admin';
+import type { CandidateBrain, CustomQAPair } from '@/lib/types';
+
+// The columns that make up the brain, plus the gating flags and owner id.
+// Sensitive fields here are intentionally barred from the anon role (see the
+// 20260626 migration); this read uses the service-role client so the chatbot can
+// assemble the full prompt server-side without depending on anon column access.
+const BRAIN_COLUMNS =
+  'id, clerk_user_id, full_name, target_role, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, additional_context, custom_qa_pairs, redirect_topics, ai_enabled, is_published';
+
+interface BrainRow {
+  id: string;
+  clerk_user_id: string;
+  full_name: string;
+  target_role: string | null;
+  leadership_philosophy: string | null;
+  key_wins: string | null;
+  departure_reasons: string | null;
+  biggest_challenge: string | null;
+  ideal_environment: string | null;
+  manager_needs: string | null;
+  honest_weaknesses: string | null;
+  wish_questions: string | null;
+  additional_context: string | null;
+  custom_qa_pairs: unknown;
+  redirect_topics: string[] | null;
+  ai_enabled: boolean;
+  is_published: boolean;
+}
+
+export interface CandidateBrainResult {
+  candidateProfileId: string;
+  ownerClerkUserId: string;
+  isPublished: boolean;
+  aiEnabled: boolean;
+  candidate: CandidateBrain;
+  resumeMarkdown: string | null;
+}
+
+/**
+ * Loads a candidate's brain by slug for the chat endpoint. Returns null only
+ * when the profile does not exist. The caller is responsible for gating on
+ * isPublished / aiEnabled / ownership -- this lets the owner preview their own
+ * unpublished AI from the dashboard while keeping it hidden from recruiters.
+ * Only the assembled answer is ever returned to the client; the raw brain never
+ * leaves the server.
+ */
+export async function getCandidateBrainBySlug(
+  slug: string,
+): Promise<CandidateBrainResult | null> {
+  const { data, error } = await (adminClient.from('candidate_profiles') as any)
+    .select(BRAIN_COLUMNS)
+    .eq('slug', slug)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  const row = data as BrainRow;
+
+  // Resume text lives in resume_documents (one row per profile); may be absent.
+  const { data: doc } = await (adminClient.from('resume_documents') as any)
+    .select('canonical_markdown')
+    .eq('candidate_profile_id', row.id)
+    .maybeSingle();
+
+  const candidate: CandidateBrain = {
+    full_name: row.full_name,
+    target_role: row.target_role,
+    leadership_philosophy: row.leadership_philosophy,
+    key_wins: row.key_wins,
+    departure_reasons: row.departure_reasons,
+    biggest_challenge: row.biggest_challenge,
+    ideal_environment: row.ideal_environment,
+    manager_needs: row.manager_needs,
+    honest_weaknesses: row.honest_weaknesses,
+    wish_questions: row.wish_questions,
+    additional_context: row.additional_context,
+    custom_qa_pairs: normalizeCustomQA(row.custom_qa_pairs),
+    redirect_topics: Array.isArray(row.redirect_topics) ? row.redirect_topics : [],
+  };
+
+  const resumeMarkdown =
+    doc && typeof doc.canonical_markdown === 'string' && doc.canonical_markdown.trim().length > 0
+      ? (doc.canonical_markdown as string)
+      : null;
+
+  return {
+    candidateProfileId: row.id,
+    ownerClerkUserId: row.clerk_user_id,
+    isPublished: row.is_published,
+    aiEnabled: row.ai_enabled,
+    candidate,
+    resumeMarkdown,
+  };
+}
+
+/** Defensively coerce JSONB custom_qa_pairs into a typed, validated array. */
+function normalizeCustomQA(raw: unknown): CustomQAPair[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (p): p is CustomQAPair =>
+      !!p &&
+      typeof (p as CustomQAPair).question === 'string' &&
+      typeof (p as CustomQAPair).answer === 'string',
+  );
+}

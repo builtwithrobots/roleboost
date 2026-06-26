@@ -18,20 +18,70 @@ export interface User {
   updated_at: string;
 }
 
-export interface CandidateProfile {
+export interface CustomQAPair {
+  question: string;
+  answer: string;
+}
+
+// The verified career context that feeds the AI system prompt. Resume text is
+// NOT stored here -- it is sourced from resume_documents.canonical_markdown and
+// passed to the prompt builder separately.
+export interface CandidateBrain {
+  full_name: string;
+  target_role: string | null;
+  leadership_philosophy: string | null;
+  key_wins: string | null;
+  departure_reasons: string | null;
+  biggest_challenge: string | null;
+  ideal_environment: string | null;
+  manager_needs: string | null;
+  honest_weaknesses: string | null;
+  wish_questions: string | null;
+  additional_context: string | null;
+  custom_qa_pairs: CustomQAPair[];
+  redirect_topics: string[];
+}
+
+export interface CandidateProfile extends CandidateBrain {
   id: string;
   clerk_user_id: string;
   slug: string;
-  full_name: string;
   headline: string | null;
-  target_role: string | null;
   location: string | null;
   linkedin_url: string | null;
   summary_bullets: string[];
-  additional_context: string | null;
+  ai_enabled: boolean;
   is_published: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export type ChatRole = 'user' | 'assistant';
+
+// One turn in the chat transcript, exchanged between the client and /api/chat.
+export interface ChatTurn {
+  role: ChatRole;
+  content: string;
+}
+
+export interface ChatSession {
+  id: string;
+  candidate_profile_id: string;
+  viewer_clerk_user_id: string | null;
+  employer_account_id: string | null;
+  employer_company_name: string | null;
+  is_sandbox: boolean;
+  started_at: string;
+  ended_at: string | null;
+  transcript_sent: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  chat_session_id: string;
+  role: ChatRole;
+  content: string;
+  created_at: string;
 }
 
 export interface CandidateAsset {
