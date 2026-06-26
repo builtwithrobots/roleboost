@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MapPin, Link2, Headphones, MessageSquare, Video, Layout, Image as ImageIcon, FileText, MessageCircle, ExternalLink } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
+import ChatPanel from '@/components/chat/ChatPanel';
 
 type AssetType = 'audio' | 'debate_audio' | 'video' | 'deck' | 'infographic' | 'resume';
 
@@ -13,6 +14,7 @@ interface Asset {
 }
 
 interface Props {
+  slug: string;
   fullName: string;
   headline: string | null;
   targetRole: string | null;
@@ -45,6 +47,7 @@ function getInitials(name: string): string {
 }
 
 export default function CandidateModal({
+  slug,
   fullName,
   headline,
   targetRole,
@@ -215,13 +218,7 @@ export default function CandidateModal({
         })()}
 
         {activeTab === 'chat' && (
-          <div className="rb-card p-8 text-center">
-            <MessageCircle className="size-10 mx-auto text-[var(--rb-brand)] mb-3" strokeWidth={1.5} />
-            <h3 className="text-base font-semibold text-[var(--rb-text)] mb-1">AI Chat coming soon</h3>
-            <p className="text-sm text-[var(--rb-text-muted)]">
-              Ask this candidate&apos;s career AI any question about their background, experience, and goals.
-            </p>
-          </div>
+          <ChatPanel candidateSlug={slug} candidateName={fullName} mode="live" />
         )}
       </div>
     </div>

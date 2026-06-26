@@ -101,6 +101,7 @@ export default async function CandidateProfilePage({ params }: Props) {
       </header>
 
       <CandidateModal
+        slug={slug}
         fullName={profileData.full_name}
         headline={profileData.headline}
         targetRole={profileData.target_role}
