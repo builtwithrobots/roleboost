@@ -11,6 +11,8 @@ const isPublicRoute = createRouteMatcher([
   // Recruiters chat with a candidate's AI without signing in. The route reads
   // auth() itself to optionally identify a logged-in owner/employer.
   '/api/chat(.*)',
+  // Transcript delivery is triggered by the chat surface on close (anonymous).
+  '/api/transcripts(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

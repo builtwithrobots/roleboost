@@ -44,6 +44,7 @@ export default function ChatPanel({
   const inputId = useId();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const sessionIdRef = useRef<string | null>(null);
 
   const firstName = candidateName.split(' ')[0] || candidateName;
 
@@ -61,6 +62,27 @@ export default function ChatPanel({
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
+
+  // Deliver the transcript when a live conversation closes (the panel unmounts).
+  // Sandbox/preview turns never created a deliverable session, so skip them.
+  useEffect(() => {
+    return () => {
+      if (mode === 'live' && sessionIdRef.current && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        try {
+          const blob = new Blob([JSON.stringify({ sessionId: sessionIdRef.current })], {
+            type: 'application/json',
+          });
+          navigator.sendBeacon('/api/transcripts/deliver', blob);
+        } catch {
+          // best-effort; a missed beacon just means no transcript this time
+        }
+      }
+    };
+  }, [mode]);
 
   async function send(explicitMessage?: string) {
     const trimmed = (explicitMessage ?? input).trim();
