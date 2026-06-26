@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, MapPin, ExternalLink, Sparkles, MessageCircle } from 'lucide-react';
 import { staggerContainer, fadeUp } from '@/lib/motion';
 import ChatOverlay from '@/components/chat/ChatOverlay';
+import ShareButton from '@/components/ui/ShareButton';
 import AssetGallery from './AssetGallery';
 
 type AssetType = 'audio' | 'debate_audio' | 'video' | 'deck' | 'infographic' | 'resume';
@@ -89,6 +90,15 @@ export default function CallingCard({
           style={{ background: 'var(--rb-brand-gradient)' }}
           aria-hidden="true"
         />
+
+        <div className="absolute right-4 top-4 z-10">
+          <ShareButton
+            title={`${fullName} on RoleBoost`}
+            text={`Ask ${firstName}'s career AI anything about their career`}
+            iconOnly
+            className="inline-flex size-11 items-center justify-center rounded-full border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] text-[var(--rb-text-secondary)] shadow-[var(--shadow-card)] transition-colors duration-[var(--duration-fast)] hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)]"
+          />
+        </div>
 
         <motion.div
           variants={staggerContainer}

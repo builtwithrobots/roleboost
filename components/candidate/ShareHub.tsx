@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Copy, Check, ExternalLink, Download, Eye, EyeOff, Code2 } from 'lucide-react';
 import PageHeader from '@/components/ui/page-header';
+import ShareButton from '@/components/ui/ShareButton';
 
 interface Props {
   profileUrl: string;
@@ -150,6 +151,12 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
               {linkCopy.copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
               {linkCopy.copied ? 'Copied!' : 'Copy'}
             </button>
+            <ShareButton
+              url={profileUrl}
+              title={`${fullName} on RoleBoost`}
+              text={`Chat with ${fullName}'s career AI`}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-3 py-2 text-xs font-semibold text-[var(--rb-text-secondary)] hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)] transition-colors duration-[var(--duration-fast)]"
+            />
           </div>
 
           {isPublished && (

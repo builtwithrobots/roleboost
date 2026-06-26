@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
@@ -26,6 +26,20 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'RoleBoost',
   description: 'When everyone sounds the same on paper — be heard.',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/icons/32',
+    apple: '/icons/180',
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'RoleBoost',
+    statusBarStyle: 'default',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#D97706',
 };
 
 export default function RootLayout({
