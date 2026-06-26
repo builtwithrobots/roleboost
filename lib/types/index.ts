@@ -189,3 +189,33 @@ export interface BrainReadiness {
   overall: number; // 0-100
   categories: { label: string; score: number }[];
 }
+
+// ── Transcript-to-brain gap loop (Phase E2) ─────────────────────────────────
+
+export type TranscriptGapType = 'deflection' | 'weak' | 'new_topic';
+export type GapPriority = 'high' | 'medium' | 'low';
+
+/** A gap as produced by the analyzer (before it gets DB ids). */
+export interface TranscriptGapItem {
+  questionAsked: string;
+  chatbotAnswer: string;
+  gapType: TranscriptGapType;
+  suggestedPrompt: string;
+  category: string;
+  priority: GapPriority;
+}
+
+export interface TranscriptGap {
+  id: string;
+  candidate_profile_id: string;
+  chat_session_id: string;
+  question_asked: string;
+  chatbot_answer: string;
+  gap_type: TranscriptGapType;
+  suggested_prompt: string;
+  category: string;
+  priority: GapPriority;
+  is_addressed: boolean;
+  pattern_count: number;
+  created_at: string;
+}

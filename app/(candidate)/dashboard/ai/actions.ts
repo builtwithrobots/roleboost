@@ -63,3 +63,26 @@ export async function updateCandidateBrain(input: unknown) {
     throw e;
   }
 }
+
+const GapIdInput = z.object({ gapId: z.string().uuid() });
+
+export async function markGapAddressed(input: unknown) {
+  try {
+    const { supabase } = await getUserContext('candidate');
+    const { gapId } = GapIdInput.parse(input);
+
+    // RLS scopes the update to the candidate's own transcript gaps.
+    const { error } = await supabase
+      .from('transcript_gaps')
+      .update({ is_addressed: true })
+      .eq('id', gapId);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/ai');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
