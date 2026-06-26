@@ -889,4 +889,32 @@ Push back if asked for these:
 
 ## Current Build Status
 
-**Phase:** Pre-development. Vision, PRD, and CLAUDE.md complete. Ready to begin Phase 0.
+> Durable cross-session handoff, updated June 2026. The in-session task list (`TaskCreate`) and any scheduled check-ins are **ephemeral** — they do not survive into a new session. Only what is committed here does. Read this first.
+
+**Phase:** The AI Brain (Phases A–E) is fully built and merged to `main`, plus the first polish fast-follow. **Working branch:** `claude/audit-and-build-plan-m4bci2` — one branch, sequential PRs into `main`.
+
+### Shipped & merged
+- **A — Minimum viable brain:** `candidate_profiles` brain columns + `chat_sessions`/`chat_messages`; `lib/ai/build-system-prompt.ts` (elite XML-layered prompt); `getCandidateBrainBySlug`; `/api/chat`; `ChatPanel`; AI Studio context form; anon-column REVOKE/GRANT security fix.
+- **B — Elite chat route:** complexity router (Haiku ↔ Sonnet via `detectComplexQuestion`); high-risk detection + `validateAndSanitize` post-generation grounding; per-turn `model_used`/`was_complex`/`was_validated` tracking.
+- **C — Sandbox self-testing:** `sandbox_sessions`; 20-question library; `analyze-sandbox.ts`; `/api/sandbox/analyze`; `SandboxPanel` with verdicts + "Strengthen <field>" deep-links + full diagnostic.
+- **Calling card (UX):** chat-first public `/c/[slug]` (`CallingCard` + `ChatOverlay` + `AssetGallery`); replaced the old modal. Deliberately **no token streaming** (conflicts with post-gen validation).
+- **D — AI intake interview:** `intake_answers` + readiness columns; `lib/ai/intake.ts` (multi-pass analysis + brain assembly); `/api/intake/analyze` + `/assemble`; `IntakeInterview` dialog.
+- **E1 — Transcript email:** Resend client + branded candidate/employer transcript emails; `/api/transcripts/deliver` (idempotent, fired by `sendBeacon` on chat close).
+- **E2 — Transcript→brain gap loop:** `transcript_gaps`; `analyze-transcript.ts`; gap-analysis hook in the deliver route (dedupe by category, escalate recurring questions); `PromptBot` in AI Studio.
+- **E3 — External transcript hardening:** `brain_hardening_sessions`; `harden-transcript.ts`; `/api/transcript/harden` (paste or TXT/PDF, re-analysis, transcript never stored); `HardenPanel` + history.
+- **Fast-follow — PWA + share:** `app/manifest.ts`; code-generated `app/icons/[size]`; `ShareButton` (native share + copy fallback) on the calling card + Share Hub.
+
+### Next-session TODO (in order)
+1. **A11y + empty/loading-states audit** *(unblocked — start here)* — WCAG 2.1 AA pass + empty/skeleton states across the calling card, chat, AI Studio, and dashboards. Keep the diff focused on high-traffic surfaces.
+2. **Distinctive visual refresh** *(needs founder steer)* — elevate the cream/navy/amber system; propose a direction before any broad reskin.
+3. **Phase F — voice input (Whisper)** *(held)* — browser audio capture → `/api/transcribe` (OpenAI Whisper) → editable transcript before submit. Gated on: (a) founder has tested A–E, and (b) `OPENAI_API_KEY` is provisioned (new vendor). Build with graceful degradation so it is safe to merge before the key is set.
+
+### Standing decisions
+- Voice (F) is **last**, only after the rest is tested.
+- DB migrations **auto-apply** via the Supabase branching integration on PR merge — no manual step.
+- Chat/generation model ids come from `lib/ai/models.ts` (`CHAT_MODEL`/`GENERATION_MODEL`) — never hardcode.
+- New sensitive columns must stay out of the anon grant (REVOKE/GRANT pattern).
+
+### Ops notes
+- Each unit of work = its own PR off the working branch into `main`; PRs merge fast and sequentially (merge commits, so each new PR shows only its delta — keep committing on top of the prior commit).
+- Verify every change: `npx tsc --noEmit`, `npm run lint` (0 errors; ~16 pre-existing warnings are acceptable), `npm run build`.
