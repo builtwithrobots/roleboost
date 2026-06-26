@@ -101,3 +101,48 @@ export interface CandidateAsset {
   is_active: boolean;
   created_at: string;
 }
+
+// ── Sandbox self-testing (Phase C) ──────────────────────────────────────────
+
+export type SandboxCategory =
+  | 'gap_departure'
+  | 'commitment_tenure'
+  | 'metric_verification'
+  | 'leadership'
+  | 'adversarial'
+  | 'weakness_failure';
+
+export type SandboxVerdict = 'strong' | 'adequate' | 'weak' | 'hallucinated';
+
+export interface SandboxQuestion {
+  id: string;
+  category: SandboxCategory;
+  question: string;
+  whyItMatters: string;
+  // Brain field keys this question probes (e.g. 'departure_reasons', 'key_wins').
+  brainFields: string[];
+}
+
+export interface SandboxAnalysis {
+  verdict: SandboxVerdict;
+  diagnosis: string;
+  prescription: string;
+  // A brain field key to strengthen, or 'custom_qa', or null.
+  brainFieldTarget: string | null;
+  expansionPrompt: string;
+}
+
+export interface SandboxSession {
+  id: string;
+  candidate_profile_id: string;
+  question: string;
+  question_category: string;
+  ai_answer: string;
+  verdict: SandboxVerdict;
+  diagnosis: string;
+  prescription: string;
+  brain_field_target: string | null;
+  expansion_prompt: string | null;
+  pattern_signal: boolean;
+  created_at: string;
+}

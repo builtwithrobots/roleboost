@@ -17,7 +17,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
-import ChatPanel from '@/components/chat/ChatPanel';
+import SandboxPanel from '@/components/candidate/SandboxPanel';
 import type { CandidateProfile, CustomQAPair } from '@/lib/types';
 
 interface Props {
@@ -152,6 +152,14 @@ export default function AIStudio({ profile }: Props) {
   const updateTopic = (i: number, value: string) =>
     setTopics((prev) => prev.map((t, idx) => (idx === i ? value : t)));
 
+  // Deep-link from a sandbox diagnosis to the brain field that needs work.
+  const focusBrainField = useCallback((key: string) => {
+    const el = document.getElementById(`brain-${key}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.focus();
+  }, []);
+
   const inputClass =
     'w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]';
 
@@ -191,9 +199,12 @@ export default function AIStudio({ profile }: Props) {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-3">
-        {/* Left: brain form */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
+        {/* ── Build ─────────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+            1 · Build your brain
+          </p>
           <section className="rb-card p-6">
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
               <Sparkles className="size-4 text-[var(--rb-brand)]" />
@@ -230,7 +241,7 @@ export default function AIStudio({ profile }: Props) {
           </section>
 
           {/* Custom answers */}
-          <section className="rb-card p-6">
+          <section id="brain-custom_qa" className="rb-card p-6">
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
               <MessageSquarePlus className="size-4 text-[var(--rb-brand)]" />
               Custom answers
@@ -336,27 +347,27 @@ export default function AIStudio({ profile }: Props) {
           </section>
         </div>
 
-        {/* Right: live test */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--rb-text-muted)]">
-              Test your AI
+        {/* ── Test ──────────────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+              2 · Test your brain
             </p>
-            {aiEnabled ? (
-              <ChatPanel
-                candidateSlug={profile.slug}
-                candidateName={profile.full_name}
-                mode="preview"
-              />
-            ) : (
-              <div className="rb-card p-6 text-center text-sm text-[var(--rb-text-muted)]">
-                Turn your AI on to test it. While it is off, the chat tab is hidden from recruiters.
-              </div>
-            )}
-            <p className="mt-3 text-center text-xs text-[var(--rb-text-muted)]">
-              Edits save automatically and apply to your AI right away.
+            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
+              Edits above save automatically and apply to your AI right away.
             </p>
           </div>
+          {aiEnabled ? (
+            <SandboxPanel
+              candidateSlug={profile.slug}
+              candidateName={profile.full_name}
+              focusBrainField={focusBrainField}
+            />
+          ) : (
+            <div className="rb-card p-6 text-center text-sm text-[var(--rb-text-muted)]">
+              Turn your AI on to test it. While it is off, the chat tab is hidden from recruiters.
+            </div>
+          )}
         </div>
       </div>
     </div>
