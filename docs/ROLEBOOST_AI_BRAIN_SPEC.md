@@ -1,6 +1,6 @@
 # RoleBoost -- AI Brain and Calling Card
 ## Product Vision and Scope Update
-**Version:** 1.0
+**Version:** 1.1
 **Date:** June 2026
 **Author:** Rob Ramos
 **Purpose:** Update vision.md, PRD.md, and CLAUDE.md to reflect the evolved product flagship -- the candidate AI brain and mobile calling card -- and the growth loop that powers it.
@@ -697,14 +697,445 @@ OPENAI_API_KEY=   # Whisper transcription only -- not used for chat or generatio
 
 ---
 
-## Summary of Changes
+## New Concepts Added in v1.1
+
+Three new product concepts developed June 2026 are documented below. Each requires PRD additions. Instructions for Claude Code are at the end of this section.
+
+---
+
+## The Founder as First Guinea Pig
+
+### Why This Matters
+
+Rob Ramos is the first RoleBoost candidate. His profile is the live proof of concept, the platform demo, and the first documented recruiter interaction -- all in one.
+
+The founder brings 20+ years of operations and logistics experience from floor to VP. That is the exact beachhead market. When a logistics recruiter or warehouse VP clicks Rob's RoleBoost link, they are not reading marketing copy -- they are experiencing the product firsthand from someone they recognize as credible in their domain.
+
+### What This Unlocks Immediately
+
+Rob's profile can go live before any other candidate is on the platform. The link goes in his LinkedIn bio, email signature, Fiverr profile, and resume header today. Every recruiter or hiring manager who clicks it and interacts with the AI is a real documented recruiter conversation -- the proof point the platform needs before any employer subscription conversation is possible.
+
+This is also the fastest path to catching product friction. Every confusing question in the intake interview, every weak chatbot answer, every awkward deflection -- Rob experiences it personally before a paying candidate does. The founder's own profile is the quality gate.
+
+### How to Build It
+
+Rob goes through the intake interview as a candidate. No shortcuts. Full document upload (resume, LinkedIn export). Full cross-document analysis. Full 2 to 3 pass AI intake interview using voice input. Complete sandbox testing against the 20 hardest recruiter questions from 20 years of operations hiring experience. Brain does not go live until every hard question produces an answer Rob would be satisfied receiving from a strong candidate.
+
+The target outcome: a live chatbot at `getroleboost.com/c/rob-ramos` that any operations or logistics recruiter can interrogate and receive a full transcript from. That profile is the platform's first and most important asset.
+
+---
+
+## The Sandbox and AI-Powered Fine-Tuning Dashboard
+
+### What It Is
+
+A private testing environment inside the candidate dashboard where candidates stress-test their own AI before sharing the link -- and receive specific AI-powered coaching on exactly what to fix and where.
+
+The sandbox is not a "test your chatbot" feature. It is the confidence mechanism that drives distribution. A candidate who has verified their AI handles the hardest recruiter questions accurately is a candidate who shares their link everywhere. Active sharing from confident candidates is how the platform gets recruiter interactions without spending on recruiter acquisition.
+
+### The Sandbox Interface
+
+A chat interface inside the candidate dashboard at `/dashboard/ai` that looks identical to what a recruiter sees on the public profile, with one difference: a clear label indicating this is a private test. No transcript sent. No session logged as a recruiter interaction. No employer notification.
+
+The sandbox opens with a **suggested question library** -- not a blank input. A curated set of the 20 hardest recruiter questions organized by category, drawn from real recruiter behavior in operations and logistics hiring:
+
+**Gap and departure questions:**
+- "Walk me through the gap between [Company A] and [Company B]."
+- "Why did you leave [most recent role]?"
+- "What actually happened at [Company]?"
+- "I see you have left three jobs in four years. Why should this be different?"
+
+**Commitment and tenure questions:**
+- "Your average tenure is under two years. What guarantees you will stay?"
+- "You are overqualified for this role. Why do you want it?"
+- "Where do you see yourself in five years?"
+
+**Metric and achievement verification questions:**
+- "Walk me through exactly how you calculated that cost savings figure."
+- "How did you measure the 40% improvement you mentioned?"
+- "That team size seems unusually large for that role. Can you clarify?"
+
+**Leadership and management questions:**
+- "Describe how you handle an underperforming team member. Give me a real example."
+- "Tell me about a time you disagreed with your manager. What did you do?"
+- "What would your last direct report say is your biggest weakness as a leader?"
+
+**Adversarial premise questions:**
+- "Given your background, why should I trust your commitment to an operations role?"
+- "Your resume shows a lot of accomplishments but no degree. How do you respond to that?"
+- "Candidates with your profile typically struggle with [X]. How are you different?"
+
+**Weakness and failure questions:**
+- "What are you genuinely not good at? Be honest."
+- "Tell me about your biggest professional failure."
+- "What would your references say about your weaknesses?"
+
+The candidate selects a question from the library or types their own. The AI answers. Then the analysis runs.
+
+### The AI Analysis Layer
+
+After each sandbox answer, Claude Sonnet runs a fast evaluation against a specific rubric and returns a plain-language diagnosis:
+
+**Evaluation criteria:**
+- Did the answer use specific documented facts or vague generalizations?
+- Did it stay grounded in the brain or drift toward invented detail?
+- Was the response length appropriate -- too short, too long, or right?
+- Did it sound like the candidate or like a generic AI?
+- If the question was adversarial, did it handle the false premise correctly or capitulate?
+- If the question involved a number or credential, was that claim grounded in the brain?
+
+**Output format -- a diagnosis and a prescription:**
+
+Not a score. A specific, actionable finding linked directly to the brain field that needs work.
+
+Good example: "Your AI gave a vague answer to the departure question about [Company] because your departure reasons field only covers two roles and does not include this one. A recruiter asking this in the first 60 seconds of a screening call needs a specific, calm answer. Click here to add that context now."
+
+Bad example: "Your answer could be improved." (Never do this -- not actionable.)
+
+Each diagnosis includes:
+- What the AI said (quoted)
+- What was weak about it (specific, not generic)
+- What brain field or custom QA pair needs more content
+- A direct link to that field with the cursor placed in it
+- A suggested expansion prompt to get started
+
+### Pattern Recognition Across Sandbox Sessions
+
+The analysis runs not just on individual questions but across all sandbox sessions to identify categories where the brain is consistently weak. If departure questions produce weak answers three times across different sandbox sessions, the brain health score drops in that category and the prompt bot surfaces it as a priority.
+
+This pattern layer connects the sandbox directly to the transcript-to-brain loop -- both produce gap signals, both feed the same prompt bot queue, both update the same brain health score.
+
+### PRD Addition -- Section 8D
+
+**Add the following as Section 8D immediately after Section 8C in PRD.md:**
+
+```
+## Section 8D -- Sandbox and AI-Powered Fine-Tuning
+
+### 8D.1 Overview
+
+The sandbox is a private testing environment inside the candidate dashboard where candidates stress-test their AI against the hardest recruiter questions and receive specific AI-powered coaching on what to fix. It is the confidence mechanism that drives profile sharing.
+
+### 8D.2 Sandbox Interface
+
+**Location:** `/dashboard/ai` -- below the brain health score, above the transcript history.
+
+**Components:**
+- Chat interface identical to public modal chat (same endpoint, `sandbox: true` flag)
+- Suggested question library -- 20 questions organized by 5 categories
+- Free-form input for custom questions
+- Analysis panel that appears after each AI response
+- "Run full diagnostic" button that runs all 20 suggested questions in sequence and returns a complete brain health report
+
+**Sandbox flag behavior:**
+- `sandbox: true` on API call suppresses transcript delivery
+- Session not logged to `chat_sessions` as a recruiter interaction
+- No employer notification triggered
+- Conversation history cleared on page reload
+
+### 8D.3 Suggested Question Library
+
+Stored as a static JSON file at `lib/ai/sandbox-questions.json`. Organized by category:
+
+```typescript
+type SandboxQuestion = {
+  id: string,
+  category: 'gap_departure' | 'commitment_tenure' | 'metric_verification' 
+            | 'leadership' | 'adversarial' | 'weakness_failure',
+  question: string,
+  whyItMatters: string,    // shown to candidate before they run it
+  brainFieldsTestedId: string[]  // which brain fields this question probes
+}
+```
+
+### 8D.4 Post-Answer AI Analysis
+
+After each sandbox answer, a Claude Sonnet evaluation call runs:
+
+**API endpoint:** `POST /api/sandbox/analyze`
+
+**Request:**
+```typescript
+{
+  candidateProfileId: string,
+  question: string,
+  answer: string,
+  questionCategory: string,
+  brainSnapshot: string    // current system prompt -- what the AI had available
+}
+```
+
+**Response:**
+```typescript
+{
+  verdict: 'strong' | 'adequate' | 'weak' | 'hallucinated',
+  diagnosis: string,          // plain language -- what was weak and why
+  prescription: string,       // exactly what to add and where
+  brainFieldTarget: string,   // which field to link to
+  expansionPrompt: string,    // suggested text to get the candidate started
+  patternSignal: boolean      // true if this is a recurring weakness category
+}
+```
+
+**Verdict definitions:**
+- `strong` -- answer was grounded, specific, and appropriately handled the question
+- `adequate` -- answer was acceptable but could be stronger with more context
+- `weak` -- answer was vague, deflected unnecessarily, or missed the point
+- `hallucinated` -- answer contained a claim not present in the brain (triggers immediate alert)
+
+### 8D.5 Full Diagnostic Mode
+
+"Run full diagnostic" executes all 20 suggested questions in sequence against the candidate's AI and returns a complete brain health report organized by category. Each category gets a verdict (strong / adequate / weak) with the specific questions that produced each verdict.
+
+The report is the most complete view of brain readiness available. It runs before the candidate shares their link for the first time and can be re-run after any significant brain update.
+
+Estimated cost: 20 Haiku calls + 20 Sonnet analysis calls. Approximately $0.05 per full diagnostic run.
+
+### 8D.6 Data Model Additions
+
+```sql
+CREATE TABLE sandbox_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  question_category TEXT NOT NULL,
+  ai_answer TEXT NOT NULL,
+  verdict TEXT NOT NULL CHECK (verdict IN ('strong', 'adequate', 'weak', 'hallucinated')),
+  diagnosis TEXT NOT NULL,
+  prescription TEXT NOT NULL,
+  brain_field_target TEXT,
+  expansion_prompt TEXT,
+  pattern_signal BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE sandbox_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY sandbox_sessions_owner ON sandbox_sessions
+  FOR ALL TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+```
+
+### 8D.7 Phase and Priority
+
+**Phase 3** -- builds alongside the chat endpoint and testing interface already specced in Section 3.3.
+
+Build sequence within Phase 3:
+1. Basic sandbox chat interface with `sandbox: true` flag
+2. Suggested question library JSON and UI
+3. Post-answer Sonnet analysis call and diagnosis display
+4. Direct link from diagnosis to brain field
+5. Full diagnostic mode
+6. Pattern signal connection to prompt bot queue
+7. Hallucinated verdict alert and immediate brain field CTA
+```
+
+---
+
+## External Transcript Hardening
+
+### What It Is
+
+Candidates can upload or paste conversation transcripts from any source -- real recruiter calls they summarized, practice sessions with other AI tools, LinkedIn message threads, interview debrief notes, informational interview notes -- and the platform analyzes them to identify brain gaps and generate targeted expansion prompts.
+
+This is the most powerful brain growth mechanism because it feeds verified external intelligence -- real questions from real hiring professionals -- directly into the improvement loop.
+
+### Why It Is More Powerful Than Internal Sandbox Testing
+
+The sandbox tests the brain against predicted questions. External transcript hardening tests it against questions that actually happened. A candidate who brings transcripts from 15 screening calls they had before discovering RoleBoost arrives with a fully mapped set of their real weaknesses. The brain hardens specifically against what real recruiters in their target market actually ask -- not what a question library predicts they will ask.
+
+### Scenarios Where This Is Enormously Valuable
+
+**Pre-platform job search history.** A candidate who has been searching for three months before finding RoleBoost has had 10 to 20 screening calls. They know which questions hurt them. They bring those transcripts. The brain immediately hardens against the specific gaps that real recruiters already found.
+
+**Other AI practice tools.** Candidates using ChatGPT or Claude directly to practice interview answers paste those transcripts in. All prior practice becomes brain fuel rather than wasted effort.
+
+**LinkedIn message threads.** A recruiter asked three qualifying questions in a DM before deciding whether to schedule. The candidate pastes the thread. The brain learns what that type of recruiter cares about.
+
+**Interview debrief notes.** The candidate did not get the offer. They have notes from the debrief. The brain learns exactly what the hiring committee found insufficient and hardens specifically against those objections.
+
+**Informational interview notes.** A coffee chat revealed gaps the candidate had not considered. Paste it in. Brain gets smarter.
+
+### The Analysis Process
+
+Claude Sonnet reads the uploaded transcript and does four things simultaneously:
+
+**Step 1 -- Map questions to brain sections.** Every question asked in the transcript is identified and mapped to the brain section that should answer it. Not just hard questions -- all questions, including simple ones that might reveal thin coverage areas.
+
+**Step 2 -- Gap analysis against current brain.** For each mapped question, evaluate whether the current brain has sufficient context to answer it well. Not how the candidate answered in that conversation -- how the AI would answer right now with the current brain. This reveals gaps the candidate may not have noticed.
+
+**Step 3 -- Flag weak coverage areas.** Questions where the current brain would produce a weak or deflecting answer -- when a strong answer was available -- are flagged as high-priority gaps.
+
+**Step 4 -- Generate expansion prompts.** For each identified gap, generate a specific expansion prompt that references the question that revealed it: "A recruiter asked about your budget authority at Brightship and your brain does not have enough detail to answer confidently. Walk through the scope of your financial responsibility in that role."
+
+### Privacy Design
+
+External transcripts contain the recruiter's questions and potentially their name, company, and communication style. The candidate owns their side of the conversation. The recruiter's side is reference material only.
+
+Design rules:
+- Uploaded transcripts are processed and discarded -- not stored as recruiter data
+- Never used to identify or profile the recruiter
+- Never surfaced in any employer-facing part of the platform
+- Output is brain improvement recommendations only
+- Disclosed clearly in the UI: "Transcripts you upload are used only to improve your AI brain. They are analyzed and discarded."
+
+### PRD Addition -- Section 8E
+
+**Add the following as Section 8E immediately after Section 8D in PRD.md:**
+
+```
+## Section 8E -- External Transcript Hardening
+
+### 8E.1 Overview
+
+Candidates upload or paste conversation transcripts from any source -- real recruiter screening calls, practice sessions with other AI tools, LinkedIn message threads, interview debrief notes -- and the platform analyzes them to identify brain gaps and generate targeted expansion prompts.
+
+This is the growth loop powered by external intelligence rather than internal testing.
+
+### 8E.2 Input Interface
+
+**Location:** `/dashboard/ai` -- "Harden Your Brain" section, below sandbox.
+
+**Two input methods:**
+
+**Text paste field:** Any format. No structure required. The candidate copies and pastes whatever they have -- rough notes, a formal transcript, a message thread. The AI reads it as plain text and extracts the relevant questions and answers.
+
+**File upload:** TXT or PDF. For candidates who have saved formal chat logs or typed up interview notes.
+
+**Submit button:** "Analyze and find gaps"
+
+### 8E.3 Analysis Process
+
+**API endpoint:** `POST /api/transcript/harden`
+
+**Request:**
+```typescript
+{
+  candidateProfileId: string,
+  transcriptText: string,
+  transcriptSource: 'paste' | 'file',
+  sourceContext?: string    // optional: "phone screening with [Company]", "ChatGPT practice"
+}
+```
+
+**Response:**
+```typescript
+{
+  questionsFound: number,
+  gapsIdentified: TranscriptHardeningGap[],
+  strongCoverageConfirmed: string[],  // questions brain handles well
+  hardeningPlan: HardeningAction[]    // prioritized list of what to do
+}
+
+type TranscriptHardeningGap = {
+  questionFromTranscript: string,
+  brainCoverageVerdict: 'strong' | 'adequate' | 'weak' | 'missing',
+  expansionPrompt: string,
+  brainFieldTarget: string,
+  priority: 'high' | 'medium' | 'low'
+}
+
+type HardeningAction = {
+  priority: number,
+  action: string,           // plain language instruction
+  brainFieldTarget: string,
+  expansionPrompt: string,
+  linkToField: string       // direct URL to field in dashboard
+}
+```
+
+### 8E.4 Output -- Hardening Plan
+
+The output is a prioritized action list, not a report. Three to five actions ranked by impact, each with a direct link to the brain field and a suggested expansion prompt.
+
+Example output:
+
+```
+Your brain analyzed against 12 questions from this conversation.
+
+3 gaps identified:
+
+[HIGH] Budget and P&L authority
+A recruiter asked about your financial responsibility and your brain only has 
+a general statement. Add the specific dollar figures and scope.
+→ Add context to Key Wins
+
+[MEDIUM] First 90 days approach  
+Asked how you approach a new leadership role and your brain has no answer 
+for this common question.
+→ Add a custom answer
+
+[LOW] Team composition and hiring philosophy
+Your brain covers team size but not how you build and evaluate teams.
+→ Expand Leadership Philosophy
+```
+
+### 8E.5 Privacy Enforcement
+
+- Uploaded transcript text processed server-side and not stored after analysis
+- Analysis output (gaps, prompts) stored in `brain_hardening_sessions` table
+- No recruiter identifying information stored in any table
+- Privacy disclosure shown in UI before first upload
+- Candidate can clear their hardening history at any time
+
+### 8E.6 Re-analysis After Brain Updates
+
+After the candidate addresses the gaps from a hardening session, they can re-run the analysis on the same transcript to confirm the gaps are closed. The re-run compares the new brain state against the same questions. Each re-run confirms progress and surfaces any remaining gaps.
+
+### 8E.7 Data Model Additions
+
+```sql
+CREATE TABLE brain_hardening_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_profile_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  transcript_source TEXT NOT NULL CHECK (transcript_source IN ('paste', 'file')),
+  source_context TEXT,
+  questions_found INTEGER NOT NULL DEFAULT 0,
+  gaps_identified INTEGER NOT NULL DEFAULT 0,
+  gaps_addressed INTEGER NOT NULL DEFAULT 0,
+  hardening_plan JSONB NOT NULL DEFAULT '[]',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_reanalyzed_at TIMESTAMPTZ
+);
+
+ALTER TABLE brain_hardening_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY hardening_sessions_owner ON brain_hardening_sessions
+  FOR ALL TO authenticated
+  USING (
+    candidate_profile_id IN (
+      SELECT id FROM candidate_profiles WHERE clerk_user_id = requesting_user_id()
+    )
+  );
+```
+
+### 8E.8 Phase and Priority
+
+**Phase 3** -- builds after transcript delivery and sandbox are live.
+
+Build sequence within Phase 3:
+1. Text paste and file upload UI
+2. Sonnet analysis call and gap extraction
+3. Hardening plan display with direct field links
+4. Privacy disclosure and data handling
+5. Re-analysis after brain updates
+6. History view of past hardening sessions
+```
+
+---
+
+## Updated Summary of Changes
 
 | File | Version Change | Key Updates |
 |---|---|---|
 | vision.md | 3.2 to 4.0 | Flagship reframed as AI brain. Calling card section added. Growth loop added. Moats updated. Fiverr framing updated. |
-| PRD.md | 3.0 to 3.1 | Section 8B (AI Intake Interview) added. Section 8C (Transcript-to-Brain Loop) added. Data model additions for both sections. |
+| PRD.md | 3.0 to 3.2 | Section 8B (AI Intake Interview) added. Section 8C (Transcript-to-Brain Loop) added. Section 8D (Sandbox and AI Fine-Tuning) added. Section 8E (External Transcript Hardening) added. Data model additions for all four sections. |
 | CLAUDE.md | no version to v1.0 | Brain compartmentalization rule added. Voice transcription spec added. Hallucination prevention documented. MVP exclusions updated. |
+
+**Note on PRD versioning:** The original spec targeted PRD v3.1. With Sections 8D and 8E added, PRD target version is now 3.2.
 
 ---
 
-*RoleBoost AI Brain and Calling Card Spec v1.0 -- getroleboost.com -- Built by Rob Ramos -- June 2026*
+*RoleBoost AI Brain and Calling Card Spec v1.1 -- getroleboost.com -- Built by Rob Ramos -- June 2026*
