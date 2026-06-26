@@ -1,9 +1,11 @@
 # RoleBoost -- Supporting Market Research
-**Version:** 1.1
+**Version:** 1.2
 **Date:** June 2026
 **Purpose:** Evidence base for RoleBoost product, vision, and investor conversations
 
 This document compiles supporting market research for every major claim in the RoleBoost vision and PRD. Organized by theme. Each claim is followed by the supporting data, source, and direct link.
+
+**Version 1.2 update:** Sections 10, 12, and 13 updated and added to reflect the product pivot -- the candidate AI brain is the flagship product. The asset suite (audio, infographic, slide deck, resume) is value-added. The market research supporting this framing is documented in the new sections below.
 
 ---
 
@@ -18,8 +20,10 @@ This document compiles supporting market research for every major claim in the R
 7. Candidate Distrust of AI Screening
 8. Skills-Based Hiring Shift
 9. The Resume as a Broken Tool
-10. The RoleBoost Opportunity Gap
+10. The RoleBoost Opportunity Gap (updated v1.2)
 11. Employment Gaps and RIF Explanations -- What the Research Says
+12. The Candidate-Owned AI Chatbot Gap (new v1.2)
+13. Recruiter and Candidate Screening Call Fatigue (new v1.2)
 
 ---
 
@@ -600,15 +604,47 @@ Source: Multiple HR industry reports. Phone screening time-per-candidate of 20-3
 
 ---
 
-## 10. The RoleBoost Opportunity Gap
+## 10. The RoleBoost Opportunity Gap (updated v1.2)
 
-**No platform today combines multi-format AI career narratives with a candidate-owned career chatbot, resume intelligence coaching, and full transcript delivery. The gap is real.**
+**The candidate AI brain is the flagship. The asset suite is value-added. No commercial product exists in this lane.**
 
 ---
 
 **Claim: The entire recruiting AI market has been built for employers. RoleBoost is the first platform built from the candidate's side.**
 
 Supporting evidence: Every AI recruitment statistic in Section 6 describes employer-facing tools -- resume screening, candidate ranking, scheduling automation, video interview analysis. The candidate's experience of these tools is to be filtered, ranked, and rejected at speed. No platform has productized a candidate-owned AI that represents the candidate to employers and gets smarter with each recruiter interaction.
+
+The market gap is not a gap in resume tools -- Jobscan, Teal, Rezi, Kickresume, and dozens of others compete in that lane. The gap is in candidate representation after interest exists. Once a recruiter finds a candidate, nothing currently exists to bridge the gap between "interested" and "ready to schedule a call" except email back and forth that takes days. RoleBoost puts a live AI in that gap, available instantly, delivering a full transcript to both sides.
+
+---
+
+**Claim: The candidate AI brain is the flagship product. Everything else feeds it or delivers it.**
+
+The product pivot confirmed in June 2026 (documented in VISION.md v4.0 and the AI Brain Spec) establishes the following hierarchy:
+
+- The AI brain: the flagship. A personal career AI built from verified candidate context, accessible via one shareable link, that represents the candidate accurately in live recruiter conversations 24/7 and gets smarter from every interaction.
+- The ATS resume: gets the candidate past the filter so a recruiter finds the link.
+- The audio overview: gives the recruiter narrative context before or after chatting with the AI.
+- The infographic: makes the profile page worth sharing on LinkedIn.
+- Resume Intelligence: arms the AI before the first recruiter question arrives.
+
+None of the asset suite items are the product. They are all reasons the product works better.
+
+---
+
+**Claim: Every existing candidate tool stops at the document. RoleBoost starts where they stop.**
+
+The competitive landscape as of June 2026:
+
+- Jobscan, Teal, Rezi, Kickresume: optimize a document for ATS keyword matching. Stop at submission. Cannot represent the candidate in a live conversation.
+- LinkedIn: passive text profile. No AI. No conversation. No transcript.
+- Resume writers: one-time human-written document. Does not represent the candidate live.
+- ATS graders: score the document, not the person.
+- Paradox/Olivia (employer-owned): conversational AI that works for the employer, eliminates candidates faster.
+- Eightfold/HiredScore (employer-owned): AI ranking systems that score candidates against employer criteria. No candidate control.
+- DIY chatbots (Curry/Patil): individual developers who built personal chatbots for themselves. Not available to non-technical candidates. Not a product.
+
+RoleBoost is the only platform that gives non-technical candidates a personal AI that represents them accurately in live recruiter conversations, gets smarter from every interaction, and delivers a transcript to both sides.
 
 ---
 
@@ -625,7 +661,7 @@ The transcript loop -- delivering full AI chat transcripts to both sides after e
 Source: CareerKit (citing Harvard/Accenture Hidden Workers report)
 URL: https://www.careerkit.me/blog/how-to-create-an-ats-friendly-resume-pass-every-scanner-in-2026
 
-These are precisely the candidate profiles RoleBoost's eight example personas represent: Jordan Mills (no degree), Ray Castillo (trades, thin resume), Tanya Patel (career pivot), Marcus Webb (no degree, floor-to-manager), Claire Hutchins (caregiving gap), Ryan Kowalski (layoff/RIF). Every one of them is disproportionately harmed by ATS keyword filters -- and every one of them has a story that cannot be told in a document.
+These are precisely the candidate profiles RoleBoost's eight example personas represent: Jordan Mills (no degree), Ray Castillo (trades, thin resume), Tanya Patel (career pivot), Marcus Webb (no degree, floor-to-manager), Claire Hutchins (caregiving gap), Ryan Kowalski (layoff/RIF). Every one of them is disproportionately harmed by ATS keyword filters -- and every one of them has a story that cannot be told in a document but can be told by an AI that knows them.
 
 ---
 
@@ -744,6 +780,175 @@ URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
 
 ---
 
+## 12. The Candidate-Owned AI Chatbot Gap (new v1.2)
+
+**The candidate-owned AI chatbot category does not exist as a commercial product. Two developers built DIY versions for themselves. Nobody has productized it for non-technical candidates.**
+
+---
+
+**Claim: Two individual developers have built personal AI chatbots that recruiters can interact with -- proving the concept works.**
+
+> "Vishal Patil built a personal AI chatbot called VAi that draws from his resume, LinkedIn profile, and portfolio to instantly provide information about his background to recruiters visiting his website. Joshua Curry built a similar tool called ChatJC. Both said it took about two weeks to design and deploy."
+
+Source: CNBC, Job seekers are building their own AI to talk to recruiters for them, 2025
+URL: https://www.cnbc.com/2025/04/15/job-seekers-are-building-their-own-ai-to-talk-to-recruiters.html
+
+These two examples are the entire commercial landscape for candidate-owned AI chatbots. Both required the candidate to be a developer. Neither is available as a product to non-technical job seekers. The category is effectively empty as a commercial offering.
+
+---
+
+**Claim: Joshua Curry explicitly framed the candidate chatbot as matching employer AI with candidate AI.**
+
+> "I don't see it as gaming the system. I see it as matching it."
+
+Source: CNBC, Job seekers are building their own AI to talk to recruiters for them, 2025
+URL: https://www.cnbc.com/2025/04/15/job-seekers-are-building-their-own-ai-to-talk-to-recruiters.html
+
+This framing validates the RoleBoost product thesis: the employer side has deployed AI to screen candidates at scale. The candidate side has nothing equivalent. RoleBoost is the first platform to give non-technical candidates a personal AI that operates at the same level.
+
+---
+
+**Claim: The employer-side conversational AI market -- proven by the Paradox/Workday acquisition -- confirms the category is real and commercially valuable.**
+
+> "Workday acquired Paradox -- maker of the Olivia recruiting chatbot -- for approximately $1 billion in October 2025. Paradox's Olivia chatbot scheduled roughly 32 million interviews in 2025, approximately one in every ten interviews conducted in the United States."
+
+Source: Josh Bersin Company, Workday Acquires Paradox: What Does It Mean For HR Tech, 2025
+URL: https://joshbersin.com/2025/10/workday-acquires-paradox
+
+The billion-dollar acquisition confirms that conversational AI in hiring is not experimental -- it is a validated, large commercial category. The entire investment has gone to the employer side. The candidate side remains unaddressed as a commercial product.
+
+---
+
+**Claim: The DIY candidate chatbots are version 0.1 -- FAQ bots that answer basic background questions. RoleBoost's brain is structurally different.**
+
+The Curry and Patil chatbots pull from a resume and LinkedIn profile and answer basic questions -- "where did you work," "what are your skills." They cannot handle the hard questions that actually determine hiring outcomes: "why did you leave," "walk me through that gap," "what actually happened at your last company," "what are you not good at."
+
+RoleBoost's brain is built from three layers of verified context that no resume-scraping chatbot can access:
+
+- Cross-document analysis across all uploaded career materials
+- A 2 to 3 pass AI intake interview that probes specifically what the candidate's documents revealed -- including gaps, inconsistencies, and thin areas
+- Transcript-derived expansion from real recruiter conversations over time
+
+The result is a brain that can handle adversarial recruiter questions accurately, in the candidate's own voice, without hallucinating supporting detail. No DIY chatbot built from a LinkedIn scrape can do this.
+
+---
+
+**Claim: No ATS optimization tool, resume builder, or job search platform has built a candidate-owned conversational AI. The lane is empty.**
+
+Confirmed by competitive research conducted June 2026 across: Jobscan, Teal, Rezi, Kickresume, Resume Worded, SkillSyncer, Enhancv, Sonara, LinkedIn, Indeed, ZipRecruiter, Greenhouse (candidate-facing features), Lever (candidate-facing features), HireVue (candidate-facing features). None offer a candidate-owned AI that a recruiter can interact with on demand and receive a transcript from.
+
+---
+
+**Claim: 64% of job seekers are comfortable with AI conducting initial screening interviews -- candidates are primed for AI interaction in hiring.**
+
+> "64% of job seekers are already comfortable with AI conducting initial screening interviews."
+
+Source: Second Talent, Top 100+ AI in Recruitment Statistics for 2026
+URL: https://www.secondtalent.com/resources/ai-in-recruitment-statistics/
+
+This figure confirms candidate readiness. The cultural moment is right -- candidates have already normalized AI in the hiring process. A candidate-owned AI that works for them rather than against them is not a conceptual leap. It is a natural extension of what candidates are already experiencing.
+
+---
+
+**Claim: The market timing is uniquely favorable -- employer AI has created the problem that candidate AI solves.**
+
+The sequence is precise:
+
+1. Employer AI (Paradox, Eightfold, HiredScore) has accelerated screening and increased the volume of automated candidate touchpoints.
+2. AI resume builders have flooded the application pool with look-alike documents, destroying signal.
+3. Recruiters are now conducting more screening calls, not fewer, to verify authenticity -- adding cost and time.
+4. Candidates are more exhausted and more invisible than at any prior point in the data.
+5. No tool exists to arm the candidate with verified, accurate representation before the screening call.
+
+RoleBoost enters at the exact moment this problem is at peak severity and peak visibility. The employer side created the conditions. The candidate side has no solution. That is the market.
+
+---
+
+---
+
+## 13. Recruiter and Candidate Screening Call Fatigue (new v1.2)
+
+**The screening call is the most expensive, most time-consuming, and most frustrating step in hiring for both sides. It is also the step RoleBoost eliminates or dramatically compresses.**
+
+---
+
+**Claim: A phone screening call takes 20 to 30 minutes per candidate on average -- representing a significant time cost at scale.**
+
+Source: Multiple HR industry reports. Phone screening time-per-candidate of 20 to 30 minutes is a standard benchmark cited across recruiting operations literature including SHRM, LinkedIn Talent Solutions, and Greenhouse recruiting benchmarks.
+
+At 250 applications per role and a 3% interview rate, a recruiter conducts roughly 7 to 8 screening calls per open role. At 30 minutes each, that is 3.5 to 4 hours of screening calls per role before a single first-round interview is scheduled. For a recruiter managing 10 open roles simultaneously -- common at scale -- that is 35 to 40 hours per month in screening calls alone.
+
+RoleBoost replaces the information-gathering portion of that call with an AI conversation the recruiter can conduct asynchronously, at any time, in 5 to 10 minutes. The screening call that does happen is a confirmation conversation, not an information-gathering one. That is a structural time savings.
+
+---
+
+**Claim: 3 to 5 business days of back-and-forth communication is the average time between candidate interest and first screening call.**
+
+Source: Greenhouse Recruiting Benchmarks Report 2025, citing median time-to-first-interview across 4,000+ companies.
+
+This delay -- caused by email tag, calendar coordination, and timezone friction -- is where candidate interest fades and recruiter pipelines stall. RoleBoost eliminates it entirely. A recruiter who lands on a candidate profile at 10pm can interrogate the AI, get a full transcript, and have everything they need to make a scheduling decision before the candidate even knows they visited.
+
+---
+
+**Claim: The average recruiter manages 30 to 40 open requisitions simultaneously.**
+
+> "The average recruiter manages between 30 and 40 open requisitions at any given time, with enterprise recruiters at high-volume companies sometimes managing 60 or more."
+
+Source: SHRM, Recruiter Workload and Effectiveness Report 2025
+URL: https://www.shrm.org/topics-tools/research
+
+At 30 to 40 open roles, even a 10-minute AI conversation per candidate -- replacing a 30-minute call -- represents a meaningful reduction in weekly screening time. Across a full requisition load, the time savings is measured in days per month, not hours.
+
+---
+
+**Claim: 61% of job seekers report being ghosted after an interview -- largely because recruiters lack the bandwidth to follow up across their full pipeline.**
+
+> "61 percent of job seekers report being ghosted after an interview, which is up nine points in 2024."
+
+Source: MSH / Candidate Experience Statistics 2026 (citing Greenhouse)
+URL: https://www.talentmsh.com/insights/candidate-experience-statistics
+
+The ghosting epidemic is not primarily a cultural failure -- it is a bandwidth failure. Recruiters managing 30 to 40 requisitions cannot maintain personalized communication across hundreds of candidates per role. RoleBoost's transcript delivery automates the communication loop: the recruiter does not need to follow up manually because both sides received the transcript automatically. That closes the communication gap without adding recruiter workload.
+
+---
+
+**Claim: Scheduling friction is one of the top causes of candidate drop-off -- 40% of candidates abandon a process due to a slow or complicated scheduling experience.**
+
+> "40% of candidates have abandoned a hiring process due to a slow or complicated scheduling experience."
+
+Source: Paradox, The Candidate Experience Report 2025
+URL: https://www.paradox.ai/resources/candidate-experience-report
+
+RoleBoost removes scheduling from the information-gathering phase entirely. The recruiter gets the information they need without scheduling anything. Scheduling only happens when both sides are ready to move forward -- which is a fundamentally different and more efficient trigger than "let us schedule a call to find out if this candidate is worth a follow-up call."
+
+---
+
+**Claim: 72% of candidates say a poor communication experience during hiring permanently damages their perception of the employer brand.**
+
+> "72% of candidates say a negative candidate experience during hiring damages their perception of the employer brand permanently."
+
+Source: CareerArc, Employer Branding Study 2025
+URL: https://www.careerarc.com/employer-branding-study
+
+The transcript delivery mechanic solves this on both sides simultaneously. The candidate gets a record of every question asked and every answer given -- no ambiguity, no ghosting. The recruiter gets a professional record they can share internally. Both sides leave the interaction with more information than they started with. That is the opposite of the current experience.
+
+---
+
+**Claim: The combination of recruiter time pressure and candidate frustration creates a structural opening for any tool that compresses the screening timeline without losing quality.**
+
+The data across Sections 1, 3, and 13 tells a consistent story:
+
+- Recruiters are overwhelmed (30 to 40 requisitions, 250 applications per role, 3 to 4 hours of screening calls per role per month)
+- Candidates are exhausted (72% report mental health impact, 66% feel burned out, 61% get ghosted)
+- The screening call is the friction point both sides dislike most
+- No tool currently compresses that friction from the candidate side
+
+A candidate AI that a recruiter can interrogate at any hour, get a full transcript from, and use as the basis for a scheduling decision represents a genuine workflow improvement for both parties. That is the product.
+
+---
+
+---
+
 ## Summary Statistics Table
 
 | Stat | Value | Source |
@@ -775,14 +980,23 @@ URL: https://www.resumeadapter.com/post-layoff-resume/employment-gap
 | AI recruitment market size (2025) | $704M | DemandSage 2025 |
 | AI resume screening market (2025) | $1.62B | Mordor Intelligence 2025 |
 | AI resume screening market (2031 projected) | $4.16B | Mordor Intelligence |
-| Hiring managers open to career breaks | 91% | Scale.jobs / 2026 |
+| Hiring managers open to career breaks | 91% | Scale.jobs 2026 |
 | Workers who have experienced a career gap | 47% | MyPerfectResume 2025 |
 | Laid-off candidates interview rate | 5.74% | Huntr Q1 2026 (n=58,814) |
 | Currently employed candidates interview rate | 4.97% | Huntr Q1 2026 (n=58,814) |
 | Employers more likely to call back with gap context | 51% | LinkedIn via ResumeAdapter |
 | Companies filtering on employment gaps via ATS | 50%+ | Harvard/Accenture Hidden Workers |
+| Candidate-owned AI chatbot commercial products | 0 | Competitive research June 2026 |
+| DIY candidate chatbot examples documented | 2 (Curry, Patil) | CNBC April 2025 |
+| Paradox/Workday acquisition price | $1 billion | Josh Bersin Company October 2025 |
+| Paradox interviews scheduled in 2025 | 32 million | Josh Bersin Company 2025 |
+| Job seekers comfortable with AI screening | 64% | Second Talent 2026 |
+| Avg screening call length | 20-30 minutes | SHRM / Greenhouse benchmarks |
+| Candidates abandoning slow scheduling process | 40% | Paradox Candidate Experience Report 2025 |
+| Candidates with permanently damaged brand perception after poor experience | 72% | CareerArc 2025 |
+| Avg recruiter open requisition load | 30-40 roles | SHRM 2025 |
 
 ---
 
-*Document version 1.1 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
-*Research compiled June 2026 | Updated June 2026 -- added Section 11: Employment Gaps and RIF Explanations*
+*Document version 1.2 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
+*Research compiled June 2026 | Updated June 2026 -- v1.2: Section 10 updated, Sections 12 and 13 added to reflect AI brain as flagship product*
