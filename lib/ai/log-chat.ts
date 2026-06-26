@@ -48,16 +48,30 @@ export async function ensureChatSession(
   }
 }
 
-/** Logs the user question and the assistant answer for a session. */
+/**
+ * Logs the user question and the assistant answer for a session. The model and
+ * validation tracking (Phase B) lives on the assistant turn; the user turn keeps
+ * the column defaults.
+ */
 export async function logChatExchange(params: {
   sessionId: string;
   question: string;
   answer: string;
+  modelUsed?: string;
+  wasComplex?: boolean;
+  wasValidated?: boolean;
 }): Promise<void> {
   try {
     await (adminClient.from('chat_messages') as any).insert([
       { chat_session_id: params.sessionId, role: 'user', content: params.question },
-      { chat_session_id: params.sessionId, role: 'assistant', content: params.answer },
+      {
+        chat_session_id: params.sessionId,
+        role: 'assistant',
+        content: params.answer,
+        model_used: params.modelUsed ?? null,
+        was_complex: params.wasComplex ?? false,
+        was_validated: params.wasValidated ?? false,
+      },
     ]);
   } catch (e) {
     console.error('logChatExchange: failed', params.sessionId, e);

@@ -143,68 +143,40 @@ Rules:
 
 ### AI Chatbot Architecture
 
-The candidate career AI is a Claude API call with a dynamically built system prompt. No fine-tuning, no embeddings, no vector database needed for MVP.
+The candidate career AI is a Claude API call with a layered, XML-structured system prompt. No fine-tuning, no embeddings, no vector database needed for MVP. Resume text is sourced from `resume_documents.canonical_markdown` and passed to the builder as a separate argument -- there is no `resume_text` column on `candidate_profiles`.
 
-**System prompt construction (`lib/ai/build-system-prompt.ts`):**
+**Prompt structure (`lib/ai/build-system-prompt.ts`) -- data near the top, rules near the bottom:**
 
-```typescript
-export function buildCandidateSystemPrompt(candidate: CandidateProfile): string {
-  return `
-You are the career AI for ${candidate.full_name}. You represent them professionally to recruiters and hiring managers. You only answer questions using the career information provided below. If asked something outside this information, politely redirect to scheduling a direct conversation with the candidate.
+1. `<role>` -- Identity assignment. First-person framing. Not a FAQ bot.
+2. `<career_information>` -- Full resume markdown.
+3. `<context>` -- The named career-context fields.
+4. `<custom_answers priority="highest">` -- Candidate-refined QA pairs. Highest priority.
+5. `<few_shot_examples>` -- 2 to 3 worked hard-question exemplars built from custom QA.
+6. `<knowledge_boundary>` -- Explicit known / not_known / when_not_known blocks.
+7. `<principles>` -- Three constitutional values: honesty, calm confidence, human warmth.
+8. `<adversarial_posture>` -- Pattern for handling skeptical or pressure-testing questions.
+9. `<redirect_topics>` -- Topics that go to a direct conversation, not the AI.
+10. `<voice>` -- Tone instruction derived from the candidate's own writing.
+11. `<reasoning_instruction>` -- Explicit guidance for synthesis and numeric grounding.
 
-Never invent, embellish, or extrapolate beyond what is provided. If you do not know the answer from the provided data, say so honestly and suggest the recruiter connect directly.
+**Complexity router (`app/api/chat/route.ts`):**
+- Simple factual questions: `claude-haiku-4-5-20251001` (fast, cheap).
+- Multi-part, adversarial, or synthesis questions: `claude-sonnet-4-6` (better reasoning).
+- Detection is a fast string heuristic (`detectComplexQuestion`) -- no API call. Model ids come from `lib/ai/models.ts` (`CHAT_MODEL` / `GENERATION_MODEL`); never hardcode them.
 
-CAREER INFORMATION:
-${candidate.resume_text}
+**Post-generation validation:**
+- Runs only when the answer contains numbers, dollar figures, percentages, or credential claims (`detectHighRiskContent`).
+- A fast Sonnet call (`validateAndSanitize`) checks that every such claim traces to the candidate's career data.
+- If not grounded: the answer is replaced with a safe, natural deflection.
+- If the validation call fails for any reason: the original answer is returned (fail-safe).
 
-CAREER CONTEXT:
-Target Role: ${candidate.target_role}
-Leadership Philosophy: ${candidate.leadership_philosophy}
-Key Wins: ${candidate.key_wins}
-Reasons for leaving each role: ${candidate.departure_reasons}
-Biggest professional challenge: ${candidate.biggest_challenge}
-Ideal team and work environment: ${candidate.ideal_environment}
-What they need from a manager: ${candidate.manager_needs}
-What they are not good at: ${candidate.honest_weaknesses}
-Questions they wish recruiters would ask: ${candidate.wish_questions}
+**Per-turn tracking:** each assistant `chat_messages` row records `model_used`, `was_complex`, and `was_validated` for analytics.
 
-CUSTOM ANSWERS (candidate-refined, highest priority):
-${candidate.custom_qa_pairs}
-
-TOPICS TO REDIRECT:
-${candidate.redirect_topics}
-
-Keep responses concise, warm, and grounded. No corporate speak.
-  `.trim();
-}
-```
-
-**Chat handler (`app/api/chat/route.ts`):**
-
-```typescript
-export async function POST(request: Request) {
-  const { candidateSlug, message, sessionId, conversationHistory } = await request.json();
-
-  const candidate = await getCandidateBySlug(candidateSlug);
-  const systemPrompt = buildCandidateSystemPrompt(candidate);
-
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 500,
-    system: systemPrompt,
-    messages: [
-      ...conversationHistory,
-      { role: 'user', content: message }
-    ]
-  });
-
-  const answer = response.content[0].text;
-
-  await logChatExchange({ candidateId: candidate.id, sessionId, question: message, answer });
-
-  return NextResponse.json({ answer, sessionId });
-}
-```
+**Cost estimate:**
+- Simple turns (Haiku, no validation): ~$0.0008 per session.
+- Complex turns (Sonnet): ~$0.003 per turn -- estimate 2 to 3 complex turns per session.
+- Validation pass (Sonnet, 200 tokens, only on high-risk answers): ~$0.001 per validated turn.
+- Blended estimate for a 10-turn session with 2 complex + 1 validated turn: ~$0.01 per session.
 
 ### Transcript Delivery
 
