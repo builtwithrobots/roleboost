@@ -25,6 +25,7 @@ interface Props {
   linkedinUrl: string | null;
   summaryBullets: string[];
   aiEnabled: boolean;
+  avatarUrl?: string | null;
   assets: Asset[];
 }
 
@@ -60,6 +61,7 @@ export default function CallingCard({
   linkedinUrl,
   summaryBullets,
   aiEnabled,
+  avatarUrl,
   assets,
 }: Props) {
   const prefersReduced = useReducedMotion();
@@ -108,10 +110,15 @@ export default function CallingCard({
         >
           <motion.div
             variants={fadeUp}
-            className="rb-glow mb-6 flex size-20 items-center justify-center rounded-full text-2xl font-bold text-white"
+            className="rb-glow mb-6 flex size-20 items-center justify-center overflow-hidden rounded-full text-2xl font-bold text-white"
             style={{ background: 'var(--rb-brand-gradient)' }}
           >
-            {getInitials(fullName)}
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={fullName} className="size-full object-cover" />
+            ) : (
+              getInitials(fullName)
+            )}
           </motion.div>
 
           <motion.h1

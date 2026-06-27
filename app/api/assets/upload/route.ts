@@ -40,6 +40,12 @@ const ASSET_CONFIGS: Record<string, AssetConfig> = {
     maxBytes: 10 * 1024 * 1024,
     label: 'Infographic',
   },
+  avatar: {
+    bucket: 'candidate-images',
+    allowedMimes: ['image/png', 'image/jpeg', 'image/webp'],
+    maxBytes: 5 * 1024 * 1024,
+    label: 'Profile photo',
+  },
   resume: {
     bucket: 'candidate-documents',
     allowedMimes: ['application/pdf'],
@@ -96,6 +102,7 @@ export async function POST(req: NextRequest) {
     video:        ['mp4', 'webm', 'mov'],
     deck:         ['pdf'],
     infographic:  ['png', 'jpg', 'jpeg', 'webp', 'gif'],
+    avatar:       ['png', 'jpg', 'jpeg', 'webp'],
     resume:       ['pdf'],
   };
   const ext = (file.name.split('.').pop() ?? '').toLowerCase();

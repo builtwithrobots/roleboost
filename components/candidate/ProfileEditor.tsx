@@ -20,10 +20,22 @@ import {
   ExternalLink,
   Check,
   Loader2,
+  Camera,
 } from 'lucide-react';
 
 interface Props {
   profile: CandidateProfile;
+  /** Signed URL for the current profile photo, or null for initials. */
+  avatarUrl?: string | null;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0]?.toUpperCase())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('');
 }
 
 type Section = 'basic' | 'headline' | 'snapshot' | 'context';
@@ -36,7 +48,11 @@ const ALL_CLEAN: Record<Section, boolean> = {
   context: false,
 };
 
-export default function ProfileEditor({ profile }: Props) {
+export default function ProfileEditor({ profile, avatarUrl }: Props) {
+  const [avatar, setAvatar] = useState<string | null>(avatarUrl ?? null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   const [headline, setHeadline] = useState(profile.headline ?? '');
   const [targetRole, setTargetRole] = useState(profile.target_role ?? '');
@@ -120,6 +136,31 @@ export default function ProfileEditor({ profile }: Props) {
       }
     });
   };
+
+  async function onAvatarFile(file: File | undefined) {
+    if (!file) return;
+    setAvatarError(null);
+    setAvatarUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('asset_type', 'avatar');
+      form.append('candidate_profile_id', profile.id);
+      const res = await fetch('/api/assets/upload', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok) {
+        setAvatarError(json?.error?.message ?? 'Could not upload that photo.');
+        return;
+      }
+      // Instant preview from the local file; the signed URL loads on next visit.
+      setAvatar(URL.createObjectURL(file));
+    } catch {
+      setAvatarError('Upload failed. Please try again.');
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  }
 
   const addBullet = () => {
     if (bullets.length < 7) setBullets((prev) => [...prev, '']);
@@ -206,6 +247,48 @@ export default function ProfileEditor({ profile }: Props) {
               <User className="size-4 text-[var(--rb-brand)]" />
               Basic Info
             </h2>
+
+            {/* Profile photo */}
+            <div className="mb-5 flex items-center gap-4">
+              <div className="relative shrink-0">
+                <div className="size-16 overflow-hidden rounded-full bg-[var(--rb-brand)] flex items-center justify-center text-white font-bold text-xl">
+                  {avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatar} alt="Profile photo" className="size-full object-cover" />
+                  ) : (
+                    getInitials(fullName) || '?'
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  aria-label="Upload profile photo"
+                  className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border-2 border-[var(--rb-bg-surface)] bg-[var(--rb-brand)] text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {avatarUploading ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
+                </button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => onAvatarFile(e.target.files?.[0])}
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[var(--rb-text)]">Profile photo</p>
+                <p className="text-xs text-[var(--rb-text-muted)]">
+                  JPG, PNG, or WEBP up to 5MB. Shown on your public profile and in chat.
+                </p>
+                {avatarError && (
+                  <p role="alert" className="mt-1 text-xs text-[var(--color-error)]">
+                    {avatarError}
+                  </p>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[var(--rb-text-secondary)] mb-1.5">
@@ -443,6 +526,7 @@ export default function ProfileEditor({ profile }: Props) {
               location={location}
               isPublished={isPublished}
               bullets={bullets.filter(Boolean)}
+              avatar={avatar}
             />
             <p className="mt-3 text-xs text-[var(--rb-text-muted)] text-center">
               This is how your modal header appears to employers.
@@ -494,6 +578,7 @@ function ProfilePreviewCard({
   location,
   isPublished,
   bullets,
+  avatar,
 }: {
   fullName: string;
   headline: string;
@@ -501,13 +586,9 @@ function ProfilePreviewCard({
   location: string;
   isPublished: boolean;
   bullets: string[];
+  avatar: string | null;
 }) {
-  const initials = fullName
-    .split(' ')
-    .map((n) => n[0]?.toUpperCase())
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('');
+  const initials = getInitials(fullName);
 
   return (
     <div className="rb-card overflow-hidden">
@@ -523,8 +604,13 @@ function ProfilePreviewCard({
       <div className="p-5">
         {/* Avatar + name */}
         <div className="flex items-start gap-3 mb-3">
-          <div className="size-12 rounded-full bg-[var(--rb-brand)] flex items-center justify-center text-white font-bold text-lg shrink-0">
-            {initials || '?'}
+          <div className="size-12 overflow-hidden rounded-full bg-[var(--rb-brand)] flex items-center justify-center text-white font-bold text-lg shrink-0">
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="" className="size-full object-cover" />
+            ) : (
+              initials || '?'
+            )}
           </div>
           <div className="min-w-0">
             <div className="font-semibold text-[var(--rb-text)] truncate">

@@ -1,7 +1,14 @@
 export type UserRole = 'candidate' | 'employer' | 'admin';
 export type SubscriptionStatus = 'free' | 'active' | 'cancelled' | 'past_due';
 export type SubscriptionTier = 'pro' | 'starter' | 'growth' | 'scale';
-export type AssetType = 'audio' | 'debate_audio' | 'video' | 'deck' | 'infographic' | 'resume';
+export type AssetType =
+  | 'audio'
+  | 'debate_audio'
+  | 'video'
+  | 'deck'
+  | 'infographic'
+  | 'resume'
+  | 'avatar';
 export type CandidateStage = 'saved' | 'screening' | 'interview' | 'offer' | 'passed';
 export type EmployerMemberRole = 'owner' | 'member';
 

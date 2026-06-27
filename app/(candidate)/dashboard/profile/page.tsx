@@ -1,6 +1,7 @@
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { ensureCandidateProfile } from './actions';
+import { adminClient } from '@/lib/supabase/admin';
 import ProfileEditor from '@/components/candidate/ProfileEditor';
 import DashboardPage from '@/components/layout/DashboardPage';
 import type { CandidateProfile } from '@/lib/types';
@@ -45,9 +46,32 @@ export default async function CandidateProfilePage() {
     );
   }
 
+  // Active profile photo (if any) -- sign with the admin client since the bucket
+  // is private. Avatars reuse the candidate_assets pipeline.
+  let avatarUrl: string | null = null;
+  const { data: avatarAsset } = await (adminClient.from('candidate_assets') as any)
+    .select('storage_bucket, storage_path')
+    .eq('candidate_profile_id', profile.id)
+    .eq('asset_type', 'avatar')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (avatarAsset) {
+    try {
+      const { data } = await (adminClient.storage.from(avatarAsset.storage_bucket) as any).createSignedUrl(
+        avatarAsset.storage_path,
+        3600,
+      );
+      avatarUrl = data?.signedUrl ?? null;
+    } catch {
+      // Bucket may not exist yet; fall back to initials.
+    }
+  }
+
   return (
     <DashboardPage>
-      <ProfileEditor profile={profile} />
+      <ProfileEditor profile={profile} avatarUrl={avatarUrl} />
     </DashboardPage>
   );
 }

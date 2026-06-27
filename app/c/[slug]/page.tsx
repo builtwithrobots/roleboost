@@ -59,13 +59,18 @@ export default async function CandidateProfilePage({ params }: Props) {
     file_name: string;
     signed_url: string;
   }> = [];
+  // The avatar is pulled out of the gallery and rendered in the profile header.
+  let avatarUrl: string | null = null;
 
   for (const asset of (assetData ?? [])) {
     try {
       const { data: signedData } = await (adminClient.storage
         .from(asset.storage_bucket) as any)
         .createSignedUrl(asset.storage_path, 3600);
-      if (signedData?.signedUrl) {
+      if (!signedData?.signedUrl) continue;
+      if (asset.asset_type === 'avatar') {
+        avatarUrl = signedData.signedUrl;
+      } else {
         assets.push({
           asset_type: asset.asset_type,
           file_name: asset.file_name,
@@ -109,6 +114,7 @@ export default async function CandidateProfilePage({ params }: Props) {
         linkedinUrl={profileData.linkedin_url}
         summaryBullets={profileData.summary_bullets ?? []}
         aiEnabled={profileData.ai_enabled ?? false}
+        avatarUrl={avatarUrl}
         assets={assets as any}
       />
     </div>
