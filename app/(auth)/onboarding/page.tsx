@@ -6,9 +6,10 @@ import { UserRound, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
 import { setUserRole } from './actions';
 import { ensureCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
 import ResumeUploadStep from '@/components/onboarding/ResumeUploadStep';
+import OnboardingSourcesStep from '@/components/onboarding/OnboardingSourcesStep';
 
 type Role = 'candidate' | 'employer';
-type Step = 'role' | 'resume';
+type Step = 'role' | 'resume' | 'sources';
 
 const ROLES: {
   role: Role;
@@ -36,6 +37,7 @@ export default function OnboardingPage() {
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('role');
+  const [resumeReviewId, setResumeReviewId] = useState<string | null>(null);
 
   const handleSelect = (role: Role) => {
     setError(null);
@@ -67,8 +69,24 @@ export default function OnboardingPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--rb-bg-page)] px-6 py-12">
         <ResumeUploadStep
-          onParsed={(id) => router.push(`/dashboard/assets?review=${id}`)}
+          onParsed={(id) => {
+            // Hold the review id and offer the optional sources step before review.
+            setResumeReviewId(id);
+            setStep('sources');
+          }}
           onSkip={() => router.push('/dashboard/profile')}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'sources') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--rb-bg-page)] px-6 py-12">
+        <OnboardingSourcesStep
+          onContinue={() =>
+            router.push(resumeReviewId ? `/dashboard/assets?review=${resumeReviewId}` : '/dashboard/profile')
+          }
         />
       </div>
     );
