@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useTransition, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { statusSlide } from '@/lib/motion-dashboard';
 import { updateCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
+import RoleSuggestions from '@/components/candidate/RoleSuggestions';
 import type { CandidateProfile } from '@/lib/types';
 import {
   User,
@@ -19,16 +18,25 @@ import {
   MessageSquare,
   Globe,
   ExternalLink,
+  Check,
+  Loader2,
 } from 'lucide-react';
 
 interface Props {
   profile: CandidateProfile;
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+type Section = 'basic' | 'headline' | 'snapshot' | 'context';
+type Status = 'idle' | 'saving' | 'saved' | 'error';
+
+const ALL_CLEAN: Record<Section, boolean> = {
+  basic: false,
+  headline: false,
+  snapshot: false,
+  context: false,
+};
 
 export default function ProfileEditor({ profile }: Props) {
-  const prefersReduced = useReducedMotion();
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   const [headline, setHeadline] = useState(profile.headline ?? '');
   const [targetRole, setTargetRole] = useState(profile.target_role ?? '');
@@ -39,10 +47,23 @@ export default function ProfileEditor({ profile }: Props) {
     profile.summary_bullets?.length ? profile.summary_bullets : ['']
   );
   const [isPublished, setIsPublished] = useState(profile.is_published);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+
+  const [status, setStatus] = useState<Record<Section, Status>>({
+    basic: 'idle',
+    headline: 'idle',
+    snapshot: 'idle',
+    context: 'idle',
+  });
+  const [dirty, setDirty] = useState<Record<Section, boolean>>(ALL_CLEAN);
+  const [publishStatus, setPublishStatus] = useState<Status>('idle');
   const [isPending, startTransition] = useTransition();
 
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const markDirty = useCallback((section: Section) => {
+    setDirty((prev) => (prev[section] ? prev : { ...prev, [section]: true }));
+    setStatus((prev) => (prev[section] === 'idle' ? prev : { ...prev, [section]: 'idle' }));
+  }, []);
 
   const currentData = useCallback(
     () => ({
@@ -58,15 +79,24 @@ export default function ProfileEditor({ profile }: Props) {
     [fullName, headline, targetRole, location, linkedinUrl, bullets, additionalContext, isPublished]
   );
 
-  const save = useCallback(
-    (overrides?: Partial<ReturnType<typeof currentData>>) => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      setSaveStatus('saving');
+  // Each section's Save persists the whole profile (one row), so a successful
+  // save clears every section's dirty flag; the confirmation shows on the
+  // section the candidate clicked.
+  const saveSection = useCallback(
+    (section: Section) => {
+      setStatus((prev) => ({ ...prev, [section]: 'saving' }));
       startTransition(async () => {
-        const result = await updateCandidateProfile({ ...currentData(), ...overrides });
-        setSaveStatus(result.ok ? 'saved' : 'error');
+        const result = await updateCandidateProfile(currentData());
         if (result.ok) {
-          saveTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2500);
+          setDirty(ALL_CLEAN);
+          setStatus((prev) => ({ ...prev, [section]: 'saved' }));
+          const t = setTimeout(
+            () => setStatus((prev) => ({ ...prev, [section]: 'idle' })),
+            2500
+          );
+          timeouts.current.push(t);
+        } else {
+          setStatus((prev) => ({ ...prev, [section]: 'error' }));
         }
       });
     },
@@ -76,96 +106,93 @@ export default function ProfileEditor({ profile }: Props) {
   const handlePublishToggle = () => {
     const next = !isPublished;
     setIsPublished(next);
-    save({ is_published: next });
+    setPublishStatus('saving');
+    startTransition(async () => {
+      const result = await updateCandidateProfile({ ...currentData(), is_published: next });
+      if (result.ok) {
+        setDirty(ALL_CLEAN);
+        setPublishStatus('saved');
+        const t = setTimeout(() => setPublishStatus('idle'), 2500);
+        timeouts.current.push(t);
+      } else {
+        setIsPublished(!next); // revert the optimistic toggle
+        setPublishStatus('error');
+      }
+    });
   };
 
   const addBullet = () => {
     if (bullets.length < 7) setBullets((prev) => [...prev, '']);
   };
-
   const removeBullet = (i: number) => {
     setBullets((prev) => prev.filter((_, idx) => idx !== i));
+    markDirty('snapshot');
   };
-
   const updateBullet = (i: number, value: string) => {
     setBullets((prev) => prev.map((b, idx) => (idx === i ? value : b)));
+    markDirty('snapshot');
   };
 
   const profileUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/c/${profile.slug}`;
+  const inputClass =
+    'w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]';
 
   return (
     <div className="min-h-full">
       {/* Top bar */}
       <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-display text-xl font-bold tracking-tight text-[var(--rb-text)]">Profile</h1>
-          <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
-            Your public career page · roleboost.com/c/{profile.slug}
-          </p>
-        </div>
+          <div className="min-w-0">
+            <h1 className="font-display text-xl font-bold tracking-tight text-[var(--rb-text)]">Profile</h1>
+            <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
+              Your public career page · roleboost.com/c/{profile.slug}
+            </p>
+          </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          {/* Save status */}
-          <AnimatePresence mode="wait">
-            {saveStatus !== 'idle' && (
-              <motion.span
-                key={saveStatus}
-                variants={statusSlide}
-                initial={prefersReduced ? false : 'hidden'}
-                animate="visible"
-                exit="exit"
-                className="text-xs"
-              >
-                {saveStatus === 'saving' && (
-                  <span className="text-[var(--rb-text-muted)]">Saving…</span>
-                )}
-                {saveStatus === 'saved' && (
-                  <span className="text-[var(--color-success)]">✓ Saved</span>
-                )}
-                {saveStatus === 'error' && (
-                  <span className="text-[var(--color-error)]">Save failed</span>
-                )}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <div className="flex shrink-0 items-center gap-3">
+            {/* Publish save status */}
+            <span aria-live="polite" className="text-xs">
+              {publishStatus === 'saving' && <span className="text-[var(--rb-text-muted)]">Saving…</span>}
+              {publishStatus === 'saved' && <span className="text-[var(--color-success)]">✓ Saved</span>}
+              {publishStatus === 'error' && <span className="text-[var(--color-error)]">Save failed</span>}
+            </span>
 
-          {/* Publish toggle */}
-          <button
-            onClick={handlePublishToggle}
-            disabled={isPending}
-            className={`flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-semibold transition-all duration-[var(--duration-base)] disabled:opacity-50 ${
-              isPublished
-                ? 'bg-[var(--color-success-bg)] text-[var(--color-success)] hover:bg-emerald-200'
-                : 'bg-[var(--rb-bg-surface-raised)] text-[var(--rb-text-secondary)] hover:bg-[var(--rb-border)]'
-            }`}
-          >
-            {isPublished ? (
-              <>
-                <Eye className="size-3" />
-                Published
-              </>
-            ) : (
-              <>
-                <EyeOff className="size-3" />
-                Draft
-              </>
-            )}
-          </button>
-
-          {/* View live */}
-          {isPublished && (
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-[var(--rb-text-brand)] hover:underline"
+            {/* Publish toggle */}
+            <button
+              onClick={handlePublishToggle}
+              disabled={isPending}
+              className={`flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-semibold transition-all duration-[var(--duration-base)] disabled:opacity-50 ${
+                isPublished
+                  ? 'bg-[var(--color-success-bg)] text-[var(--color-success)] hover:bg-emerald-200'
+                  : 'bg-[var(--rb-bg-surface-raised)] text-[var(--rb-text-secondary)] hover:bg-[var(--rb-border)]'
+              }`}
             >
-              View live
-              <ExternalLink className="size-3" />
-            </a>
-          )}
-        </div>
+              {isPublished ? (
+                <>
+                  <Eye className="size-3" />
+                  Published
+                </>
+              ) : (
+                <>
+                  <EyeOff className="size-3" />
+                  Draft
+                </>
+              )}
+            </button>
+
+            {/* View live */}
+            {isPublished && (
+              <a
+                href={profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-[var(--rb-text-brand)] hover:underline"
+              >
+                View live
+                <ExternalLink className="size-3" />
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
@@ -173,7 +200,6 @@ export default function ProfileEditor({ profile }: Props) {
       <div className="mx-auto max-w-6xl px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: form (2/3) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-
           {/* Basic Info */}
           <section className="rb-card p-6">
             <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)] mb-5">
@@ -188,10 +214,12 @@ export default function ProfileEditor({ profile }: Props) {
                 <input
                   type="text"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  onBlur={() => save()}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    markDirty('basic');
+                  }}
                   placeholder="Jane Smith"
-                  className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]"
+                  className={inputClass}
                 />
               </div>
 
@@ -203,10 +231,12 @@ export default function ProfileEditor({ profile }: Props) {
                 <input
                   type="text"
                   value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  onBlur={() => save()}
+                  onChange={(e) => {
+                    setTargetRole(e.target.value);
+                    markDirty('basic');
+                  }}
                   placeholder="Director of Operations"
-                  className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]"
+                  className={inputClass}
                 />
               </div>
 
@@ -218,10 +248,12 @@ export default function ProfileEditor({ profile }: Props) {
                 <input
                   type="text"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  onBlur={() => save()}
+                  onChange={(e) => {
+                    setLocation(e.target.value);
+                    markDirty('basic');
+                  }}
                   placeholder="New York, NY (Remote)"
-                  className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]"
+                  className={inputClass}
                 />
               </div>
 
@@ -233,14 +265,25 @@ export default function ProfileEditor({ profile }: Props) {
                 <input
                   type="url"
                   value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                  onBlur={() => save()}
+                  onChange={(e) => {
+                    setLinkedinUrl(e.target.value);
+                    markDirty('basic');
+                  }}
                   placeholder="https://linkedin.com/in/janesmithsmith"
-                  className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]"
+                  className={inputClass}
                 />
               </div>
             </div>
+            <SaveBar state={status.basic} dirty={dirty.basic} onSave={() => saveSection('basic')} />
           </section>
+
+          {/* AI role suggestions — fills the Target role field above */}
+          <RoleSuggestions
+            onUseRole={(title) => {
+              setTargetRole(title);
+              markDirty('basic');
+            }}
+          />
 
           {/* Headline */}
           <section className="rb-card p-6">
@@ -254,25 +297,26 @@ export default function ProfileEditor({ profile }: Props) {
             <div>
               <textarea
                 value={headline}
-                onChange={(e) => setHeadline(e.target.value)}
-                onBlur={() => save()}
+                onChange={(e) => {
+                  setHeadline(e.target.value);
+                  markDirty('headline');
+                }}
                 placeholder="Ops leader who scaled two companies from Series A to $200M ARR, built the teams that run them, and still answers Slack on weekends."
                 rows={3}
                 maxLength={200}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)] resize-none"
+                className={`${inputClass} resize-none`}
               />
               <div className="flex justify-end mt-1">
                 <span
                   className={`text-xs font-data ${
-                    headline.length >= 180
-                      ? 'text-[var(--color-warning)]'
-                      : 'text-[var(--rb-text-muted)]'
+                    headline.length >= 180 ? 'text-[var(--color-warning)]' : 'text-[var(--rb-text-muted)]'
                   }`}
                 >
                   {headline.length} / 200
                 </span>
               </div>
             </div>
+            <SaveBar state={status.headline} dirty={dirty.headline} onSave={() => saveSection('headline')} />
           </section>
 
           {/* Career Snapshot */}
@@ -298,16 +342,12 @@ export default function ProfileEditor({ profile }: Props) {
                     type="text"
                     value={bullet}
                     onChange={(e) => updateBullet(i, e.target.value)}
-                    onBlur={() => save()}
                     placeholder={`Career highlight ${i + 1}…`}
-                    className="flex-1 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)]"
+                    className={`flex-1 ${inputClass}`}
                   />
                   {bullets.length > 1 && (
                     <button
-                      onClick={() => {
-                        removeBullet(i);
-                        setTimeout(() => save(), 50);
-                      }}
+                      onClick={() => removeBullet(i)}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded text-[var(--rb-text-muted)] hover:text-[var(--color-error)] transition-all duration-[var(--duration-fast)]"
                       aria-label="Remove bullet"
                     >
@@ -327,6 +367,7 @@ export default function ProfileEditor({ profile }: Props) {
                 Add highlight
               </button>
             )}
+            <SaveBar state={status.snapshot} dirty={dirty.snapshot} onSave={() => saveSection('snapshot')} />
           </section>
 
           {/* Additional Context */}
@@ -342,25 +383,26 @@ export default function ProfileEditor({ profile }: Props) {
             <div>
               <textarea
                 value={additionalContext}
-                onChange={(e) => setAdditionalContext(e.target.value)}
-                onBlur={() => save()}
+                onChange={(e) => {
+                  setAdditionalContext(e.target.value);
+                  markDirty('context');
+                }}
                 placeholder="Share anything else recruiters should know — your story, what you're looking for, what you care about…"
                 rows={4}
                 maxLength={2000}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:outline-none focus:border-[var(--rb-border-focus)] focus:shadow-[var(--shadow-focus)] transition-shadow duration-[var(--duration-fast)] resize-none"
+                className={`${inputClass} resize-none`}
               />
               <div className="flex justify-end mt-1">
                 <span
                   className={`text-xs font-data ${
-                    additionalContext.length >= 1800
-                      ? 'text-[var(--color-warning)]'
-                      : 'text-[var(--rb-text-muted)]'
+                    additionalContext.length >= 1800 ? 'text-[var(--color-warning)]' : 'text-[var(--rb-text-muted)]'
                   }`}
                 >
                   {additionalContext.length} / 2000
                 </span>
               </div>
             </div>
+            <SaveBar state={status.context} dirty={dirty.context} onSave={() => saveSection('context')} />
           </section>
 
           {/* Profile Link */}
@@ -408,6 +450,39 @@ export default function ProfileEditor({ profile }: Props) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Per-section save control with inline confirmation. */
+function SaveBar({ state, dirty, onSave }: { state: Status; dirty: boolean; onSave: () => void }) {
+  const disabled = state === 'saving' || (!dirty && state !== 'error');
+  return (
+    <div className="mt-4 flex items-center justify-end gap-3 border-t border-[var(--rb-border)] pt-3">
+      <span aria-live="polite" className="text-xs">
+        {state === 'saved' && (
+          <span className="flex items-center gap-1 text-[var(--color-success)]">
+            <Check className="size-3.5" /> Saved
+          </span>
+        )}
+        {state === 'error' && (
+          <span className="text-[var(--color-error)]">Couldn&apos;t save — check the fields and retry</span>
+        )}
+        {state === 'idle' && dirty && <span className="text-[var(--rb-text-muted)]">Unsaved changes</span>}
+      </span>
+      <button
+        onClick={onSave}
+        disabled={disabled}
+        className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {state === 'saving' ? (
+          <>
+            <Loader2 className="size-3.5 animate-spin" /> Saving…
+          </>
+        ) : (
+          'Save'
+        )}
+      </button>
     </div>
   );
 }
@@ -498,9 +573,7 @@ function ProfilePreviewCard({
               </li>
             ))}
             {bullets.length > 3 && (
-              <li className="text-xs text-[var(--rb-text-muted)] pl-3">
-                +{bullets.length - 3} more…
-              </li>
+              <li className="text-xs text-[var(--rb-text-muted)] pl-3">+{bullets.length - 3} more…</li>
             )}
           </ul>
         )}
