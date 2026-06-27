@@ -203,6 +203,12 @@ export type CareerSourceType =
 
 export type SourceIngestMethod = 'upload' | 'paste' | 'link';
 
+// Client-safe view of a source: metadata only, never the extracted_text body.
+export type CareerSourceSummary = Pick<
+  CareerSource,
+  'id' | 'source_type' | 'label' | 'ingest_method' | 'char_count' | 'file_name' | 'created_at'
+>;
+
 // External career material a candidate brings in (LinkedIn/Indeed/GitHub/reviews).
 // Stored as extracted text and fed to the brain as grounding -- never displayed
 // raw to recruiters. extracted_text is private; never granted to anon.

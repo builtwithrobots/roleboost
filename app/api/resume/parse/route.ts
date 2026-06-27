@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { adminClient } from '@/lib/supabase/admin';
 import { extractResumeText } from '@/lib/resume/extract-text';
 import { parseResumeText } from '@/lib/ai/parse-resume';
+import { deriveProfileFromResume } from '@/lib/ai/derive-profile';
 
 // Node runtime: text extraction (unpdf/mammoth) + Anthropic call need Node APIs.
 export const runtime = 'nodejs';
@@ -35,9 +36,10 @@ export async function POST(req: NextRequest) {
   }
 
   // The candidate's profile (owner-scoped) is the parent for the resume_document.
+  // Pull the public-profile fields too so we can pre-fill the empty ones below.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: profile } = await (adminClient.from('candidate_profiles') as any)
-    .select('id')
+    .select('id, headline, target_role, location, linkedin_url, summary_bullets')
     .eq('clerk_user_id', userId)
     .single();
   if (!profile) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'No candidate profile' } }, { status: 404 });
@@ -85,6 +87,29 @@ export async function POST(req: NextRequest) {
   if (error || !doc) {
     console.error('resume parse: upsert failed', userId, error);
     return NextResponse.json({ error: { code: 'INTERNAL', message: error?.message } }, { status: 500 });
+  }
+
+  // Pre-fill empty public-profile fields from the parsed résumé. Only fields the
+  // candidate has not already set are touched -- a re-upload never clobbers edits.
+  // Best-effort: a failure here must not fail the parse the user is waiting on.
+  try {
+    const derived = deriveProfileFromResume(parsed.json);
+    const prefill: Record<string, string | string[]> = {};
+    if (!profile.headline && derived.headline) prefill.headline = derived.headline;
+    if (!profile.target_role && derived.target_role) prefill.target_role = derived.target_role;
+    if (!profile.location && derived.location) prefill.location = derived.location;
+    if (!profile.linkedin_url && derived.linkedin_url) prefill.linkedin_url = derived.linkedin_url;
+    if ((!profile.summary_bullets || profile.summary_bullets.length === 0) && derived.summary_bullets.length) {
+      prefill.summary_bullets = derived.summary_bullets;
+    }
+
+    if (Object.keys(prefill).length > 0) {
+      await (adminClient.from('candidate_profiles') as unknown as { update: (v: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<unknown> } })
+        .update({ ...prefill, updated_at: new Date().toISOString() })
+        .eq('clerk_user_id', userId);
+    }
+  } catch (e) {
+    console.error('resume parse: profile pre-fill failed (non-fatal)', userId, e);
   }
 
   return NextResponse.json({ ok: true, resume_document_id: doc.id, markdown: doc.canonical_markdown, status: doc.status });
