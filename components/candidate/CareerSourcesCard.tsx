@@ -52,8 +52,12 @@ function modesFor(type: CareerSourceType): Mode[] {
 function acceptFor(type: CareerSourceType): string {
   return type === 'linkedin' ? '.zip,.pdf,.docx,.txt' : '.pdf,.docx,.txt';
 }
+// Tells the candidate exactly how to get the file for this source. Both LinkedIn
+// and Indeed hand you a single PDF -- that's the primary path; LinkedIn's full
+// data-export .zip is an optional richer extra.
 function hintFor(type: CareerSourceType): string {
-  if (type === 'linkedin') return 'Your LinkedIn data export (.zip) or a Save-to-PDF — PDF, DOCX, TXT, ZIP up to 10MB';
+  if (type === 'linkedin') return 'LinkedIn → ⋯ More → Save to PDF, then upload it (or your data-export .zip) · 10MB';
+  if (type === 'indeed') return 'Indeed → download icon on your profile → upload the PDF · 10MB';
   return 'PDF, DOCX, or TXT up to 10MB';
 }
 
