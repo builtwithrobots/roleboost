@@ -8,6 +8,7 @@ import {
   BRAIN_CATEGORIES,
   type BrainFieldKey,
 } from '@/lib/ai/intake';
+import { getSourceDocuments } from '@/lib/career-sources/queries';
 
 // Owner-only. Persists the interview answers, synthesizes them into the brain
 // fields (one source of truth), computes the readiness score, and marks intake
@@ -77,9 +78,12 @@ export async function POST(req: NextRequest) {
       ? (resumeDoc as { canonical_markdown: string }).canonical_markdown
       : null;
 
+  // Saved career sources enrich the synthesized brain as additional grounding.
+  const sources = await getSourceDocuments(supabase, profileId);
+
   let synthesized;
   try {
-    synthesized = await assembleBrainFromIntake(resumeMarkdown, answers);
+    synthesized = await assembleBrainFromIntake(resumeMarkdown, answers, sources);
   } catch (e) {
     console.error('intake assemble: synthesis failed', userId, e);
     return NextResponse.json({ error: { code: 'INTERNAL', message: 'Brain assembly failed' } }, { status: 500 });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { analyzeIntakePass1, generateNextPass } from '@/lib/ai/intake';
+import { getSourceDocuments } from '@/lib/career-sources/queries';
 import type { IntakeDocument } from '@/lib/types';
 
 // Owner-only, multi-pass intake question generation. Stateless per call: the
@@ -70,8 +71,11 @@ export async function POST(req: NextRequest) {
       ? (resumeDoc as { canonical_markdown: string }).canonical_markdown
       : null;
 
+  // Grounding documents: résumé + the candidate's saved career sources + any
+  // one-off text pasted in this session. Saved sources are owner-scoped via RLS.
   const docs: IntakeDocument[] = [];
   if (resumeMarkdown && resumeMarkdown.trim()) docs.push({ label: 'Résumé', text: resumeMarkdown });
+  docs.push(...(await getSourceDocuments(supabase, profileId)));
   docs.push(...documents);
 
   try {

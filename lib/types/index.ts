@@ -190,6 +190,38 @@ export interface BrainReadiness {
   categories: { label: string; score: number }[];
 }
 
+// ── Career sources (external profile imports) ───────────────────────────────
+
+export type CareerSourceType =
+  | 'linkedin'
+  | 'indeed'
+  | 'github'
+  | 'portfolio'
+  | 'review'
+  | 'recommendation'
+  | 'other';
+
+export type SourceIngestMethod = 'upload' | 'paste' | 'link';
+
+// External career material a candidate brings in (LinkedIn/Indeed/GitHub/reviews).
+// Stored as extracted text and fed to the brain as grounding -- never displayed
+// raw to recruiters. extracted_text is private; never granted to anon.
+export interface CareerSource {
+  id: string;
+  candidate_profile_id: string;
+  clerk_user_id: string;
+  source_type: CareerSourceType;
+  label: string;
+  ingest_method: SourceIngestMethod;
+  extracted_text: string;
+  char_count: number;
+  source_url: string | null;
+  file_name: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ── Transcript-to-brain gap loop (Phase E2) ─────────────────────────────────
 
 export type TranscriptGapType = 'deflection' | 'weak' | 'new_topic';

@@ -222,18 +222,23 @@ const BRAIN_SCHEMA = {
 export async function assembleBrainFromIntake(
   resumeMarkdown: string | null,
   answers: IntakeAnswer[],
+  sources: IntakeDocument[] = [],
 ): Promise<AssembledBrain> {
   const system = `You assemble a candidate's AI "brain" from their intake interview. Synthesize their answers into clean, first-person context fields the AI will speak from.
 
 Rules:
-- Use ONLY what the candidate said in their answers (and the résumé for grounding). Never invent facts, numbers, or credentials.
+- Use ONLY what the candidate said in their answers, and the résumé and supporting sources for grounding. Never invent facts, numbers, or credentials.
+- Supporting sources (LinkedIn, recommendations, reviews, etc.) may corroborate or add detail the candidate did not retype, but the answers lead. Do not contradict the candidate's own answers.
 - Write in first person ("I led...", "I left because...").
 - Each field is a concise paragraph. If a field has no supporting answer, return an empty string for it.
 - Group each answer into the field that matches its category.
 
 Fields: ${CATEGORY_LIST}. Submit via the submit_brain tool.`;
 
-  const content = `RÉSUMÉ (for grounding only):\n${resumeMarkdown ?? 'None.'}\n\nINTERVIEW ANSWERS:\n${formatAnswers(answers)}`;
+  const sourceBlock = sources.filter((s) => s.text.trim()).length
+    ? `\n\nSUPPORTING SOURCES (for grounding only):\n${formatDocs(sources)}`
+    : '';
+  const content = `RÉSUMÉ (for grounding only):\n${resumeMarkdown ?? 'None.'}${sourceBlock}\n\nINTERVIEW ANSWERS:\n${formatAnswers(answers)}`;
 
   const response = await anthropic.messages.create({
     model: GENERATION_MODEL,
