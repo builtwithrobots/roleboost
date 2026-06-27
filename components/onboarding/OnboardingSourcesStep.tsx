@@ -5,6 +5,7 @@ import {
   Library,
   UploadCloud,
   ClipboardPaste,
+  Link2,
   Loader2,
   Plus,
   ArrowRight,
@@ -17,7 +18,7 @@ interface Props {
   onContinue: () => void;
 }
 
-type Mode = 'upload' | 'paste';
+type Mode = 'upload' | 'paste' | 'link';
 type Added = { id: string; label: string };
 
 const SOURCE_TYPES: { value: CareerSourceType; label: string }[] = [
@@ -34,16 +35,38 @@ const LABELS: Record<CareerSourceType, string> = Object.fromEntries(
   SOURCE_TYPES.map((t) => [t.value, t.label]),
 ) as Record<CareerSourceType, string>;
 
-const ACCEPT = '.pdf,.docx,.txt';
+function modesFor(type: CareerSourceType): Mode[] {
+  if (type === 'github') return ['link', 'paste'];
+  return ['upload', 'paste'];
+}
+function acceptFor(type: CareerSourceType): string {
+  return type === 'linkedin' ? '.zip,.pdf,.docx,.txt' : '.pdf,.docx,.txt';
+}
+
+const MODE_META: Record<Mode, { label: string; Icon: typeof Library }> = {
+  upload: { label: 'Upload', Icon: UploadCloud },
+  paste: { label: 'Paste', Icon: ClipboardPaste },
+  link: { label: 'Link', Icon: Link2 },
+};
 
 export default function OnboardingSourcesStep({ onContinue }: Props) {
   const [type, setType] = useState<CareerSourceType>('linkedin');
-  const [mode, setMode] = useState<Mode>('paste');
+  const [mode, setMode] = useState<Mode>('upload');
   const [text, setText] = useState('');
+  const [url, setUrl] = useState('');
   const [added, setAdded] = useState<Added[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const modes = modesFor(type);
+
+  function onTypeChange(next: CareerSourceType) {
+    setType(next);
+    const allowed = modesFor(next);
+    if (!allowed.includes(mode)) setMode(allowed[0]);
+    setError(null);
+  }
 
   async function submit(form: FormData) {
     setError(null);
@@ -59,6 +82,7 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
       }
       setAdded((prev) => [...prev, { id: json.source.id, label: json.source.label }]);
       setText('');
+      setUrl('');
       if (fileRef.current) fileRef.current.value = '';
     } catch {
       setError('Something went wrong. Please try again.');
@@ -81,6 +105,16 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
     }
     const form = new FormData();
     form.append('text', text.trim());
+    void submit(form);
+  }
+
+  function onLink() {
+    if (!url.trim()) {
+      setError('Paste a GitHub profile URL or username.');
+      return;
+    }
+    const form = new FormData();
+    form.append('url', url.trim());
     void submit(form);
   }
 
@@ -118,7 +152,7 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
         <div className="mb-3 flex flex-col gap-2 sm:flex-row">
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as CareerSourceType)}
+            onChange={(e) => onTypeChange(e.target.value as CareerSourceType)}
             aria-label="Source type"
             className="rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] focus:border-[var(--rb-border-focus)] focus:outline-none focus:shadow-[var(--shadow-focus)]"
           >
@@ -129,25 +163,28 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
             ))}
           </select>
           <div className="inline-flex rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-sunken)] p-0.5 text-xs">
-            {(['paste', 'upload'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                aria-pressed={mode === m}
-                className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium transition-colors ${
-                  mode === m
-                    ? 'bg-[var(--rb-bg-surface)] text-[var(--rb-text)] shadow-sm'
-                    : 'text-[var(--rb-text-muted)] hover:text-[var(--rb-text-secondary)]'
-                }`}
-              >
-                {m === 'upload' ? <UploadCloud className="size-3.5" /> : <ClipboardPaste className="size-3.5" />}
-                {m === 'upload' ? 'Upload' : 'Paste'}
-              </button>
-            ))}
+            {modes.map((m) => {
+              const { label: ml, Icon } = MODE_META[m];
+              return (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  aria-pressed={mode === m}
+                  className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium transition-colors ${
+                    mode === m
+                      ? 'bg-[var(--rb-bg-surface)] text-[var(--rb-text)] shadow-sm'
+                      : 'text-[var(--rb-text-muted)] hover:text-[var(--rb-text-secondary)]'
+                  }`}
+                >
+                  <Icon className="size-3.5" />
+                  {ml}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {mode === 'upload' ? (
+        {mode === 'upload' && (
           <button
             onClick={() => fileRef.current?.click()}
             disabled={busy}
@@ -163,18 +200,22 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
                 <span className="text-sm text-[var(--rb-text-secondary)]">
                   Drop or <span className="font-semibold text-[var(--rb-text-brand)]">browse</span>
                 </span>
-                <span className="text-xs text-[var(--rb-text-muted)]">PDF, DOCX, or TXT up to 10MB</span>
+                <span className="text-xs text-[var(--rb-text-muted)]">
+                  {type === 'linkedin' ? 'LinkedIn export (.zip) or PDF/DOCX/TXT' : 'PDF, DOCX, or TXT'} up to 10MB
+                </span>
               </>
             )}
             <input
               ref={fileRef}
               type="file"
-              accept={ACCEPT}
+              accept={acceptFor(type)}
               className="hidden"
               onChange={(e) => onFile(e.target.files?.[0])}
             />
           </button>
-        ) : (
+        )}
+
+        {mode === 'paste' && (
           <div className="flex flex-col gap-2">
             <textarea
               value={text}
@@ -191,6 +232,26 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
             >
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
               Add source
+            </button>
+          </div>
+        )}
+
+        {mode === 'link' && (
+          <div className="flex flex-col gap-2">
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="github.com/yourname  (or just your username)"
+              className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:border-[var(--rb-border-focus)] focus:outline-none focus:shadow-[var(--shadow-focus)]"
+            />
+            <button
+              onClick={onLink}
+              disabled={busy || !url.trim()}
+              className="inline-flex items-center gap-2 self-start rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-raised)] px-4 py-2 text-sm font-semibold text-[var(--rb-text)] transition-colors hover:bg-[var(--rb-bg-surface-sunken)] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+              Import profile
             </button>
           </div>
         )}
