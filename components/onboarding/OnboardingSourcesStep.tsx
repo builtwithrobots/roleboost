@@ -42,6 +42,13 @@ function modesFor(type: CareerSourceType): Mode[] {
 function acceptFor(type: CareerSourceType): string {
   return type === 'linkedin' ? '.zip,.pdf,.docx,.txt' : '.pdf,.docx,.txt';
 }
+// LinkedIn and Indeed both give you a single PDF -- the primary path. LinkedIn's
+// full data-export .zip is an optional richer extra.
+function hintFor(type: CareerSourceType): string {
+  if (type === 'linkedin') return 'LinkedIn → ⋯ More → Save to PDF (or your data-export .zip) · 10MB';
+  if (type === 'indeed') return 'Indeed → download icon → save the PDF · 10MB';
+  return 'PDF, DOCX, or TXT up to 10MB';
+}
 
 const MODE_META: Record<Mode, { label: string; Icon: typeof Library }> = {
   upload: { label: 'Upload', Icon: UploadCloud },
@@ -200,9 +207,7 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
                 <span className="text-sm text-[var(--rb-text-secondary)]">
                   Drop or <span className="font-semibold text-[var(--rb-text-brand)]">browse</span>
                 </span>
-                <span className="text-xs text-[var(--rb-text-muted)]">
-                  {type === 'linkedin' ? 'LinkedIn export (.zip) or PDF/DOCX/TXT' : 'PDF, DOCX, or TXT'} up to 10MB
-                </span>
+                <span className="text-xs text-[var(--rb-text-muted)]">{hintFor(type)}</span>
               </>
             )}
             <input
