@@ -181,9 +181,9 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
                     Let&apos;s build your brain from your documents
                   </h2>
                   <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
-                    I&apos;ll read your résumé and ask the questions a recruiter actually would. Add a
-                    second source (LinkedIn, Indeed) and I&apos;ll also flag anything that doesn&apos;t
-                    line up across them.
+                    I&apos;ll read your résumé and any career sources you&apos;ve saved, then ask the
+                    questions a recruiter actually would — and flag anything that doesn&apos;t line up
+                    across them. Paste one more source below for this session if you like.
                   </p>
                 </div>
                 <div>

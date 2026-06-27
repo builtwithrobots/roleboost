@@ -22,7 +22,14 @@ import SandboxPanel from '@/components/candidate/SandboxPanel';
 import PromptBot from './PromptBot';
 import HardenPanel from './HardenPanel';
 import IntakeInterview from './IntakeInterview';
-import type { CandidateProfile, CustomQAPair, TranscriptGap, BrainHardeningSession } from '@/lib/types';
+import CareerSourcesCard from './CareerSourcesCard';
+import type {
+  CandidateProfile,
+  CustomQAPair,
+  TranscriptGap,
+  BrainHardeningSession,
+  CareerSourceSummary,
+} from '@/lib/types';
 
 interface Props {
   profile: CandidateProfile;
@@ -30,6 +37,10 @@ interface Props {
   gaps?: TranscriptGap[];
   /** Past external-transcript hardening sessions (most recent first). */
   hardeningSessions?: BrainHardeningSession[];
+  /** Saved external career sources that feed the brain as grounding. */
+  sources?: CareerSourceSummary[];
+  /** Active-source ceiling, mirrored from the API. */
+  maxSources?: number;
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -88,7 +99,7 @@ const TEXT_FIELDS = [
 
 type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
-export default function AIStudio({ profile, gaps, hardeningSessions }: Props) {
+export default function AIStudio({ profile, gaps, hardeningSessions, sources, maxSources = 10 }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
     leadership_philosophy: profile.leadership_philosophy ?? '',
@@ -252,6 +263,9 @@ export default function AIStudio({ profile, gaps, hardeningSessions }: Props) {
               </button>
             </div>
           </section>
+
+          {/* Career sources: external material that grounds the brain + interview */}
+          <CareerSourcesCard sources={sources ?? []} maxSources={maxSources} />
 
           <section className="rb-card p-6">
             <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">

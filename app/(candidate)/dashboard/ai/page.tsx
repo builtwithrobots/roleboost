@@ -3,13 +3,22 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { ensureCandidateProfile } from '../profile/actions';
 import AIStudio from '@/components/candidate/AIStudio';
 import DashboardPage from '@/components/layout/DashboardPage';
-import type { CandidateProfile, TranscriptGap, BrainHardeningSession } from '@/lib/types';
+import { MAX_ACTIVE_SOURCES } from '@/lib/career-sources/queries';
+import type {
+  CandidateProfile,
+  TranscriptGap,
+  BrainHardeningSession,
+  CareerSourceSummary,
+} from '@/lib/types';
 
 const GAP_COLUMNS =
   'id, candidate_profile_id, chat_session_id, question_asked, chatbot_answer, gap_type, suggested_prompt, category, priority, is_addressed, pattern_count, created_at';
 
 const HARDENING_COLUMNS =
   'id, candidate_profile_id, transcript_source, source_context, questions_found, gaps_identified, gaps_addressed, hardening_plan, created_at, last_reanalyzed_at';
+
+// Metadata only -- extracted_text is private brain material and stays server-side.
+const SOURCE_COLUMNS = 'id, source_type, label, ingest_method, char_count, file_name, created_at';
 
 const AI_COLUMNS =
   'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, created_at, updated_at';
@@ -85,9 +94,26 @@ export default async function AIStudioPage() {
     .limit(20);
   const hardeningSessions = (hardeningData ?? []) as unknown as BrainHardeningSession[];
 
+  // Saved career sources (LinkedIn/Indeed/etc.) the candidate manages in the Build
+  // section. RLS scopes to the owner; the explicit filter keeps it indexed.
+  const { data: sourcesData } = await supabase
+    .from('career_sources')
+    .select(SOURCE_COLUMNS)
+    .eq('candidate_profile_id', profile.id)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(MAX_ACTIVE_SOURCES);
+  const sources = (sourcesData ?? []) as unknown as CareerSourceSummary[];
+
   return (
     <DashboardPage>
-      <AIStudio profile={profile} gaps={gaps} hardeningSessions={hardeningSessions} />
+      <AIStudio
+        profile={profile}
+        gaps={gaps}
+        hardeningSessions={hardeningSessions}
+        sources={sources}
+        maxSources={MAX_ACTIVE_SOURCES}
+      />
     </DashboardPage>
   );
 }
