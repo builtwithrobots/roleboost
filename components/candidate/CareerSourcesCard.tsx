@@ -5,6 +5,7 @@ import {
   Library,
   UploadCloud,
   ClipboardPaste,
+  Link2,
   Loader2,
   Plus,
   Trash2,
@@ -25,7 +26,7 @@ interface Props {
   maxSources: number;
 }
 
-type Mode = 'upload' | 'paste';
+type Mode = 'upload' | 'paste' | 'link';
 
 const SOURCE_TYPES: { value: CareerSourceType; label: string; Icon: typeof Library }[] = [
   { value: 'linkedin', label: 'LinkedIn', Icon: Contact },
@@ -41,8 +42,26 @@ const TYPE_META: Record<CareerSourceType, { label: string; Icon: typeof Library 
   SOURCE_TYPES.map((t) => [t.value, { label: t.label, Icon: t.Icon }]),
 ) as Record<CareerSourceType, { label: string; Icon: typeof Library }>;
 
-const ACCEPT = '.pdf,.docx,.txt';
 const MAX_PASTE = 50000;
+
+// GitHub imports via link; LinkedIn upload also accepts the data-export .zip.
+function modesFor(type: CareerSourceType): Mode[] {
+  if (type === 'github') return ['link', 'paste'];
+  return ['upload', 'paste'];
+}
+function acceptFor(type: CareerSourceType): string {
+  return type === 'linkedin' ? '.zip,.pdf,.docx,.txt' : '.pdf,.docx,.txt';
+}
+function hintFor(type: CareerSourceType): string {
+  if (type === 'linkedin') return 'Your LinkedIn data export (.zip) or a Save-to-PDF — PDF, DOCX, TXT, ZIP up to 10MB';
+  return 'PDF, DOCX, or TXT up to 10MB';
+}
+
+const MODE_META: Record<Mode, { label: string; Icon: typeof Library }> = {
+  upload: { label: 'Upload file', Icon: UploadCloud },
+  paste: { label: 'Paste text', Icon: ClipboardPaste },
+  link: { label: 'Link', Icon: Link2 },
+};
 
 export default function CareerSourcesCard({ sources, maxSources }: Props) {
   const router = useRouter();
@@ -51,17 +70,22 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
   const [labelTouched, setLabelTouched] = useState(false);
   const [mode, setMode] = useState<Mode>('upload');
   const [text, setText] = useState('');
+  const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const atCap = sources.length >= maxSources;
+  const modes = modesFor(type);
 
   function onTypeChange(next: CareerSourceType) {
     setType(next);
-    // Keep the label in sync with the type until the user customizes it.
     if (!labelTouched) setLabel(TYPE_META[next].label);
+    // Snap to a mode that makes sense for the new type.
+    const allowed = modesFor(next);
+    if (!allowed.includes(mode)) setMode(allowed[0]);
+    setError(null);
   }
 
   async function submit(form: FormData) {
@@ -75,6 +99,7 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
         return;
       }
       setText('');
+      setUrl('');
       setLabelTouched(false);
       setLabel(TYPE_META[type].label);
       if (fileRef.current) fileRef.current.value = '';
@@ -109,6 +134,16 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
     void submit(form);
   }
 
+  function onLink() {
+    if (!url.trim()) {
+      setError('Paste a GitHub profile URL or username.');
+      return;
+    }
+    const form = base(new FormData());
+    form.append('url', url.trim());
+    void submit(form);
+  }
+
   function onDelete(id: string) {
     startTransition(async () => {
       const res = await deleteCareerSource({ sourceId: id });
@@ -136,6 +171,8 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
         <ul className="mb-4 flex flex-col gap-2">
           {sources.map((s) => {
             const Icon = TYPE_META[s.source_type]?.Icon ?? Library;
+            const detail =
+              s.ingest_method === 'link' ? 'Linked' : s.file_name ?? 'Pasted text';
             return (
               <li
                 key={s.id}
@@ -147,7 +184,7 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-[var(--rb-text)]">{s.label}</p>
                   <p className="truncate text-xs text-[var(--rb-text-muted)]">
-                    {s.file_name ?? 'Pasted text'} · {s.char_count.toLocaleString()} chars
+                    {detail} · {s.char_count.toLocaleString()} chars
                   </p>
                 </div>
                 <button
@@ -199,24 +236,27 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
 
           {/* Mode toggle */}
           <div className="mb-3 inline-flex rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-sunken)] p-0.5 text-xs">
-            {(['upload', 'paste'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                aria-pressed={mode === m}
-                className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium transition-colors ${
-                  mode === m
-                    ? 'bg-[var(--rb-bg-surface)] text-[var(--rb-text)] shadow-sm'
-                    : 'text-[var(--rb-text-muted)] hover:text-[var(--rb-text-secondary)]'
-                }`}
-              >
-                {m === 'upload' ? <UploadCloud className="size-3.5" /> : <ClipboardPaste className="size-3.5" />}
-                {m === 'upload' ? 'Upload file' : 'Paste text'}
-              </button>
-            ))}
+            {modes.map((m) => {
+              const { label: ml, Icon } = MODE_META[m];
+              return (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  aria-pressed={mode === m}
+                  className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 font-medium transition-colors ${
+                    mode === m
+                      ? 'bg-[var(--rb-bg-surface)] text-[var(--rb-text)] shadow-sm'
+                      : 'text-[var(--rb-text-muted)] hover:text-[var(--rb-text-secondary)]'
+                  }`}
+                >
+                  <Icon className="size-3.5" />
+                  {ml}
+                </button>
+              );
+            })}
           </div>
 
-          {mode === 'upload' ? (
+          {mode === 'upload' && (
             <button
               onClick={() => fileRef.current?.click()}
               disabled={busy}
@@ -232,18 +272,20 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
                   <span className="text-sm text-[var(--rb-text-secondary)]">
                     Drop or <span className="font-semibold text-[var(--rb-text-brand)]">browse</span>
                   </span>
-                  <span className="text-xs text-[var(--rb-text-muted)]">PDF, DOCX, or TXT up to 10MB</span>
+                  <span className="text-xs text-[var(--rb-text-muted)]">{hintFor(type)}</span>
                 </>
               )}
               <input
                 ref={fileRef}
                 type="file"
-                accept={ACCEPT}
+                accept={acceptFor(type)}
                 className="hidden"
                 onChange={(e) => onFile(e.target.files?.[0])}
               />
             </button>
-          ) : (
+          )}
+
+          {mode === 'paste' && (
             <div className="flex flex-col gap-2">
               <textarea
                 value={text}
@@ -260,6 +302,26 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
               >
                 {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                 Add source
+              </button>
+            </div>
+          )}
+
+          {mode === 'link' && (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="github.com/yourname  (or just your username)"
+                className="w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:border-[var(--rb-border-focus)] focus:outline-none focus:shadow-[var(--shadow-focus)]"
+              />
+              <button
+                onClick={onLink}
+                disabled={busy || !url.trim()}
+                className="inline-flex items-center gap-2 self-start rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+                Import profile
               </button>
             </div>
           )}

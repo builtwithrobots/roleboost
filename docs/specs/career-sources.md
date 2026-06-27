@@ -102,9 +102,14 @@ Each phase is its own commit on the working branch, sequential PRs into `main`.
 - On résumé parse, pre-fill `headline` / `target_role` / `summary_bullets` from the parsed
   `canonical_json` when those profile fields are still empty.
 
-### Phase 4 — Structured imports (follow-up, higher effort)
-- LinkedIn data-export **ZIP** parsing (Positions, Recommendations CSV → labelled sources).
-- GitHub / public-link fetch (ToS-safe: public APIs only; never scrape LinkedIn).
+### Phase 4 — Structured imports ✅
+- LinkedIn data-export **ZIP** parsing (`lib/career-sources/linkedin-export.ts` + `csv.ts`,
+  dependency `jszip`): pulls Profile, Positions, Education, Skills, Certifications, and
+  Recommendations Received into one consolidated grounding source.
+- GitHub **link** import (`lib/career-sources/github-import.ts`): public GitHub REST API only
+  (bio + top repos + languages); ToS-safe, never scrapes. New `link` ingest method + `source_url`.
+- `/api/sources` routes by input: `url` → GitHub, `.zip` → LinkedIn parser, else file/paste.
+- UI: AI Studio + onboarding gain a **Link** mode (GitHub) and `.zip`-aware upload (LinkedIn).
 
 ## Security / guardrails
 - Service-role never reads `extracted_text` to the client; the AI page reads it via the
