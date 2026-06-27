@@ -25,6 +25,20 @@ function clean(value: string | null | undefined, max: number): string | null {
   return v ? v.slice(0, max) : null;
 }
 
+// Résumés list LinkedIn bare ("linkedin.com/in/me"). Add a scheme so the stored
+// value is a valid URL the profile form can save without tripping URL validation.
+function normalizeUrl(value: string | null | undefined): string | null {
+  const s = value?.trim();
+  if (!s) return null;
+  const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+  try {
+    const u = new URL(withScheme);
+    return u.hostname.includes('.') ? u.toString().slice(0, 500) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Public-profile bullets from the résumé: the strongest accomplishment highlights
  * from the most recent roles, falling back to the summary split into sentences.
@@ -67,6 +81,6 @@ export function deriveProfileFromResume(resume: CanonicalResume): DerivedProfile
     target_role: clean(resume.experience[0]?.title, TARGET_ROLE_MAX),
     summary_bullets: deriveBullets(resume),
     location: clean(resume.contact.location, LOCATION_MAX),
-    linkedin_url: clean(resume.contact.linkedin_url, 500),
+    linkedin_url: normalizeUrl(resume.contact.linkedin_url),
   };
 }

@@ -15,11 +15,31 @@ const ProfileInput = z.object({
   headline: z.string().max(200).optional(),
   target_role: z.string().max(100).optional(),
   location: z.string().max(100).optional(),
-  linkedin_url: z.string().url().max(500).optional().or(z.literal('')),
+  // Accept any string here and normalize below. A strict .url() check rejected
+  // common bare URLs ("www.linkedin.com/in/me") and failed the whole save -- the
+  // résumé pre-fill stores them bare, so that broke saving for many candidates.
+  linkedin_url: z.string().max(500).optional(),
   summary_bullets: z.array(z.string().max(300)).max(7),
   additional_context: z.string().max(2000).optional(),
   is_published: z.boolean(),
 });
+
+/**
+ * Coerces a user- or résumé-supplied LinkedIn URL into a stored value. Adds a
+ * missing scheme, and drops anything that still isn't a plausible URL (returns
+ * null) rather than failing the entire profile save.
+ */
+function normalizeLinkedinUrl(value: string | undefined): string | null {
+  const s = value?.trim();
+  if (!s) return null;
+  const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+  try {
+    const u = new URL(withScheme);
+    return u.hostname.includes('.') ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function updateCandidateProfile(input: unknown) {
   try {
@@ -33,7 +53,7 @@ export async function updateCandidateProfile(input: unknown) {
         headline: parsed.headline || null,
         target_role: parsed.target_role || null,
         location: parsed.location || null,
-        linkedin_url: parsed.linkedin_url || null,
+        linkedin_url: normalizeLinkedinUrl(parsed.linkedin_url),
         summary_bullets: parsed.summary_bullets.filter(Boolean),
         additional_context: parsed.additional_context || null,
         is_published: parsed.is_published,
