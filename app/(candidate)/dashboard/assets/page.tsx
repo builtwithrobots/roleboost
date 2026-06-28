@@ -27,33 +27,43 @@ export default async function CandidateAssetsPage() {
   if (!profile) redirect('/dashboard/profile');
   const { id: profileId, slug } = profile as { id: string; slug: string };
 
-  // Audio Brief — the one media asset we keep. Sign its URL for playback.
-  const { data: audioRows } = await supabase
+  // Media assets we keep: Audio Brief + Infographic. Sign each for playback/preview.
+  type MediaType = 'audio' | 'infographic';
+  type MediaAsset = {
+    id: string;
+    file_name: string;
+    file_size_bytes: number | null;
+    created_at: string;
+    signed_url?: string;
+  };
+  const { data: mediaRows } = await supabase
     .from('candidate_assets')
-    .select('id, file_name, file_size_bytes, storage_bucket, storage_path, created_at')
+    .select('id, file_name, file_size_bytes, storage_bucket, storage_path, created_at, asset_type')
     .eq('clerk_user_id', userId)
-    .eq('asset_type', 'audio')
-    .eq('is_active', true)
-    .limit(1);
+    .in('asset_type', ['audio', 'infographic'])
+    .eq('is_active', true);
 
-  let audioAsset:
-    | { id: string; file_name: string; file_size_bytes: number | null; created_at: string; signed_url?: string }
-    | null = null;
-  const audioRow = (audioRows ?? [])[0] as
-    | { id: string; file_name: string; file_size_bytes: number | null; storage_bucket: string; storage_path: string; created_at: string }
-    | undefined;
-  if (audioRow) {
+  const mediaByType: Record<MediaType, MediaAsset | null> = { audio: null, infographic: null };
+  for (const row of (mediaRows ?? []) as Array<{
+    id: string;
+    file_name: string;
+    file_size_bytes: number | null;
+    storage_bucket: string;
+    storage_path: string;
+    created_at: string;
+    asset_type: MediaType;
+  }>) {
     let signed_url: string | undefined;
     try {
-      signed_url = await getSignedAssetUrl(audioRow.storage_bucket, audioRow.storage_path);
+      signed_url = await getSignedAssetUrl(row.storage_bucket, row.storage_path);
     } catch {
-      // bucket may not exist yet — show the card without a play link
+      // bucket may not exist yet — show the card without a preview link
     }
-    audioAsset = {
-      id: audioRow.id,
-      file_name: audioRow.file_name,
-      file_size_bytes: audioRow.file_size_bytes,
-      created_at: audioRow.created_at,
+    mediaByType[row.asset_type] = {
+      id: row.id,
+      file_name: row.file_name,
+      file_size_bytes: row.file_size_bytes,
+      created_at: row.created_at,
       signed_url,
     };
   }
@@ -117,18 +127,23 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        description="Your résumé, audio brief, and shareable context package — the materials that power your RoleBoost profile."
+        description="Your résumé, audio brief, infographic, and shareable context package — the materials that power your RoleBoost profile."
       />
 
       {/* ATS résumé builder */}
       <ResumeBuilderCard resume={resumeDoc} />
 
-      {/* Audio Brief + Asset Package */}
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-8 lg:grid-cols-2">
+      {/* Audio Brief + Infographic + Asset Package */}
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-8 sm:grid-cols-2 lg:grid-cols-3">
         <AssetUploadCard
           assetType="audio"
           candidateProfileId={profileId}
-          existingAsset={audioAsset ?? undefined}
+          existingAsset={mediaByType.audio ?? undefined}
+        />
+        <AssetUploadCard
+          assetType="infographic"
+          candidateProfileId={profileId}
+          existingAsset={mediaByType.infographic ?? undefined}
         />
         <AssetPackageCard initialMarkdown={packageMd} updatedAt={packageUpdatedAt} slug={slug} />
       </div>
