@@ -46,7 +46,7 @@ const ASSET_META: Record<AssetType, {
 }> = {
   audio: {
     icon: Headphones,
-    label: 'Audio Overview',
+    label: 'Audio Brief',
     description: 'Your 2–5 minute career story. Produced via NotebookLM.',
     accept: 'audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/ogg,.mp3,.m4a,.wav,.ogg',
     hint: 'MP3, M4A, WAV up to 50MB',

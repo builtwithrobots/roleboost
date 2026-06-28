@@ -1,13 +1,11 @@
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
-import AssetsGrid from '@/components/candidate/AssetsGrid';
+import AssetUploadCard from '@/components/candidate/AssetUploadCard';
+import AssetPackageCard from '@/components/candidate/AssetPackageCard';
 import DashboardPage from '@/components/layout/DashboardPage';
 import PageHeader from '@/components/ui/page-header';
 import ResumeBuilderCard, { type ResumeDoc } from '@/components/candidate/ResumeBuilderCard';
-
-const ASSET_TYPES = ['audio', 'debate_audio', 'video', 'deck', 'infographic', 'resume'] as const;
-type AssetType = typeof ASSET_TYPES[number];
 
 export default async function CandidateAssetsPage() {
   let ctx;
@@ -20,48 +18,63 @@ export default async function CandidateAssetsPage() {
 
   const { supabase, userId } = ctx;
 
-  // Get candidate profile id
   const { data: profile } = await supabase
     .from('candidate_profiles')
-    .select('id')
+    .select('id, slug')
     .eq('clerk_user_id', userId)
     .single();
 
   if (!profile) redirect('/dashboard/profile');
+  const { id: profileId, slug } = profile as { id: string; slug: string };
 
-  // Fetch all active assets
-  const { data: rawAssets } = await supabase
+  // Audio Brief — the one media asset we keep. Sign its URL for playback.
+  const { data: audioRows } = await supabase
     .from('candidate_assets')
-    .select('id, asset_type, file_name, file_size_bytes, storage_bucket, storage_path, created_at')
+    .select('id, file_name, file_size_bytes, storage_bucket, storage_path, created_at')
     .eq('clerk_user_id', userId)
-    .eq('is_active', true);
+    .eq('asset_type', 'audio')
+    .eq('is_active', true)
+    .limit(1);
 
-  const assets: { id: string; asset_type: string; file_name: string; file_size_bytes: number | null; storage_bucket: string; storage_path: string; created_at: string }[] = rawAssets ?? [];
+  let audioAsset:
+    | { id: string; file_name: string; file_size_bytes: number | null; created_at: string; signed_url?: string }
+    | null = null;
+  const audioRow = (audioRows ?? [])[0] as
+    | { id: string; file_name: string; file_size_bytes: number | null; storage_bucket: string; storage_path: string; created_at: string }
+    | undefined;
+  if (audioRow) {
+    let signed_url: string | undefined;
+    try {
+      signed_url = await getSignedAssetUrl(audioRow.storage_bucket, audioRow.storage_path);
+    } catch {
+      // bucket may not exist yet — show the card without a play link
+    }
+    audioAsset = {
+      id: audioRow.id,
+      file_name: audioRow.file_name,
+      file_size_bytes: audioRow.file_size_bytes,
+      created_at: audioRow.created_at,
+      signed_url,
+    };
+  }
 
-  // Generate signed URLs for existing assets
-  const assetsWithUrls = await Promise.all(
-    assets.map(async (asset) => {
-      let signed_url: string | undefined;
-      try {
-        signed_url = await getSignedAssetUrl(asset.storage_bucket, asset.storage_path);
-      } catch {
-        // Bucket may not exist yet in dev — continue without URL
-      }
-      return { ...asset, signed_url };
-    })
-  );
+  // Asset Package — best-effort: the columns may not exist yet on a project that
+  // hasn't received the context_package migration, so this query may come back
+  // empty without breaking the page.
+  let packageMd: string | null = null;
+  let packageUpdatedAt: string | null = null;
+  const { data: pkg } = await supabase
+    .from('candidate_profiles')
+    .select('context_package_md, context_package_updated_at')
+    .eq('clerk_user_id', userId)
+    .maybeSingle();
+  if (pkg) {
+    const p = pkg as { context_package_md?: string | null; context_package_updated_at?: string | null };
+    packageMd = p.context_package_md ?? null;
+    packageUpdatedAt = p.context_package_updated_at ?? null;
+  }
 
-  const assetByType = Object.fromEntries(
-    ASSET_TYPES.map((type) => [
-      type,
-      assetsWithUrls.find((a) => a.asset_type === type) ?? null,
-    ])
-  ) as Record<AssetType, typeof assetsWithUrls[number] | null>;
-
-  const uploadedCount = Object.values(assetByType).filter(Boolean).length;
-
-  // Load the candidate's résumé document (if any) for the ATS builder, with
-  // fresh signed download URLs for the generated PDF/Word files.
+  // Résumé document (ATS builder) with fresh signed download URLs.
   const { data: rawResume } = await supabase
     .from('resume_documents')
     .select('id, status, canonical_markdown, docx_asset_id, pdf_asset_id')
@@ -104,29 +117,29 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        description={
-          <>
-            Upload the media files that power your RoleBoost profile.{' '}
-            <span className="font-data">{uploadedCount}</span>
-            {' / '}
-            <span className="font-data">{ASSET_TYPES.length}</span> uploaded.
-          </>
-        }
+        description="Your résumé, audio brief, and shareable context package — the materials that power your RoleBoost profile."
       />
 
       {/* ATS résumé builder */}
       <ResumeBuilderCard resume={resumeDoc} />
 
-      {/* Asset grid (client component for motion) */}
-      <AssetsGrid candidateProfileId={profile.id} assetByType={assetByType} />
+      {/* Audio Brief + Asset Package */}
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-8 lg:grid-cols-2">
+        <AssetUploadCard
+          assetType="audio"
+          candidateProfileId={profileId}
+          existingAsset={audioAsset ?? undefined}
+        />
+        <AssetPackageCard initialMarkdown={packageMd} updatedAt={packageUpdatedAt} slug={slug} />
+      </div>
 
       {/* Tip */}
       <div className="mx-auto max-w-6xl px-6 pb-12">
         <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
           <p className="text-sm text-[var(--rb-text-secondary)]">
             <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}
-            Audio Overview and Debate Audio are produced by Google NotebookLM from your career documents.
-            Upload them here after generating — they&apos;re the most-played content on RoleBoost.
+            Your Audio Brief is produced by Google NotebookLM from your career documents — upload it here
+            after generating. The Asset Package is a single context file you can reuse anywhere.
           </p>
         </div>
       </div>
