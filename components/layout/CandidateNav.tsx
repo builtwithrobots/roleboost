@@ -9,6 +9,8 @@ import {
   BarChart3,
   Inbox,
   Bot,
+  MessagesSquare,
+  CalendarClock,
 } from 'lucide-react'
 import {
   SidebarDivider,
@@ -26,8 +28,10 @@ const profileItems = [
 ]
 
 const insightItems = [
-  { href: '/dashboard/analytics', label: 'Analytics', Icon: BarChart3 },
-  { href: '/dashboard/feedback',  label: 'Feedback',  Icon: Inbox },
+  { href: '/dashboard/transcripts',     label: 'Transcripts',      Icon: MessagesSquare },
+  { href: '/dashboard/meeting-requests', label: 'Meeting Requests', Icon: CalendarClock },
+  { href: '/dashboard/analytics',       label: 'Analytics',        Icon: BarChart3 },
+  { href: '/dashboard/feedback',        label: 'Feedback',         Icon: Inbox },
 ]
 
 const aiItems = [
