@@ -144,7 +144,26 @@ export async function POST(req: NextRequest) {
     });
 
   if (uploadError) {
-    console.error('Asset upload failed', userId, assetType, uploadError);
+    // Diagnostic: reveal which Supabase project this upload actually targets and
+    // which buckets that connection can see. Pinpoints a "Bucket not found" that
+    // is really a wrong-project / preview-branch mismatch.
+    let supabaseHost = 'unknown';
+    try {
+      supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').host;
+    } catch {
+      /* ignore */
+    }
+    let visibleBuckets: string[] = [];
+    try {
+      const { data: bk } = await (adminClient.storage as any).listBuckets();
+      visibleBuckets = (bk ?? []).map((b: { name: string }) => b.name);
+    } catch {
+      /* ignore */
+    }
+    console.error(
+      `Asset upload failed user=${userId} type=${assetType} targetBucket=${config.bucket} supabaseHost=${supabaseHost} visibleBuckets=${JSON.stringify(visibleBuckets)}`,
+      uploadError,
+    );
     return NextResponse.json({ error: { code: 'INTERNAL', message: uploadError.message } }, { status: 500 });
   }
 
