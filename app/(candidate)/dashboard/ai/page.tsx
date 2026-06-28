@@ -21,7 +21,7 @@ const HARDENING_COLUMNS =
 const SOURCE_COLUMNS = 'id, source_type, label, ingest_method, char_count, file_name, created_at';
 
 const AI_COLUMNS =
-  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, created_at, updated_at';
+  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, context_package_md, context_package_updated_at, career_context_drafts, created_at, updated_at';
 
 export default async function AIStudioPage() {
   let ctx;
@@ -60,6 +60,9 @@ export default async function AIStudioPage() {
       wish_questions: null,
       custom_qa_pairs: [],
       redirect_topics: [],
+      context_package_md: null,
+      context_package_updated_at: null,
+      career_context_drafts: null,
     };
   }
 

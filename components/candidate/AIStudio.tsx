@@ -15,6 +15,9 @@ import {
   ShieldCheck,
   Plus,
   Trash2,
+  Hammer,
+  FileText,
+  FlaskConical,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
@@ -23,6 +26,7 @@ import PromptBot from './PromptBot';
 import HardenPanel from './HardenPanel';
 import IntakeInterview from './IntakeInterview';
 import CareerSourcesCard from './CareerSourcesCard';
+import ContextDocumentPanel from './ContextDocumentPanel';
 import type {
   CandidateProfile,
   CustomQAPair,
@@ -99,6 +103,15 @@ const TEXT_FIELDS = [
 
 type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
+type StudioTab = 'build' | 'context' | 'test' | 'harden';
+
+const TABS: { key: StudioTab; label: string; Icon: typeof Hammer }[] = [
+  { key: 'build', label: 'Build', Icon: Hammer },
+  { key: 'context', label: 'Context Document', Icon: FileText },
+  { key: 'test', label: 'Test', Icon: FlaskConical },
+  { key: 'harden', label: 'Harden', Icon: ShieldCheck },
+];
+
 export default function AIStudio({ profile, gaps, hardeningSessions, sources, maxSources = 10 }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
@@ -119,6 +132,7 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
   const [aiEnabled, setAiEnabled] = useState(profile.ai_enabled ?? true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [interviewOpen, setInterviewOpen] = useState(false);
+  const [tab, setTab] = useState<StudioTab>('build');
   const router = useRouter();
   const [, startTransition] = useTransition();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -220,13 +234,44 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-8">
-        {/* ── Build ─────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
-            1 · Build your brain
-          </p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
+        {/* Tabs */}
+        <div
+          role="tablist"
+          aria-label="AI Studio sections"
+          className="flex flex-wrap gap-1 border-b border-[var(--rb-border)]"
+        >
+          {TABS.map(({ key, label, Icon }) => {
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                role="tab"
+                id={`studio-tab-${key}`}
+                aria-selected={active}
+                aria-controls={`studio-panel-${key}`}
+                onClick={() => setTab(key)}
+                className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                  active
+                    ? 'border-[var(--rb-brand)] text-[var(--rb-brand)]'
+                    : 'border-transparent text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]'
+                }`}
+              >
+                <Icon className="size-4" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
+        {/* ── Build ─────────────────────────────────────────────────────────── */}
+        {tab === 'build' && (
+        <div
+          role="tabpanel"
+          id="studio-panel-build"
+          aria-labelledby="studio-tab-build"
+          className="flex flex-col gap-6"
+        >
           {/* Prompt bot: gaps found in real recruiter conversations */}
           {gaps && gaps.length > 0 && <PromptBot gaps={gaps} focusBrainField={focusBrainField} />}
 
@@ -408,15 +453,26 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
             )}
           </section>
         </div>
+        )}
+
+        {/* ── Context Document ──────────────────────────────────────────────── */}
+        {tab === 'context' && (
+          <div role="tabpanel" id="studio-panel-context" aria-labelledby="studio-tab-context">
+            <ContextDocumentPanel initialDrafts={profile.career_context_drafts ?? null} />
+          </div>
+        )}
 
         {/* ── Test ──────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-4">
+        {tab === 'test' && (
+        <div
+          role="tabpanel"
+          id="studio-panel-test"
+          aria-labelledby="studio-tab-test"
+          className="flex flex-col gap-4"
+        >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
-              2 · Test your brain
-            </p>
-            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-              Edits above save automatically and apply to your AI right away.
+            <p className="text-xs text-[var(--rb-text-muted)]">
+              Test your brain — edits in Build save automatically and apply to your AI right away.
             </p>
           </div>
           {aiEnabled ? (
@@ -431,16 +487,20 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
             </div>
           )}
         </div>
+        )}
 
         {/* ── Harden ────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-4">
+        {tab === 'harden' && (
+        <div
+          role="tabpanel"
+          id="studio-panel-harden"
+          aria-labelledby="studio-tab-harden"
+          className="flex flex-col gap-4"
+        >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
-              3 · Harden with real conversations
-            </p>
-            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-              Bring transcripts from real recruiter calls or practice sessions — the AI finds the
-              exact gaps real questions exposed.
+            <p className="text-xs text-[var(--rb-text-muted)]">
+              Harden with real conversations — bring transcripts from real recruiter calls or practice
+              sessions and the AI finds the exact gaps real questions exposed.
             </p>
           </div>
           <HardenPanel
@@ -449,6 +509,7 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
             sessions={hardeningSessions ?? []}
           />
         </div>
+        )}
       </div>
 
       <IntakeInterview
