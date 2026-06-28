@@ -59,8 +59,18 @@ export default function ResumeBuilderCard({ resume }: Props) {
     setError(null);
     startTransition(async () => {
       const result = await saveAndRegenerateResume({ id: doc.id, markdown });
-      if (!result.ok) setError('Could not regenerate. Please try again.');
-      // revalidatePath refreshes server props (download URLs + status) on the next render.
+      if (!result.ok) {
+        setError('Could not regenerate. Please try again.');
+        return;
+      }
+      // Reflect the new status + fresh download URLs immediately (the local doc
+      // state wouldn't otherwise pick up the revalidated server props).
+      setDoc({
+        ...doc,
+        status: result.status,
+        pdfUrl: result.pdfUrl ?? doc.pdfUrl,
+        docxUrl: result.docxUrl ?? doc.docxUrl,
+      });
     });
   }
 

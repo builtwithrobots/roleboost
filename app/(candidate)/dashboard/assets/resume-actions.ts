@@ -21,6 +21,20 @@ async function ownedResumeDoc(userId: string, id: string): Promise<any | null> {
   return data ?? null;
 }
 
+/** Fresh signed download URL for a generated asset (service-role; private bucket). */
+async function signAssetById(assetId: string): Promise<string | undefined> {
+  const { data } = await (adminClient.from('candidate_assets') as any)
+    .select('storage_bucket, storage_path')
+    .eq('id', assetId)
+    .single();
+  if (!data) return undefined;
+  const { data: signed } = await (adminClient.storage.from(data.storage_bucket) as any).createSignedUrl(
+    data.storage_path,
+    3600,
+  );
+  return signed?.signedUrl ?? undefined;
+}
+
 /** Generate (or re-generate) the .docx/.pdf from the current canonical résumé. */
 export async function generateResume(input: unknown) {
   try {
@@ -62,9 +76,10 @@ export async function saveAndRegenerateResume(input: unknown) {
       })
       .eq('id', id);
 
-    await generateResumeDocuments(id, userId);
+    const { docxAssetId, pdfAssetId } = await generateResumeDocuments(id, userId);
+    const [pdfUrl, docxUrl] = await Promise.all([signAssetById(pdfAssetId), signAssetById(docxAssetId)]);
     revalidatePath('/dashboard/assets');
-    return { ok: true as const };
+    return { ok: true as const, status: 'ready' as const, pdfUrl, docxUrl };
   } catch (e) {
     if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT' } };
     if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };

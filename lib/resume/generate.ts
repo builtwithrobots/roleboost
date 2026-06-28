@@ -30,25 +30,35 @@ export async function generateResumeDocuments(
     .update({ status: 'generating', updated_at: new Date().toISOString() })
     .eq('id', resumeDocumentId);
 
-  const [docxBuf, pdfBuf] = await Promise.all([renderResumeDocx(resume), renderResumePdf(resume)]);
+  let docxAssetId: string;
+  let pdfAssetId: string;
+  try {
+    const [docxBuf, pdfBuf] = await Promise.all([renderResumeDocx(resume), renderResumePdf(resume)]);
 
-  const docxAssetId = await storeGeneratedAsset({
-    userId,
-    candidateProfileId: doc.candidate_profile_id,
-    assetType: 'resume_docx',
-    buffer: docxBuf,
-    contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    fileName: `${safeName}-ATS.docx`,
-  });
+    docxAssetId = await storeGeneratedAsset({
+      userId,
+      candidateProfileId: doc.candidate_profile_id,
+      assetType: 'resume_docx',
+      buffer: docxBuf,
+      contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      fileName: `${safeName}-ATS.docx`,
+    });
 
-  const pdfAssetId = await storeGeneratedAsset({
-    userId,
-    candidateProfileId: doc.candidate_profile_id,
-    assetType: 'resume',
-    buffer: pdfBuf,
-    contentType: 'application/pdf',
-    fileName: `${safeName}-ATS.pdf`,
-  });
+    pdfAssetId = await storeGeneratedAsset({
+      userId,
+      candidateProfileId: doc.candidate_profile_id,
+      assetType: 'resume',
+      buffer: pdfBuf,
+      contentType: 'application/pdf',
+      fileName: `${safeName}-ATS.pdf`,
+    });
+  } catch (e) {
+    // Never leave the row stuck on 'generating' -- revert so the candidate can retry.
+    await (adminClient.from('resume_documents') as any)
+      .update({ status: 'draft', updated_at: new Date().toISOString() })
+      .eq('id', resumeDocumentId);
+    throw e;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (adminClient.from('resume_documents') as any)
