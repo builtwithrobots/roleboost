@@ -61,8 +61,59 @@ export interface CandidateProfile extends CandidateBrain {
   is_published: boolean;
   intake_completed?: boolean;
   brain_readiness_score?: number;
+  // The active career-context document (uploaded OR generated-and-selected). This
+  // is the single slot the brain reads; both flows write here.
+  context_package_md?: string | null;
+  context_package_updated_at?: string | null;
+  // Staging for self-serve generation: both narrative angles + which is selected.
+  career_context_drafts?: CareerContextDrafts | null;
   created_at: string;
   updated_at: string;
+}
+
+// ── Career Context Document (self-serve generation) ─────────────────────────
+// The "RoleBoost Candidate Asset Production Skill" (Section 1 only) run in-app:
+// the candidate's résumé + career sources synthesized into a polished, elite
+// career-context document. Two narrative angles are generated; the candidate
+// picks one, whose markdown becomes the active context_package_md.
+
+export type CareerContextStoryType =
+  | 'career_arc'
+  | 'builder'
+  | 'problem_solver'
+  | 'leadership'
+  | 'skeptic_champion'
+  | 'specialist';
+
+export type CareerContextAngleKey = 'A' | 'B';
+
+export interface CareerContextAngle {
+  /** Short human label for this framing, e.g. "The Builder". */
+  name: string;
+  story_type: CareerContextStoryType;
+  headline: string;
+  target_role: string;
+  location: string;
+  /** 2-3 sentence evidence-grounded story (third person about the candidate). */
+  narrative: string;
+  /** One line: the single most credible, specific fact. */
+  hook: string;
+  /** The one hard question every recruiter asks, with a first-person answer. */
+  hard_question: { question: string; answer: string };
+  /** 5-8 specific metrics/facts that must appear in every asset. */
+  key_numbers: string[];
+  positioning: string;
+  /** The full document rendered to markdown — what lands in context_package_md. */
+  markdown: string;
+}
+
+export interface CareerContextDrafts {
+  angles: Record<CareerContextAngleKey, CareerContextAngle>;
+  /** The angle the generator recommends. */
+  recommended: CareerContextAngleKey;
+  /** The angle the candidate selected, or null until they choose. */
+  selected: CareerContextAngleKey | null;
+  generated_at: string;
 }
 
 export type ChatRole = 'user' | 'assistant';
