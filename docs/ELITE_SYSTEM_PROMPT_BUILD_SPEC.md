@@ -769,4 +769,4 @@ Before this goes live, run the following tests in the candidate AI testing sandb
 
 ---
 
-*RoleBoost Elite System Prompt Build Spec v1.0 -- getroleboost.com -- Built by Rob Ramos -- June 2026*
+*RoleBoost Elite System Prompt Build Spec v1.0 -- roleboost.app -- Built by Rob Ramos -- June 2026*

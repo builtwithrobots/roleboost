@@ -193,7 +193,7 @@ Candidate dashboard                    Employer dashboard
 Every candidate gets a permanent, public URL:
 
 ```
-roleboost.com/c/[slug]
+roleboost.app/c/[slug]
 ```
 
 This URL is shareable anywhere -- LinkedIn bio, email signature, job applications. When opened, it renders the candidate profile modal. No login required to view.

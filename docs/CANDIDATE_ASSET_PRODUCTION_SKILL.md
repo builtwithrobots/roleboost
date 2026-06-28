@@ -101,7 +101,7 @@ Claude produces the full output as a single `.md` document with two sections.
 Follows the exact format used in `PERSONA_NARRATIVE_GUIDE.md`. Six subsections:
 
 **1. Identity Snapshot**
-Name, slug (firstname-lastname, lowercase, hyphenated), public URL (getroleboost.com/c/[slug]), location, target role, headline, avatar color (assign from RoleBoost palette below), initials.
+Name, slug (firstname-lastname, lowercase, hyphenated), public URL (roleboost.app/c/[slug]), location, target role, headline, avatar color (assign from RoleBoost palette below), initials.
 
 RoleBoost avatar color palette:
 - Teal: #0F6E56
@@ -216,7 +216,7 @@ This skill is designed to run in Claude chat today and plug into the superadmin 
 
 - Accept resume upload and optional URL list via form inputs
 - Trigger this workflow automatically on submission
-- Store the output `.md` file in the candidate's asset locker (getroleboost.com/storage/[slug])
+- Store the output `.md` file in the candidate's asset locker (roleboost.app/storage/[slug])
 - Display the two narrative angles for superadmin review and selection before asset production begins
 - Track which NotebookLM prompts were run and which assets were delivered per package tier
 
@@ -236,4 +236,4 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.1 -- getroleboost.com -- Built by Rob Ramos*
+*RoleBoost Candidate Asset Production Skill v1.1 -- roleboost.app -- Built by Rob Ramos*

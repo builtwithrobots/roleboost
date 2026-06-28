@@ -109,7 +109,7 @@ The skill -- the AI's ability to read documents, spot inconsistencies, generate 
 
 ### What It Is
 
-A mobile-optimized public profile page at `getroleboost.com/c/[slug]` that functions as a digital calling card. No login required. No friction. The chat interface is the first thing a recruiter sees.
+A mobile-optimized public profile page at `roleboost.app/c/[slug]` that functions as a digital calling card. No login required. No friction. The chat interface is the first thing a recruiter sees.
 
 The candidate drops this link everywhere: LinkedIn contact info, LinkedIn About section, resume header, email signature, Indeed profile bio, job application follow-up emails. One link. Every context.
 
@@ -316,7 +316,7 @@ One shareable link. A brain that grows. Your AI available around the clock.
 3. **AI intake interview** -- The candidate is interviewed by an AI that already read their documents. Questions are specific to their history. 8 to 12 questions per pass, 2 to 3 passes deep, maximum 20 questions total. Candidate answers by typing or speaking (voice transcribed and editable before submit).
 4. **Brain assembled** -- All verified context becomes the system prompt powering the personal career AI. The chatbot can only answer from verified context -- it never invents, guesses, or inflates.
 5. **Candidate tests the brain** -- In a sandbox, the candidate asks their own AI the hard questions. Verifies accuracy. The link does not go live until the candidate confirms the brain is honest.
-6. **One link goes live** -- `getroleboost.com/c/[slug]` -- shareable anywhere. Mobile-optimized calling card with chat front and center. No login required for recruiters.
+6. **One link goes live** -- `roleboost.app/c/[slug]` -- shareable anywhere. Mobile-optimized calling card with chat front and center. No login required for recruiters.
 7. **Recruiters interact** -- Ask questions directly from the calling card on any device. Full transcript delivered to both sides after every session.
 8. **Brain grows** -- Transcript analysis identifies gaps. Prompt bot surfaces expansion questions. Candidate adds context. Loop repeats.
 ```
@@ -352,7 +352,7 @@ The done-for-you service sells a live AI brain, not a document package.
 ```
 ## The Calling Card
 
-The public profile at `getroleboost.com/c/[slug]` is designed as a mobile-first digital calling card. When a recruiter clicks the link from any context -- LinkedIn, a resume header, an email signature, an Indeed profile -- they land on a page that communicates three things in under five seconds: who this person is, what this page does, and an immediate invitation to start a conversation.
+The public profile at `roleboost.app/c/[slug]` is designed as a mobile-first digital calling card. When a recruiter clicks the link from any context -- LinkedIn, a resume header, an email signature, an Indeed profile -- they land on a page that communicates three things in under five seconds: who this person is, what this page does, and an immediate invitation to start a conversation.
 
 The chat input is open and ready above the fold on every device. No tabs to find. No buttons to click first. One thumb.
 
@@ -721,7 +721,7 @@ This is also the fastest path to catching product friction. Every confusing ques
 
 Rob goes through the intake interview as a candidate. No shortcuts. Full document upload (resume, LinkedIn export). Full cross-document analysis. Full 2 to 3 pass AI intake interview using voice input. Complete sandbox testing against the 20 hardest recruiter questions from 20 years of operations hiring experience. Brain does not go live until every hard question produces an answer Rob would be satisfied receiving from a strong candidate.
 
-The target outcome: a live chatbot at `getroleboost.com/c/rob-ramos` that any operations or logistics recruiter can interrogate and receive a full transcript from. That profile is the platform's first and most important asset.
+The target outcome: a live chatbot at `roleboost.app/c/rob-ramos` that any operations or logistics recruiter can interrogate and receive a full transcript from. That profile is the platform's first and most important asset.
 
 ---
 
@@ -1138,4 +1138,4 @@ Build sequence within Phase 3:
 
 ---
 
-*RoleBoost AI Brain and Calling Card Spec v1.1 -- getroleboost.com -- Built by Rob Ramos -- June 2026*
+*RoleBoost AI Brain and Calling Card Spec v1.1 -- roleboost.app -- Built by Rob Ramos -- June 2026*

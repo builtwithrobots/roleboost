@@ -998,5 +998,5 @@ A candidate AI that a recruiter can interrogate at any hour, get a full transcri
 
 ---
 
-*Document version 1.2 -- RoleBoost -- getroleboost.com -- Built by Rob Ramos*
+*Document version 1.2 -- RoleBoost -- roleboost.app -- Built by Rob Ramos*
 *Research compiled June 2026 | Updated June 2026 -- v1.2: Section 10 updated, Sections 12 and 13 added to reflect AI brain as flagship product*

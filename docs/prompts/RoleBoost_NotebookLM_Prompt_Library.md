@@ -244,4 +244,4 @@ Let the candidate choose their preferred version. Giving candidates choice is pa
 
 ---
 
-*RoleBoost Prompt Library v1.1 -- getroleboost.com -- Built by Rob Ramos*
+*RoleBoost Prompt Library v1.1 -- roleboost.app -- Built by Rob Ramos*

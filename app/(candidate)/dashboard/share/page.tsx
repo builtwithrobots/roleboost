@@ -22,7 +22,7 @@ export default async function ShareHubPage() {
 
   if (!profile) redirect('/dashboard/profile');
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://getroleboost.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://roleboost.app';
   const profileUrl = `${appUrl}/c/${profile.slug}`;
 
   return (
