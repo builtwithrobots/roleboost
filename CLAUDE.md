@@ -16,7 +16,7 @@ audio, video, infographic, slide deck, ATS resume, and a live AI they can interr
 conversation emails a transcript to both sides. Candidates fine-tune their AI over time.
 
 **Pitch:** "Your career. Your AI. Finally heard."
-**Domain:** getroleboost.com **GitHub org:** builtwithrobots. Independent codebase; no shared infra.
+**Domain:** roleboost.app **GitHub org:** builtwithrobots. Independent codebase; no shared infra.
 
 ---
 

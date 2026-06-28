@@ -2,8 +2,8 @@ import 'server-only';
 import { getResend } from './client';
 import type { ChatTurn } from '@/lib/types';
 
-const FROM = 'RoleBoost <transcripts@getroleboost.com>';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://getroleboost.com';
+const FROM = 'RoleBoost <transcripts@roleboost.app>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://roleboost.app';
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

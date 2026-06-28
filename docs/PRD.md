@@ -3,7 +3,7 @@
 **Version:** 3.0
 **Last updated:** June 2026
 **Author:** Rob Ramos
-**Domain:** getroleboost.com
+**Domain:** roleboost.app
 
 ---
 
@@ -71,7 +71,7 @@ Three-step flow before reaching the dashboard.
 **Step 3 -- Profile slug:**
 - Auto-generated from full name (e.g. `robert-ramos`)
 - Editable -- unique, lowercase, alphanumeric and hyphens only
-- Live preview: `getroleboost.com/c/[slug]`
+- Live preview: `roleboost.app/c/[slug]`
 
 On completion:
 - Insert row into `candidate_profiles`
@@ -126,7 +126,7 @@ The main hub for managing profile content and sharing.
 - Profile visibility toggle (Published / Draft)
 
 **Shareable assets section:**
-- Full public URL: `getroleboost.com/c/[slug]`
+- Full public URL: `roleboost.app/c/[slug]`
 - Copy link button with confirmation toast
 - QR code download button
 - RoleBoost badge download button
@@ -521,7 +521,7 @@ From candidate modal (Connect button) or candidate card action menu.
 - [ ] Transcript email sent to candidate after every session
 - [ ] Transcript email sent to logged-in employer after every session
 - [ ] Feedback email sent to candidate on every feedback submission
-- [ ] All emails from `transcripts@getroleboost.com`
+- [ ] All emails from `transcripts@roleboost.app`
 - [ ] Email templates mobile responsive
 - [ ] Unsubscribe link included per CAN-SPAM
 

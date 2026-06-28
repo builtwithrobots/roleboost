@@ -104,7 +104,7 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
   const [qrSize, setQrSize] = useState<200 | 300 | 400>(200);
   const linkCopy = useCopy(profileUrl);
 
-  const embedCode = `<a href="${profileUrl}"><img src="https://getroleboost.com/api/badge/${slug}" alt="${fullName} on RoleBoost" width="320" height="80" /></a>`;
+  const embedCode = `<a href="${profileUrl}"><img src="https://roleboost.app/api/badge/${slug}" alt="${fullName} on RoleBoost" width="320" height="80" /></a>`;
   const embedCopy = useCopy(embedCode);
 
   const downloadQR = () => {
@@ -142,7 +142,7 @@ export default function ShareHub({ profileUrl, slug, fullName, headline, isPubli
 
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] px-3 py-2 text-sm text-[var(--rb-text-secondary)] font-data truncate">
-              getroleboost.com/c/{slug}
+              roleboost.app/c/{slug}
             </div>
             <button
               onClick={linkCopy.copy}

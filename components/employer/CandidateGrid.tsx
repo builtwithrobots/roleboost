@@ -218,7 +218,7 @@ export default function CandidateGrid({ candidates }: Props) {
               <p className="text-sm text-[var(--rb-text-secondary)]">
                 <span className="font-semibold text-[var(--rb-text-brand)]">How it works:</span>{' '}
                 Candidates share a link like{' '}
-                <code className="text-xs bg-white/60 rounded px-1 py-0.5">getroleboost.com/c/jane-smith</code>.
+                <code className="text-xs bg-white/60 rounded px-1 py-0.5">roleboost.app/c/jane-smith</code>.
                 You open it, listen to their career story, and save them to your pool.
               </p>
             </div>

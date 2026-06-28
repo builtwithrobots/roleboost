@@ -1,7 +1,7 @@
 # RoleBoost Marketing Site — Claude Code Build Prompt
 **Version:** 1.4
 **Date:** June 2026
-**Purpose:** Drop this file into Claude Code to build the getroleboost.com marketing homepage.
+**Purpose:** Drop this file into Claude Code to build the roleboost.app marketing homepage.
 
 ---
 
@@ -11,7 +11,7 @@ Read CLAUDE.md before starting. This task is the public-facing marketing homepag
 
 **Brand:**
 - Name: RoleBoost
-- Domain: getroleboost.com
+- Domain: roleboost.app
 - One-line pitch: "Your career. Your AI. Finally heard."
 - Brand colors: Navy (#1E3A5F) and Gold (#B8860B)
 - Background: White (#FFFFFF) with light gray (#F9FAFB) alternating sections

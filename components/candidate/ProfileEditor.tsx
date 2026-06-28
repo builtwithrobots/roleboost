@@ -186,7 +186,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
           <div className="min-w-0">
             <h1 className="font-display text-xl font-bold tracking-tight text-[var(--rb-text)]">Profile</h1>
             <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
-              Your public career page · roleboost.com/c/{profile.slug}
+              Your public career page · roleboost.app/c/{profile.slug}
             </p>
           </div>
 
@@ -496,10 +496,10 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
             </h2>
             <div className="flex items-center gap-2">
               <div className="flex-1 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] px-3 py-2 text-sm text-[var(--rb-text-secondary)] font-data truncate">
-                getroleboost.com/c/{profile.slug}
+                roleboost.app/c/{profile.slug}
               </div>
               <button
-                onClick={() => navigator.clipboard.writeText(`https://getroleboost.com/c/${profile.slug}`)}
+                onClick={() => navigator.clipboard.writeText(`https://roleboost.app/c/${profile.slug}`)}
                 className="shrink-0 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--rb-brand-hover)] transition-colors duration-[var(--duration-fast)]"
               >
                 Copy
