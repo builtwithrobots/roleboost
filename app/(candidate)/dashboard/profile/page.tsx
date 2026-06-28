@@ -3,7 +3,9 @@ import { redirect } from 'next/navigation';
 import { ensureCandidateProfile } from './actions';
 import { adminClient } from '@/lib/supabase/admin';
 import ProfileEditor from '@/components/candidate/ProfileEditor';
+import GettingStarted from '@/components/candidate/GettingStarted';
 import DashboardPage from '@/components/layout/DashboardPage';
+import { getOnboardingProgress } from '@/lib/candidate/onboarding-progress';
 import type { CandidateProfile } from '@/lib/types';
 
 export default async function CandidateProfilePage() {
@@ -69,8 +71,12 @@ export default async function CandidateProfilePage() {
     }
   }
 
+  // Real, stateful "getting started" progress to orient + activate the candidate.
+  const progress = await getOnboardingProgress(supabase, profile.id);
+
   return (
     <DashboardPage>
+      <GettingStarted progress={progress} />
       <ProfileEditor profile={profile} avatarUrl={avatarUrl} />
     </DashboardPage>
   );
