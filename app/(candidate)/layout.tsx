@@ -7,6 +7,7 @@ import CandidateNav from '@/components/layout/CandidateNav';
 import SubscriptionBadge from '@/components/layout/SubscriptionBadge';
 import UserMenu from '@/components/layout/UserMenu';
 import AdminPreviewBanner from '@/components/layout/AdminPreviewBanner';
+import HelpButton from '@/components/candidate/HelpButton';
 
 export default async function CandidateLayout({ children }: { children: React.ReactNode }) {
   let ctx;
@@ -35,6 +36,9 @@ export default async function CandidateLayout({ children }: { children: React.Re
       </SidebarBody>
 
       <SidebarFooter>
+        <div className="px-2 pb-1">
+          <HelpButton />
+        </div>
         <div className="flex items-center justify-between px-2 pb-1">
           <SubscriptionBadge
             tier={ctx.user.subscription_tier}
