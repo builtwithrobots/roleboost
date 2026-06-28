@@ -27,6 +27,7 @@ import HardenPanel from './HardenPanel';
 import IntakeInterview from './IntakeInterview';
 import CareerSourcesCard from './CareerSourcesCard';
 import ContextDocumentPanel from './ContextDocumentPanel';
+import TabIntro from './TabIntro';
 import type {
   CandidateProfile,
   CustomQAPair,
@@ -37,6 +38,8 @@ import type {
 
 interface Props {
   profile: CandidateProfile;
+  /** Tab to open on load (from the ?tab= deep link). Defaults to "build". */
+  initialTab?: StudioTab;
   /** Open gaps from real recruiter conversations, surfaced by the prompt bot. */
   gaps?: TranscriptGap[];
   /** Past external-transcript hardening sessions (most recent first). */
@@ -112,7 +115,7 @@ const TABS: { key: StudioTab; label: string; Icon: typeof Hammer }[] = [
   { key: 'harden', label: 'Harden', Icon: ShieldCheck },
 ];
 
-export default function AIStudio({ profile, gaps, hardeningSessions, sources, maxSources = 10 }: Props) {
+export default function AIStudio({ profile, initialTab, gaps, hardeningSessions, sources, maxSources = 10 }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
     leadership_philosophy: profile.leadership_philosophy ?? '',
@@ -132,7 +135,7 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
   const [aiEnabled, setAiEnabled] = useState(profile.ai_enabled ?? true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [interviewOpen, setInterviewOpen] = useState(false);
-  const [tab, setTab] = useState<StudioTab>('build');
+  const [tab, setTab] = useState<StudioTab>(initialTab ?? 'build');
   const router = useRouter();
   const [, startTransition] = useTransition();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -272,6 +275,12 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
           aria-labelledby="studio-tab-build"
           className="flex flex-col gap-6"
         >
+          <TabIntro Icon={Hammer} title="Teach your AI about your career">
+            This is where your AI learns who you are — your wins, the hard questions, the things a
+            résumé can&apos;t say. Use the guided interview to do it fast, or fill in the details
+            yourself. Everything here saves automatically and applies to your AI right away.
+          </TabIntro>
+
           {/* Prompt bot: gaps found in real recruiter conversations */}
           {gaps && gaps.length > 0 && <PromptBot gaps={gaps} focusBrainField={focusBrainField} />}
 
@@ -470,11 +479,11 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
           aria-labelledby="studio-tab-test"
           className="flex flex-col gap-4"
         >
-          <div>
-            <p className="text-xs text-[var(--rb-text-muted)]">
-              Test your brain — edits in Build save automatically and apply to your AI right away.
-            </p>
-          </div>
+          <TabIntro Icon={FlaskConical} title="Try your AI before recruiters do">
+            Ask your AI the tough questions a recruiter would — about a gap, a short stint, a big
+            number — and see exactly how it answers. Anything that comes out weak points you to the
+            field to strengthen. Edits in Build apply here instantly.
+          </TabIntro>
           {aiEnabled ? (
             <SandboxPanel
               candidateSlug={profile.slug}
@@ -497,12 +506,11 @@ export default function AIStudio({ profile, gaps, hardeningSessions, sources, ma
           aria-labelledby="studio-tab-harden"
           className="flex flex-col gap-4"
         >
-          <div>
-            <p className="text-xs text-[var(--rb-text-muted)]">
-              Harden with real conversations — bring transcripts from real recruiter calls or practice
-              sessions and the AI finds the exact gaps real questions exposed.
-            </p>
-          </div>
+          <TabIntro Icon={ShieldCheck} title="Sharpen with real conversations">
+            Already had recruiter calls or practice interviews? Paste a transcript and your AI finds
+            the exact questions it isn&apos;t ready for yet — then shows you how to close each gap.
+            Transcripts are analyzed and never stored.
+          </TabIntro>
           <HardenPanel
             candidateSlug={profile.slug}
             focusBrainField={focusBrainField}
