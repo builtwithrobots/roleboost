@@ -3,6 +3,8 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
+import { assertCandidateAiAccess, EntitlementError } from '@/lib/auth/entitlements';
+import type { CareerContextDrafts } from '@/lib/types';
 
 const BrainInput = z.object({
   leadership_philosophy: z.string().max(5000).optional(),
@@ -59,6 +61,57 @@ export async function updateCandidateBrain(input: unknown) {
     return { ok: true as const };
   } catch (e) {
     if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
+
+const SelectAngleInput = z.object({ angle: z.enum(['A', 'B']) });
+
+// Promotes one generated narrative angle to the candidate's active career-context
+// document. Records the selection on career_context_drafts and copies the chosen
+// angle's markdown into context_package_md -- the single slot the brain reads and
+// the assets page downloads. Switching angles later is just another call here; no
+// regeneration needed.
+export async function selectCareerContextAngle(input: unknown) {
+  try {
+    const { supabase, userId, user } = await getUserContext('candidate');
+    assertCandidateAiAccess(user);
+    const { angle } = SelectAngleInput.parse(input);
+
+    const { data: profile } = await supabase
+      .from('candidate_profiles')
+      .select('career_context_drafts')
+      .eq('clerk_user_id', userId)
+      .single();
+
+    const drafts = (profile as { career_context_drafts: CareerContextDrafts | null } | null)
+      ?.career_context_drafts;
+    const chosen = drafts?.angles?.[angle];
+    if (!drafts || !chosen) {
+      return { ok: false as const, error: { code: 'NOT_FOUND', message: 'No generated angle to select' } };
+    }
+
+    const updated: CareerContextDrafts = { ...drafts, selected: angle };
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('candidate_profiles')
+      .update({
+        career_context_drafts: updated,
+        context_package_md: chosen.markdown,
+        context_package_updated_at: now,
+        updated_at: now,
+      })
+      .eq('clerk_user_id', userId);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/ai');
+    revalidatePath('/dashboard/assets');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof EntitlementError) return { ok: false as const, error: { code: e.code } };
     if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
     throw e;
   }
