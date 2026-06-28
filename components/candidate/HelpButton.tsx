@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Dialog, DialogPanel, DialogBackdrop } from '@headlessui/react';
 import { HelpCircle, X, ArrowUpRight } from 'lucide-react';
+import { SidebarItem, SidebarLabel } from '@/components/ui/sidebar';
 import HowItWorks from './HowItWorks';
 
 // Persistent help affordance in the dashboard chrome. Opens the "How it works"
@@ -17,13 +18,11 @@ export default function HelpButton() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] transition-colors hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--rb-text)]"
-      >
-        <HelpCircle className="size-4 shrink-0" />
-        How it works
-      </button>
+      {/* Rendered as a SidebarItem so it matches the nav menu items exactly. */}
+      <SidebarItem onClick={() => setOpen(true)}>
+        <HelpCircle data-slot="icon" strokeWidth={1.5} />
+        <SidebarLabel>How it All Works</SidebarLabel>
+      </SidebarItem>
 
       <Dialog open={open} onClose={close} className="relative z-[var(--z-modal)]">
         <DialogBackdrop
@@ -36,7 +35,7 @@ export default function HelpButton() {
             className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--rb-bg-surface)] shadow-[var(--shadow-modal)] transition duration-[var(--duration-base)] ease-[var(--ease-spring)] data-[closed]:translate-y-3 data-[closed]:opacity-0 sm:h-auto sm:max-h-[85vh] sm:max-w-2xl sm:rounded-[var(--radius-2xl)] sm:data-[closed]:translate-y-0 sm:data-[closed]:scale-95"
           >
             <div className="flex items-center justify-between border-b border-[var(--rb-border)] px-5 py-3">
-              <span className="text-sm font-semibold text-[var(--rb-text)]">Help</span>
+              <span className="text-sm font-semibold text-[var(--rb-text)]">How it All Works</span>
               <button
                 onClick={close}
                 aria-label="Close"

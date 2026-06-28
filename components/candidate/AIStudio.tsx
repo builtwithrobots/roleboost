@@ -254,10 +254,10 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
                 aria-selected={active}
                 aria-controls={`studio-panel-${key}`}
                 onClick={() => setTab(key)}
-                className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                className={`-mb-px inline-flex items-center gap-1.5 rounded-t-[var(--radius-md)] border px-3.5 py-2 text-sm font-medium transition-colors ${
                   active
-                    ? 'border-[var(--rb-brand)] text-[var(--rb-brand)]'
-                    : 'border-transparent text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]'
+                    ? 'border-[var(--rb-border)] border-b-transparent bg-[var(--rb-bg-surface)] text-[var(--rb-brand)]'
+                    : 'border-transparent text-[var(--rb-text-secondary)] hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--rb-text)]'
                 }`}
               >
                 <Icon className="size-4" />

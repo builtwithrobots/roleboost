@@ -33,12 +33,10 @@ export default async function CandidateLayout({ children }: { children: React.Re
       <SidebarBody>
         <CandidateNav />
         <SidebarSpacer />
+        <HelpButton />
       </SidebarBody>
 
       <SidebarFooter>
-        <div className="px-2 pb-1">
-          <HelpButton />
-        </div>
         <div className="flex items-center justify-between px-2 pb-1">
           <SubscriptionBadge
             tier={ctx.user.subscription_tier}
