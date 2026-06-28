@@ -103,8 +103,20 @@ export interface CareerContextAngle {
   /** 5-8 specific metrics/facts that must appear in every asset. */
   key_numbers: string[];
   positioning: string;
+  /**
+   * Verbatim third-party quotes pulled from career sources (recommendations,
+   * reviews) — curated evidence, not raw source text. Empty when no sources.
+   */
+  evidence_snippets: EvidenceSnippet[];
   /** The full document rendered to markdown — what lands in context_package_md. */
   markdown: string;
+}
+
+export interface EvidenceSnippet {
+  /** The exact quote from a source. */
+  quote: string;
+  /** Where it came from, e.g. "LinkedIn recommendation" or a name/title. */
+  source: string;
 }
 
 export interface CareerContextDrafts {
