@@ -156,7 +156,7 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
       <div className="mb-5 flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] p-3 text-xs text-[var(--rb-text-secondary)]">
         <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-[var(--rb-brand)]" />
         <span>
-          Your transcript is analyzed in the moment and <strong>never stored</strong> — only the
+          Your transcript is analyzed in the moment and <strong>never stored</strong>, only the
           resulting plan is saved. No recruiter names or companies are kept.
         </span>
       </div>
@@ -166,7 +166,7 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
         <div className="mb-4 flex items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--rb-brand)] bg-[var(--color-success-bg)] px-3 py-2 text-xs text-[var(--rb-text-secondary)]">
           <span className="flex items-center gap-1.5">
             <RotateCcw className="size-3.5 text-[var(--rb-brand)]" />
-            Re-analyzing {reanalyzeSession.source_context ? `“${reanalyzeSession.source_context}”` : 'a past session'} — paste the same transcript to confirm gaps are closed.
+            Re-analyzing {reanalyzeSession.source_context ? `“${reanalyzeSession.source_context}”` : 'a past session'}, paste the same transcript to confirm gaps are closed.
           </span>
           <button
             onClick={() => setReanalyzeFor(null)}
@@ -184,7 +184,7 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
           type="text"
           value={sourceContext}
           onChange={(e) => setSourceContext(e.target.value)}
-          placeholder="Where's this from? (optional) — e.g. phone screen with Acme, ChatGPT practice"
+          placeholder="Where's this from? (optional), e.g. phone screen with Acme, ChatGPT practice"
           maxLength={200}
           className={inputClass}
           aria-label="Source context"
@@ -196,7 +196,7 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
             setText(e.target.value);
             if (e.target.value) pickFile(null);
           }}
-          placeholder="Paste the conversation here — any format. Rough notes, a full transcript, a message thread."
+          placeholder="Paste the conversation here, any format. Rough notes, a full transcript, a message thread."
           rows={7}
           maxLength={60_000}
           disabled={!!file}
@@ -260,7 +260,7 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
         <div className="mt-6 border-t border-[var(--rb-border)] pt-5">
           <p className="text-sm font-semibold text-[var(--rb-text)]">
             Analyzed against {result.questionsFound}{' '}
-            {result.questionsFound === 1 ? 'question' : 'questions'} —{' '}
+            {result.questionsFound === 1 ? 'question' : 'questions'},{' '}
             {result.gapsIdentified.length === 0 ? (
               <span className="text-[var(--color-success)]">no gaps, your brain held up.</span>
             ) : (

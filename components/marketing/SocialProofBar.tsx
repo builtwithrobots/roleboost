@@ -11,7 +11,7 @@ const stats = [
   },
   {
     number: '99.99%',
-    description: 'Order accuracy — the standard we hold our candidates to',
+    description: 'Order accuracy, the standard we hold our candidates to',
   },
   {
     number: 'Both sides',

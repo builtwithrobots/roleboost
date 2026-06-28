@@ -133,7 +133,7 @@ export default function AssetSuite() {
           </h2>
           <p className="font-inter text-lg text-gray-600 leading-relaxed">
             Upload your resume and career context. RoleBoost produces a complete professional asset
-            suite — then gives you a personal career AI that works for you around the clock.
+            suite, then gives you a personal career AI that works for you around the clock.
           </p>
         </motion.div>
 

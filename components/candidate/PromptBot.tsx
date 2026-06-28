@@ -57,7 +57,7 @@ export default function PromptBot({ gaps, focusBrainField }: Props) {
             {g.pattern_count >= 3 && (
               <span className="mb-1.5 flex items-center gap-1 text-xs font-semibold text-[var(--color-warning)]">
                 <AlertTriangle className="size-3.5" />
-                Asked {g.pattern_count}× — recurring
+                Asked {g.pattern_count}×, recurring
               </span>
             )}
             <p className="text-sm text-[var(--rb-text-secondary)]">{g.suggested_prompt}</p>

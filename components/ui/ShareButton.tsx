@@ -31,7 +31,7 @@ export default function ShareButton({ url, title, text, className, iconOnly }: P
         await navigator.share({ title, text, url: shareUrl });
         return;
       } catch (e) {
-        // User dismissed the sheet — not an error. Fall through to copy on real failures.
+        // User dismissed the sheet, not an error. Fall through to copy on real failures.
         if (e instanceof DOMException && e.name === 'AbortError') return;
       }
     }
@@ -41,7 +41,7 @@ export default function ShareButton({ url, title, text, className, iconOnly }: P
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — nothing more we can do silently */
+      /* clipboard unavailable, nothing more we can do silently */
     }
   }
 

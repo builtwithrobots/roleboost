@@ -57,7 +57,7 @@ export default async function CandidateAssetsPage() {
     try {
       signed_url = await getSignedAssetUrl(row.storage_bucket, row.storage_path);
     } catch {
-      // bucket may not exist yet — show the card without a preview link
+      // bucket may not exist yet, show the card without a preview link
     }
     mediaByType[row.asset_type] = {
       id: row.id,
@@ -68,7 +68,7 @@ export default async function CandidateAssetsPage() {
     };
   }
 
-  // Asset Package — best-effort: the columns may not exist yet on a project that
+  // Asset Package, best-effort: the columns may not exist yet on a project that
   // hasn't received the context_package migration, so this query may come back
   // empty without breaking the page.
   let packageMd: string | null = null;
@@ -127,7 +127,7 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        description="Your résumé, audio brief, infographic, and shareable context package — the materials that power your RoleBoost profile."
+        description="Your résumé, audio brief, infographic, and shareable context package, the materials that power your RoleBoost profile."
       />
 
       {/* ATS résumé builder */}
@@ -153,7 +153,7 @@ export default async function CandidateAssetsPage() {
         <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
           <p className="text-sm text-[var(--rb-text-secondary)]">
             <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}
-            Your Audio Brief is produced by Google NotebookLM from your career documents — upload it here
+            Your Audio Brief is produced by Google NotebookLM from your career documents, upload it here
             after generating. The Asset Package is a single context file you can reuse anywhere.
           </p>
         </div>

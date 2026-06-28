@@ -30,7 +30,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1], delay: baseDelay ?? 0.15 }}
           >
-            RoleBoost replaces the resume with a rich AI-powered candidate profile — audio, video,
+            RoleBoost replaces the resume with a rich AI-powered candidate profile, audio, video,
             infographic, slide deck, and a personal career AI that answers recruiter questions 24/7.
           </motion.p>
 
@@ -104,7 +104,7 @@ export default function HeroSection() {
                 I&apos;m hiring for my team
               </h2>
               <p className="font-inter text-base text-gray-600 leading-relaxed mb-6 flex-1">
-                Find candidates, chat with their career AI, and manage your pipeline — all in one
+                Find candidates, chat with their career AI, and manage your pipeline, all in one
                 place.
               </p>
               <Link

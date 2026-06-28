@@ -17,7 +17,7 @@ export const SANDBOX_QUESTIONS: SandboxQuestion[] = [
     id: 'gap-2',
     category: 'gap_departure',
     question: 'Why did you leave your most recent role?',
-    whyItMatters: 'The single most common opening question — your answer sets the tone.',
+    whyItMatters: 'The single most common opening question, your answer sets the tone.',
     brainFields: ['departure_reasons'],
   },
   {

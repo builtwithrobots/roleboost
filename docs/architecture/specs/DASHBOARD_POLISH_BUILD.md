@@ -1,4 +1,4 @@
-# RoleBoost Dashboard — Token + Motion Polish
+# RoleBoost Dashboard, Token + Motion Polish
 **Version:** 1.0
 **Date:** June 2026
 **Purpose:** Drop this file into the repository root and reference it in Claude Code to apply the design token overhaul and Framer Motion layer to the candidate and employer dashboards.

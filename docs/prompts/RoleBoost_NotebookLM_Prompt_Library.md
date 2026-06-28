@@ -8,7 +8,7 @@
 
 ---
 
-## FORMAT 1 — AUDIO OVERVIEW: DEEP DIVE (Two Hosts)
+## FORMAT 1, AUDIO OVERVIEW: DEEP DIVE (Two Hosts)
 
 **NotebookLM Settings:**
 
@@ -18,7 +18,7 @@
 
 ---
 
-### DEEP DIVE PROMPT A — The Career Arc
+### DEEP DIVE PROMPT A, The Career Arc
 
 *Best for: Candidates with strong career progression and measurable results*
 
@@ -28,7 +28,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### DEEP DIVE PROMPT B — The Problem Solver
+### DEEP DIVE PROMPT B, The Problem Solver
 
 *Best for: Candidates who specialize in fixing broken operations or turning around underperforming teams*
 
@@ -38,7 +38,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### DEEP DIVE PROMPT C — The Leadership Story
+### DEEP DIVE PROMPT C, The Leadership Story
 
 *Best for: Senior candidates applying for director or VP level roles*
 
@@ -48,7 +48,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### DEEP DIVE PROMPT D — The Builder
+### DEEP DIVE PROMPT D, The Builder
 
 *Best for: Candidates who have built operations from scratch multiple times*
 
@@ -58,7 +58,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### DEEP DIVE PROMPT E — The Skeptic and The Champion
+### DEEP DIVE PROMPT E, The Skeptic and The Champion
 
 *Best for: Candidates with non-linear career paths or gaps that need contextualizing*
 
@@ -68,7 +68,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-## FORMAT 2 — AUDIO OVERVIEW: BRIEF
+## FORMAT 2, AUDIO OVERVIEW: BRIEF
 
 **NotebookLM Settings:**
 
@@ -78,7 +78,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### BRIEF PROMPT A — The Hook
+### BRIEF PROMPT A, The Hook
 
 *Best for: LinkedIn profiles, email signatures, quick first impressions*
 
@@ -88,7 +88,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### BRIEF PROMPT B — The Commute Brief
+### BRIEF PROMPT B, The Commute Brief
 
 *Best for: Hiring managers who consume candidates on the go*
 
@@ -98,7 +98,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### BRIEF PROMPT C — The Elevator Pitch
+### BRIEF PROMPT C, The Elevator Pitch
 
 *Best for: Candidates who want a punchy asset for job applications*
 
@@ -108,7 +108,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### BRIEF PROMPT D — The Specialist Brief
+### BRIEF PROMPT D, The Specialist Brief
 
 *Best for: Candidates with deep expertise in a specific niche*
 
@@ -118,7 +118,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### BRIEF PROMPT E — The Culture Add
+### BRIEF PROMPT E, The Culture Add
 
 *Best for: Candidates whose leadership philosophy and work style are strong differentiators*
 
@@ -128,7 +128,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-## FORMAT 3 — INFOGRAPHIC
+## FORMAT 3, INFOGRAPHIC
 
 **NotebookLM Settings:**
 
@@ -139,7 +139,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### INFOGRAPHIC PROMPT A — The Career Timeline
+### INFOGRAPHIC PROMPT A, The Career Timeline
 
 *Best for: Candidates with strong linear career progression*
 
@@ -149,7 +149,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### INFOGRAPHIC PROMPT B — The Impact Numbers
+### INFOGRAPHIC PROMPT B, The Impact Numbers
 
 *Best for: Candidates with strong quantitative results across multiple roles*
 
@@ -159,7 +159,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### INFOGRAPHIC PROMPT C — The Two Era Career
+### INFOGRAPHIC PROMPT C, The Two Era Career
 
 *Best for: Candidates with a clear early career foundation and later strategic evolution*
 
@@ -169,7 +169,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### INFOGRAPHIC PROMPT D — The Specialist Profile
+### INFOGRAPHIC PROMPT D, The Specialist Profile
 
 *Best for: Candidates with deep domain expertise in a specific field*
 
@@ -179,7 +179,7 @@ Do NOT use the word "brief" anywhere in the episode. Do NOT use generic intros l
 
 ---
 
-### INFOGRAPHIC PROMPT E — The Leadership Profile
+### INFOGRAPHIC PROMPT E, The Leadership Profile
 
 *Best for: Senior candidates targeting director or VP level roles*
 

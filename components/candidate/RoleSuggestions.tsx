@@ -55,7 +55,7 @@ export default function RoleSuggestions({ onUseRole }: Props) {
             Recommended roles
           </h2>
           <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-            AI suggestions based on your résumé and career sources — pick one to set your target role.
+            AI suggestions based on your résumé and career sources, pick one to set your target role.
           </p>
         </div>
         {(hasResults || needsUploads || error) && (
@@ -122,7 +122,7 @@ export default function RoleSuggestions({ onUseRole }: Props) {
       {/* Empty result */}
       {roles !== null && roles.length === 0 && !needsUploads && (
         <p className="mt-4 text-xs text-[var(--rb-text-muted)]">
-          No clear suggestions yet — add more detail to your résumé or career sources and try again.
+          No clear suggestions yet, add more detail to your résumé or career sources and try again.
         </p>
       )}
 

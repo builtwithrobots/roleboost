@@ -4,9 +4,9 @@ import PageHeader from '@/components/ui/page-header';
 import EmptyState from '@/components/ui/empty-state';
 
 const STATS = [
-  { label: 'Profile views', value: '—', Icon: Eye },
-  { label: 'AI chats started', value: '—', Icon: MessageSquare },
-  { label: 'Avg. time on profile', value: '—', Icon: Clock },
+  { label: 'Profile views', value: '-', Icon: Eye },
+  { label: 'AI chats started', value: '-', Icon: MessageSquare },
+  { label: 'Avg. time on profile', value: '-', Icon: Clock },
 ];
 
 export default function CandidateAnalyticsPage() {

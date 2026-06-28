@@ -182,13 +182,13 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
                   </h2>
                   <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
                     I&apos;ll read your résumé and any career sources you&apos;ve saved, then ask the
-                    questions a recruiter actually would — and flag anything that doesn&apos;t line up
+                    questions a recruiter actually would, and flag anything that doesn&apos;t line up
                     across them. Paste one more source below for this session if you like.
                   </p>
                 </div>
                 <div>
                   <label htmlFor="intake-extra" className="mb-1.5 block text-xs font-medium text-[var(--rb-text-secondary)]">
-                    Paste extra career text — optional
+                    Paste extra career text, optional
                   </label>
                   <textarea
                     id="intake-extra"
@@ -280,7 +280,7 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
                   onChange={(e) => setAnswer(e.target.value)}
                   rows={5}
                   autoFocus
-                  placeholder="Answer in your own words — specifics and real numbers help most."
+                  placeholder="Answer in your own words, specifics and real numbers help most."
                   className="w-full resize-none rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-input)] px-3 py-2 text-sm text-[var(--rb-text)] placeholder:text-[var(--rb-text-muted)] focus:border-[var(--rb-border-focus)] focus:outline-none focus:shadow-[var(--shadow-focus)]"
                 />
                 <div className="flex items-center gap-3">
@@ -309,7 +309,7 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
                 <div>
                   <h2 className="font-display text-lg font-bold text-[var(--rb-text)]">Your brain is assembled</h2>
                   <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
-                    Your answers are now in your brain fields below — edit anything, then test it in the sandbox.
+                    Your answers are now in your brain fields below, edit anything, then test it in the sandbox.
                   </p>
                 </div>
                 {readiness && (

@@ -117,7 +117,7 @@ export default function ContextDocumentPanel({ initialDrafts }: Props) {
         </h2>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
           A professionally synthesized narrative built from your résumé and career sources. Generate
-          two angles, pick the one that tells your story best — your AI leads from it when recruiters
+          two angles, pick the one that tells your story best, your AI leads from it when recruiters
           ask about your background.
         </p>
       </header>
@@ -142,7 +142,7 @@ export default function ContextDocumentPanel({ initialDrafts }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="max-w-md text-xs text-[var(--rb-text-muted)]">
               {drafts.selected
-                ? 'Your AI is using the selected angle. Added new wins, answers, or sources since? Update folds them in — your document stays sharp instead of just longer.'
+                ? 'Your AI is using the selected angle. Added new wins, answers, or sources since? Update folds them in, your document stays sharp instead of just longer.'
                 : 'Pick an angle above to make it active in your AI.'}
             </p>
             <div className="flex shrink-0 items-center gap-2">
@@ -198,7 +198,7 @@ function EmptyState({ onGenerate, generating }: { onGenerate: () => void; genera
         </h3>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
           We read your résumé and any career sources, then write two distinct narrative angles for
-          your career story. Pick the one that fits — it becomes the foundation your AI reasons from.
+          your career story. Pick the one that fits, it becomes the foundation your AI reasons from.
         </p>
       </div>
       <button
@@ -211,7 +211,7 @@ function EmptyState({ onGenerate, generating }: { onGenerate: () => void; genera
       </button>
       {generating && (
         <p className="text-xs text-[var(--rb-text-muted)]">
-          This takes a moment — we&apos;re synthesizing your whole career.
+          This takes a moment, we&apos;re synthesizing your whole career.
         </p>
       )}
     </div>
@@ -302,7 +302,7 @@ function AngleCard({
               className="border-l-2 border-[var(--rb-border-brand)] pl-2.5 text-xs italic leading-relaxed text-[var(--rb-text-secondary)]"
             >
               “{e.quote}”
-              {e.source && <span className="mt-0.5 block not-italic text-[var(--rb-text-muted)]">— {e.source}</span>}
+              {e.source && <span className="mt-0.5 block not-italic text-[var(--rb-text-muted)]">{e.source}</span>}
             </blockquote>
           ))}
         </div>

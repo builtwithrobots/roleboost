@@ -360,7 +360,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
             <SaveBar state={status.basic} dirty={dirty.basic} onSave={() => saveSection('basic')} />
           </section>
 
-          {/* AI role suggestions — fills the Target role field above */}
+          {/* AI role suggestions, fills the Target role field above */}
           <RoleSuggestions
             onUseRole={(title) => {
               setTargetRole(title);
@@ -461,7 +461,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
               <span className="ml-1 text-xs font-normal text-[var(--rb-text-muted)]">(optional)</span>
             </h2>
             <p className="text-xs text-[var(--rb-text-muted)] mb-4">
-              Your freeform pitch — anything that makes you unique that the rest of your profile doesn&apos;t capture.
+              Your freeform pitch, anything that makes you unique that the rest of your profile doesn&apos;t capture.
             </p>
             <div>
               <textarea
@@ -470,7 +470,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
                   setAdditionalContext(e.target.value);
                   markDirty('context');
                 }}
-                placeholder="Share anything else recruiters should know — your story, what you're looking for, what you care about…"
+                placeholder="Share anything else recruiters should know, your story, what you're looking for, what you care about…"
                 rows={4}
                 maxLength={2000}
                 className={`${inputClass} resize-none`}
@@ -550,7 +550,7 @@ function SaveBar({ state, dirty, onSave }: { state: Status; dirty: boolean; onSa
           </span>
         )}
         {state === 'error' && (
-          <span className="text-[var(--color-error)]">Couldn&apos;t save — check the fields and retry</span>
+          <span className="text-[var(--color-error)]">Couldn&apos;t save, check the fields and retry</span>
         )}
         {state === 'idle' && dirty && <span className="text-[var(--rb-text-muted)]">Unsaved changes</span>}
       </span>
@@ -596,7 +596,7 @@ function ProfilePreviewCard({
       {!isPublished && (
         <div className="bg-[var(--color-warning-bg)] border-b border-amber-200 px-4 py-2 flex items-center gap-2">
           <EyeOff className="size-3 text-[var(--color-warning)]" />
-          <span className="text-xs font-medium text-[var(--color-warning)]">Draft — not visible to employers</span>
+          <span className="text-xs font-medium text-[var(--color-warning)]">Draft, not visible to employers</span>
         </div>
       )}
 

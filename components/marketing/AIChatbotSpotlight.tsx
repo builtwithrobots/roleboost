@@ -22,7 +22,7 @@ const chatMessages = [
   {
     role: 'ai' as const,
     content:
-      "The expansion I was brought in to execute was complete. The site was stable, the team was self-managing, and my value was in building — not maintaining. I look for environments where the next hard thing is waiting.",
+      "The expansion I was brought in to execute was complete. The site was stable, the team was self-managing, and my value was in building, not maintaining. I look for environments where the next hard thing is waiting.",
   },
 ]
 
@@ -40,7 +40,7 @@ export default function AIChatbotSpotlight() {
     <section className="py-24 bg-[#1E3A5F]" aria-labelledby="ai-spotlight-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Left column — copy */}
+          {/* Left column, copy */}
           <motion.div
             ref={leftRef}
             variants={fadeUp}
@@ -60,7 +60,7 @@ export default function AIChatbotSpotlight() {
 
             <p className="font-inter text-lg text-blue-100 leading-relaxed mb-8">
               Every RoleBoost candidate gets a career AI trained on their specific data. Recruiters
-              chat with it directly from the candidate&apos;s profile — no scheduling, no waiting, no
+              chat with it directly from the candidate&apos;s profile, no scheduling, no waiting, no
               screening call required.
             </p>
 
@@ -99,7 +99,7 @@ export default function AIChatbotSpotlight() {
             </Link>
           </motion.div>
 
-          {/* Right column — mock chat UI */}
+          {/* Right column, mock chat UI */}
           <motion.div
             ref={rightRef}
             variants={fadeUp}

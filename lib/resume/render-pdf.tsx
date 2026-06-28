@@ -4,7 +4,7 @@ import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-p
 import type { CanonicalResume } from '@/lib/ai/canonical-resume';
 
 // Render the canonical résumé to an ATS-readable PDF (selectable text) Buffer.
-// @react-pdf/renderer is pure JS — runs in a Vercel Node serverless function.
+// @react-pdf/renderer is pure JS, runs in a Vercel Node serverless function.
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 10, lineHeight: 1.4, color: '#1A1A1A' },

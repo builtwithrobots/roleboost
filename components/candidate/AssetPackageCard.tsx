@@ -49,7 +49,7 @@ export default function AssetPackageCard({ initialMarkdown, updatedAt, slug }: P
     try {
       const text = (await file.text()).trim();
       if (text.length < MIN_CHARS) {
-        setError('That file looks empty — upload your full context package.');
+        setError('That file looks empty, upload your full context package.');
         return;
       }
       if (text.length > MAX_CHARS) {

@@ -56,7 +56,7 @@ export default function DoneForYouSection() {
             Want us to build it for you?
           </h2>
           <p className="font-inter text-lg text-gray-600 leading-relaxed">
-            Not ready to DIY? We build RoleBoost profiles for candidates directly — the same way we
+            Not ready to DIY? We build RoleBoost profiles for candidates directly, the same way we
             built our own. Specialized in operations, logistics, and warehouse leadership. Available
             through Fiverr or direct.
           </p>

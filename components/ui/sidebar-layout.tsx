@@ -73,7 +73,7 @@ export function SidebarLayout({
         <div className="min-w-0 flex-1">{navbar}</div>
       </header>
 
-      {/* Content — full-bleed app canvas; each page supplies its own header band */}
+      {/* Content, full-bleed app canvas; each page supplies its own header band */}
       <main className="flex flex-1 flex-col lg:min-w-0 lg:pl-64">
         <div className="grow bg-[var(--rb-bg-surface)]">{children}</div>
       </main>

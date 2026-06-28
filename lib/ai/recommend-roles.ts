@@ -58,7 +58,7 @@ export async function recommendRoles(
   const system = `You are a career strategist. From the candidate's materials, recommend the 3–5 roles they are most competitively positioned for right now.
 
 Rules:
-- Favor specific, realistic titles at the seniority their experience actually supports — not generic ("Manager") and not an aspirational reach.
+- Favor specific, realistic titles at the seniority their experience actually supports, not generic ("Manager") and not an aspirational reach.
 - Ground each recommendation in concrete evidence from their materials (scope, domain, results).
 - Each "why" is exactly one sentence, written to the candidate in second person.
 - Order from strongest fit to least.

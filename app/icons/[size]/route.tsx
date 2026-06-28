@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 // Code-generated app icons (no binary assets in the repo). Serves the RoleBoost
-// mark — a white "R" on brand amber — at the sizes the manifest + metadata ask
+// mark, a white "R" on brand amber, at the sizes the manifest + metadata ask
 // for. Full-bleed so it reads correctly when a platform applies a maskable crop.
 export const dynamic = 'force-static';
 

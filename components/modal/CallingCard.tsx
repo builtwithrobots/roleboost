@@ -29,7 +29,7 @@ interface Props {
   assets: Asset[];
 }
 
-// Universal openers — work for any candidate and need no sensitive brain fields
+// Universal openers, work for any candidate and need no sensitive brain fields
 // (the anon client cannot read those anyway).
 const OPENERS = [
   'Why are you exploring new roles?',
@@ -84,7 +84,7 @@ export default function CallingCard({
 
   return (
     <>
-      {/* ── Layer 1 — the card ───────────────────────────────────────────── */}
+      {/* ── Layer 1, the card ───────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         <div className="rb-dot-grid pointer-events-none absolute inset-0 opacity-70" aria-hidden="true" />
         <div
@@ -238,7 +238,7 @@ export default function CallingCard({
         </motion.div>
       </section>
 
-      {/* ── Layer 2 — learn more ─────────────────────────────────────────── */}
+      {/* ── Layer 2, learn more ─────────────────────────────────────────── */}
       {hasLayer2 && (
         <section
           id="learn-more"

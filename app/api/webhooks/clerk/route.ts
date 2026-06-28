@@ -4,7 +4,7 @@ import { adminClient } from '@/lib/supabase/admin';
 
 // Clerk sends webhook events when users are created, updated, or deleted.
 // We use the admin Supabase client (RLS bypass) because there is no Clerk
-// session at webhook time — the request comes from Clerk's servers, not a browser.
+// session at webhook time, the request comes from Clerk's servers, not a browser.
 type ClerkEmailAddress = { email_address: string; id: string };
 type ClerkUserCreatedEvent = {
   type: 'user.created';
@@ -70,10 +70,10 @@ export async function POST(req: NextRequest) {
     case 'user.created': {
       const { id, email_addresses, primary_email_address_id, public_metadata } = event.data;
       const email = extractEmail(email_addresses, primary_email_address_id);
-      // email may be empty for OAuth sign-ups — user.updated will fill it in.
+      // email may be empty for OAuth sign-ups, user.updated will fill it in.
       //
       // Do NOT default the role here. The webhook fires before the user reaches
-      // onboarding, so we have no role yet — leave it NULL and let onboarding's
+      // onboarding, so we have no role yet, leave it NULL and let onboarding's
       // setUserRole() set it. A pre-set role only exists when an admin provisions
       // an account via Clerk public_metadata.
       const role = (public_metadata?.role as string) ?? null;

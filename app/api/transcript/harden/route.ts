@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     const ext = (file.name.split('.').pop() ?? '').toLowerCase();
     if (!ALLOWED_EXT.includes(ext)) {
       return NextResponse.json(
-        { error: { code: 'INVALID_INPUT', message: `Unsupported file type .${ext} — use TXT or PDF` } },
+        { error: { code: 'INVALID_INPUT', message: `Unsupported file type .${ext}, use TXT or PDF` } },
         { status: 400 },
       );
     }
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
       if (updErr) console.error('harden: reanalysis update failed', candidateSlug, updErr);
       return NextResponse.json({ ...result, sessionId: reanalyzeSessionId, gapsAddressed });
     }
-    // Prior session not found / not owned — fall through to a fresh insert.
+    // Prior session not found / not owned, fall through to a fresh insert.
   }
 
   const { data: inserted, error: insErr } = await supabase

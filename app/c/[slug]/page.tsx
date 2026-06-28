@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Profile not found' };
 
   return {
-    title: `${data.full_name} — RoleBoost`,
+    title: `${data.full_name}, RoleBoost`,
     description: data.headline ?? (data.target_role ? `${data.target_role} on RoleBoost` : 'Career profile on RoleBoost'),
   };
 }
@@ -38,7 +38,7 @@ export default async function CandidateProfilePage({ params }: Props) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Fetch the public profile — anon client, RLS allows is_published = true
+  // Fetch the public profile, anon client, RLS allows is_published = true
   const { data: profileData } = await supabase
     .from('candidate_profiles')
     .select('id, clerk_user_id, full_name, headline, target_role, location, linkedin_url, summary_bullets, ai_enabled')
@@ -48,7 +48,7 @@ export default async function CandidateProfilePage({ params }: Props) {
 
   if (!profileData) notFound();
 
-  // Fetch active assets — use admin client to generate signed URLs for private buckets
+  // Fetch active assets, use admin client to generate signed URLs for private buckets
   const { data: assetData } = await (adminClient.from('candidate_assets') as any)
     .select('asset_type, file_name, storage_bucket, storage_path')
     .eq('candidate_profile_id', profileData.id)
@@ -78,7 +78,7 @@ export default async function CandidateProfilePage({ params }: Props) {
         });
       }
     } catch {
-      // Skip assets we can't sign — bucket may not exist yet
+      // Skip assets we can't sign, bucket may not exist yet
     }
   }
 

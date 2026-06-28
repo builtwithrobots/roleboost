@@ -14,12 +14,12 @@ const steps = [
   {
     number: '2',
     heading: 'Explore their full career narrative',
-    body: 'Listen to their audio overview, watch their video, review their infographic and slide deck — in the format that works for you.',
+    body: 'Listen to their audio overview, watch their video, review their infographic and slide deck, in the format that works for you.',
   },
   {
     number: '3',
     heading: 'Chat with their career AI',
-    body: 'Ask the candidate\'s AI anything — their leadership style, why they left their last role, how they handled their toughest challenge. Get instant answers, 24/7.',
+    body: 'Ask the candidate\'s AI anything, their leadership style, why they left their last role, how they handled their toughest challenge. Get instant answers, 24/7.',
   },
 ]
 

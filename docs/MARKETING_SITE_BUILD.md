@@ -1,4 +1,4 @@
-# RoleBoost Marketing Site — Claude Code Build Prompt
+# RoleBoost Marketing Site, Claude Code Build Prompt
 **Version:** 1.4
 **Date:** June 2026
 **Purpose:** Drop this file into Claude Code to build the roleboost.app marketing homepage.
@@ -472,7 +472,7 @@ The file should contain everything under the "Design System" heading above -- ph
 Format it as a standalone markdown file with this header:
 
 ```
-# RoleBoost Design System — MASTER
+# RoleBoost Design System, MASTER
 **Version:** 1.0
 **Last updated:** June 2026
 **Source of truth for all RoleBoost UI decisions. Read this before building any page or component.**

@@ -45,7 +45,7 @@ export default function Footer() {
               Built by
             </p>
             <p className="font-inter text-sm text-gray-400 leading-relaxed">
-              Rob Ramos — 20+ years in operations and logistics.
+              Rob Ramos, 20+ years in operations and logistics.
             </p>
           </div>
         </div>
