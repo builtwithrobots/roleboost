@@ -63,7 +63,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const systemPrompt = buildCandidateSystemPrompt(brain.candidate, brain.resumeMarkdown);
+  const systemPrompt = buildCandidateSystemPrompt(
+    brain.candidate,
+    brain.resumeMarkdown,
+    brain.careerContextMarkdown,
+  );
 
   // Full-diagnostic path sends only the question -- generate the answer the same
   // way a recruiter would receive it (Haiku, same system prompt).
