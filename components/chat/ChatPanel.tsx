@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, useId } from 'react';
-import { Send, Sparkles, X } from 'lucide-react';
+import { Send, Sparkles, X, Download, CalendarClock, Check } from 'lucide-react';
 import type { ChatTurn } from '@/lib/types';
 
 interface Props {
   candidateSlug: string;
   candidateName: string;
-  /** 'live' = public recruiter view. 'preview' = candidate testing their own AI. */
+  /** 'live' = public recruiter view. 'preview' = candidate testing their own assistant. */
   mode?: 'live' | 'preview';
   /** Fired after each assistant answer with the question + answer (sandbox analysis). */
   onExchange?: (question: string, answer: string) => void;
@@ -17,13 +17,15 @@ interface Props {
   suggestedQuestions?: string[];
   /** Focus the input on mount (used inside the chat overlay). */
   autoFocus?: boolean;
-  /** Fill the parent height and drop the card chrome (used inside the overlay). */
+  /** Fill the parent height and drop the card chrome. */
   fill?: boolean;
-  /** Render a close button in the header (used inside the overlay). */
+  /** Render a close button in the header. */
   onClose?: () => void;
 }
 
 const HISTORY_LIMIT = 20;
+
+type ScheduleState = 'idle' | 'prompt' | 'form' | 'sending' | 'done';
 
 export default function ChatPanel({
   candidateSlug,
@@ -41,19 +43,24 @@ export default function ChatPanel({
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
+  // Scheduling handoff, shown when the assistant cannot answer and offers to meet.
+  const [scheduleState, setScheduleState] = useState<ScheduleState>('idle');
+  const [availability, setAvailability] = useState('');
+  const [email, setEmail] = useState('');
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+
   const inputId = useId();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef<string | null>(null);
 
   const firstName = candidateName.split(' ')[0] || candidateName;
+  const assistantName = `${firstName}'s Personal Assistant`;
 
-  // Keep the latest message in view as the conversation grows.
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, scheduleState]);
 
-  // A sandbox library chip can push a question in; the bumped nonce resends it.
   useEffect(() => {
     if (externalQuestion?.text) void send(externalQuestion.text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +75,6 @@ export default function ChatPanel({
   }, [sessionId]);
 
   // Deliver the transcript when a live conversation closes (the panel unmounts).
-  // Sandbox/preview turns never created a deliverable session, so skip them.
   useEffect(() => {
     return () => {
       if (mode === 'live' && sessionIdRef.current && typeof navigator !== 'undefined' && navigator.sendBeacon) {
@@ -78,7 +84,7 @@ export default function ChatPanel({
           });
           navigator.sendBeacon('/api/transcripts/deliver', blob);
         } catch {
-          // best-effort; a missed beacon just means no transcript this time
+          // best-effort
         }
       }
     };
@@ -92,6 +98,7 @@ export default function ChatPanel({
     setMessages((m) => [...m, { role: 'user', content: trimmed }]);
     if (explicitMessage === undefined) setInput('');
     setLoading(true);
+    setScheduleState('idle'); // a new question resets any prior scheduling offer
 
     try {
       const res = await fetch('/api/chat', {
@@ -106,26 +113,67 @@ export default function ChatPanel({
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message ?? 'Request failed');
-      }
+      if (!res.ok) throw new Error(data?.error?.message ?? 'Request failed');
 
       if (data.sessionId) setSessionId(data.sessionId);
       const assistantAnswer = data.answer as string;
       setMessages((m) => [...m, { role: 'assistant', content: assistantAnswer }]);
       onExchange?.(trimmed, assistantAnswer);
+      if (mode === 'live' && data.offerSchedule) setScheduleState('prompt');
     } catch {
       setMessages((m) => [
         ...m,
         {
           role: 'assistant',
           content:
-            'Something went wrong reaching the AI just now. Please try sending that again in a moment.',
+            'Something went wrong reaching the assistant just now. Please try sending that again in a moment.',
         },
       ]);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function submitSchedule() {
+    if (!email.trim() || !availability.trim()) return;
+    setScheduleError(null);
+    setScheduleState('sending');
+    try {
+      const res = await fetch('/api/chat/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidateSlug,
+          email: email.trim(),
+          availability: availability.trim(),
+          sessionId: sessionId ?? undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('failed');
+      setScheduleState('done');
+    } catch {
+      setScheduleError('Could not send that just now. Please try again.');
+      setScheduleState('form');
+    }
+  }
+
+  function downloadTranscript() {
+    if (messages.length === 0) return;
+    const lines = [
+      `# Conversation with ${assistantName}`,
+      new Date().toLocaleString(),
+      '',
+      ...messages.flatMap((m) => [`**${m.role === 'user' ? 'You' : assistantName}:** ${m.content}`, '']),
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `roleboost-conversation-${candidateSlug}.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -134,6 +182,9 @@ export default function ChatPanel({
       void send();
     }
   }
+
+  const inputClass =
+    'w-full rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-3 py-2 text-sm text-[var(--rb-text)] outline-none placeholder:text-[var(--rb-text-muted)] focus-visible:border-[var(--rb-brand)] focus-visible:ring-2 focus-visible:ring-[var(--rb-brand)]/30';
 
   return (
     <div
@@ -151,9 +202,7 @@ export default function ChatPanel({
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-[var(--rb-text)]">
-            {mode === 'preview'
-              ? 'This is how your AI responds to recruiters'
-              : `Ask ${firstName}'s career AI anything`}
+            {mode === 'preview' ? `How ${assistantName} responds to recruiters` : `Ask ${assistantName} anything`}
           </p>
           {mode === 'preview' ? (
             <p className="text-xs text-[var(--rb-text-muted)]">Private test, nothing is sent.</p>
@@ -161,6 +210,16 @@ export default function ChatPanel({
             <p className="text-xs text-[var(--rb-text-muted)]">Honest by design · you both get the transcript</p>
           )}
         </div>
+        {messages.length > 0 && (
+          <button
+            onClick={downloadTranscript}
+            aria-label="Download transcript"
+            title="Download transcript"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full text-[var(--rb-text-muted)] transition-colors hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--rb-text)]"
+          >
+            <Download className="size-4" />
+          </button>
+        )}
         {onClose && (
           <button
             onClick={onClose}
@@ -177,14 +236,14 @@ export default function ChatPanel({
         ref={scrollRef}
         role="log"
         aria-live="polite"
-        aria-label={`Conversation with ${candidateName}'s career AI`}
+        aria-label={`Conversation with ${assistantName}`}
         className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
       >
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
             <p className="max-w-xs text-sm text-[var(--rb-text-muted)]">
               {mode === 'preview'
-                ? `Try a hard recruiter question and see how ${firstName}'s AI answers.`
+                ? `Try a hard recruiter question and see how ${assistantName} answers.`
                 : `Ask about ${firstName}'s experience, decisions, and what they're looking for next.`}
             </p>
             {suggestedQuestions && suggestedQuestions.length > 0 && (
@@ -204,20 +263,15 @@ export default function ChatPanel({
         )}
 
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[85%] rounded-[var(--radius-lg)] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[85%] whitespace-pre-wrap rounded-[var(--radius-lg)] px-3.5 py-2.5 text-sm leading-relaxed ${
                 m.role === 'user'
                   ? 'bg-[var(--rb-brand)] text-white'
-                  : 'bg-[var(--rb-bg-page)] text-[var(--rb-text-secondary)] border border-[var(--rb-border)]'
+                  : 'border border-[var(--rb-border)] bg-[var(--rb-bg-page)] text-[var(--rb-text-secondary)]'
               }`}
             >
-              <span className="sr-only">
-                {m.role === 'user' ? 'You said: ' : `${firstName}'s AI said: `}
-              </span>
+              <span className="sr-only">{m.role === 'user' ? 'You said: ' : `${assistantName} said: `}</span>
               {m.content}
             </div>
           </div>
@@ -232,6 +286,76 @@ export default function ChatPanel({
             </div>
           </div>
         )}
+
+        {/* Scheduling handoff */}
+        {scheduleState !== 'idle' && (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--rb-border-brand)] bg-[var(--rb-brand-subtle)]/50 p-3">
+            {scheduleState === 'prompt' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setScheduleState('form')}
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  <CalendarClock className="size-3.5" />
+                  Yes, schedule a time
+                </button>
+                <button
+                  onClick={() => setScheduleState('idle')}
+                  className="rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]"
+                >
+                  No thanks
+                </button>
+              </div>
+            )}
+
+            {(scheduleState === 'form' || scheduleState === 'sending') && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-medium text-[var(--rb-text)]">
+                  Share a couple of date and time ranges that work, and where to reach you.
+                </p>
+                <textarea
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. Tue 10am to 12pm ET, or Thu afternoon"
+                  className={`${inputClass} resize-none`}
+                  aria-label="Your availability"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className={inputClass}
+                  aria-label="Your email"
+                />
+                {scheduleError && <p className="text-xs text-[var(--color-error)]">{scheduleError}</p>}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={submitSchedule}
+                    disabled={scheduleState === 'sending' || !email.trim() || !availability.trim()}
+                    className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {scheduleState === 'sending' ? 'Sending…' : 'Send request'}
+                  </button>
+                  <button
+                    onClick={() => setScheduleState('idle')}
+                    className="rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {scheduleState === 'done' && (
+              <p className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-success)]">
+                <Check className="size-4" />
+                Sent. {firstName} will respond soon.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Input */}
@@ -244,7 +368,7 @@ export default function ChatPanel({
       >
         <div className="flex items-end gap-2">
           <label htmlFor={inputId} className="sr-only">
-            Ask {candidateName}&apos;s career AI a question
+            Ask {assistantName} a question
           </label>
           <textarea
             id={inputId}
@@ -266,8 +390,8 @@ export default function ChatPanel({
           </button>
         </div>
         <p className="mt-2 text-center text-[11px] text-[var(--rb-text-muted)]">
-          Powered by RoleBoost AI. This AI represents {firstName}&apos;s career history and may not
-          reflect every detail.
+          Powered by RoleBoost. {assistantName} represents {firstName}&apos;s career history and may
+          not reflect every detail.
         </p>
       </form>
     </div>

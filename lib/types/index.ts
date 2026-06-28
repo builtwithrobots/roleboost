@@ -174,6 +174,20 @@ export interface CandidateAsset {
   created_at: string;
 }
 
+// A recruiter's request to meet, captured when the Personal Assistant redirects.
+export type MeetingRequestStatus = 'new' | 'responded';
+
+export interface MeetingRequest {
+  id: string;
+  candidate_profile_id: string;
+  chat_session_id: string | null;
+  recruiter_email: string;
+  recruiter_name: string | null;
+  availability: string;
+  status: MeetingRequestStatus;
+  created_at: string;
+}
+
 // ── Sandbox self-testing (Phase C) ──────────────────────────────────────────
 
 export type SandboxCategory =

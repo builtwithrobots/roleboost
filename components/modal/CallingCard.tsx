@@ -81,7 +81,7 @@ export default function CallingCard({
       <div className="absolute right-4 top-4 z-10">
         <ShareButton
           title={`${fullName} on RoleBoost`}
-          text={`Ask ${firstName}'s career AI anything about their career`}
+          text={`Ask ${firstName}'s Personal Assistant anything about their career`}
           iconOnly
           className="inline-flex size-11 items-center justify-center rounded-full border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] text-[var(--rb-text-secondary)] shadow-[var(--shadow-card)] transition-colors duration-[var(--duration-fast)] hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)]"
         />
@@ -156,7 +156,7 @@ export default function CallingCard({
             <div className="mt-6 rounded-[var(--radius-2xl)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] p-6">
               <MessageCircle className="mb-2 size-6 text-[var(--rb-text-muted)]" />
               <p className="text-sm text-[var(--rb-text-secondary)]">
-                {firstName}&apos;s career AI is offline right now.
+                {firstName}&apos;s Personal Assistant is offline right now.
                 {linkedinUrl ? ' Reach out directly:' : ' Check back soon.'}
               </p>
               {linkedinUrl && (
