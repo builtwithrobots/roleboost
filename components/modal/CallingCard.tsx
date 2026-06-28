@@ -116,7 +116,12 @@ export default function CallingCard({
           }`}
         >
           {/* ── Left, profile + chat ──────────────────────────────────────── */}
-          <div
+          {/* motion.div with its own stagger: it is a direct child of the outer
+              staggerContainer (so it sequences with the right panel) and it
+              re-staggers its own fadeUp children. A plain div here would break
+              Framer Motion's variant propagation and the entrance animation. */}
+          <motion.div
+            variants={staggerContainer}
             className={`flex flex-col ${
               twoCol ? 'items-center text-center lg:items-start lg:text-left' : 'items-center text-center'
             }`}
@@ -243,7 +248,7 @@ export default function CallingCard({
                 )}
               </motion.div>
             )}
-          </div>
+          </motion.div>
 
           {/* ── Right, assets (or the snapshot when there are no assets) ───── */}
           {twoCol && (
