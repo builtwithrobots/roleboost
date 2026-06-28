@@ -1,7 +1,7 @@
 import 'server-only';
 import { Resend } from 'resend';
 
-// Resend client — server-only. Lazily initialised so a missing RESEND_API_KEY
+// Resend client, server-only. Lazily initialised so a missing RESEND_API_KEY
 // doesn't crash the build (matches lib/ai/client.ts and lib/supabase/admin.ts).
 let _resend: Resend | null = null;
 

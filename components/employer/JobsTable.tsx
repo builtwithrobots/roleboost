@@ -224,10 +224,10 @@ export default function JobsTable({ jobs: initialJobs }: Props) {
                       <div className="font-medium text-[var(--rb-text)]">{job.title}</div>
                     </td>
                     <td className="px-4 py-3 text-[var(--rb-text-secondary)] hidden sm:table-cell">
-                      {job.department ?? '—'}
+                      {job.department ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-[var(--rb-text-secondary)] hidden md:table-cell">
-                      {job.location ?? '—'}
+                      {job.location ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Link

@@ -42,7 +42,7 @@ const STEPS: Step[] = [
   {
     key: 'brainBuilt',
     title: 'Build your career AI',
-    blurb: 'Answer a few questions (or fill in the details) so your AI can speak for you — gaps, wins, the hard stuff.',
+    blurb: 'Answer a few questions (or fill in the details) so your AI can speak for you, gaps, wins, the hard stuff.',
     cta: 'Open AI Studio',
     href: '/dashboard/ai?tab=build',
     Icon: Bot,
@@ -58,7 +58,7 @@ const STEPS: Step[] = [
   {
     key: 'tested',
     title: 'Try your AI',
-    blurb: 'Ask it the tough questions a recruiter would, and see how it answers — before they do.',
+    blurb: 'Ask it the tough questions a recruiter would, and see how it answers, before they do.',
     cta: 'Test your AI',
     href: '/dashboard/ai?tab=test',
     Icon: FlaskConical,
@@ -107,7 +107,7 @@ export default function GettingStarted({ progress }: Props) {
     try {
       window.localStorage.setItem(DISMISS_KEY, '1');
     } catch {
-      /* private mode — fine, it just shows again next visit */
+      /* private mode, fine, it just shows again next visit */
     }
     window.dispatchEvent(new Event(DISMISS_EVENT));
   };
@@ -122,7 +122,7 @@ export default function GettingStarted({ progress }: Props) {
           <PartyPopper className="size-4 text-[var(--color-success)]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--rb-text)]">You&apos;re all set — your AI is live.</p>
+          <p className="text-sm font-semibold text-[var(--rb-text)]">You&apos;re all set, your AI is live.</p>
           <p className="text-xs text-[var(--rb-text-muted)]">
             Keep it sharp: add new wins anytime and your AI gets better.{' '}
             <Link href="/dashboard/ai" className="font-medium text-[var(--rb-brand)] hover:underline">

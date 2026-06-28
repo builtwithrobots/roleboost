@@ -155,6 +155,7 @@ Hard rules:
 - Write the narrative in third person about the candidate. Write the hard-question answer in first person ("I ...").
 - The hard-question answer is direct and confident, does not hedge or apologize, and ends on what the candidate brings.
 - Evidence snippets must be VERBATIM quotes that actually appear in the supporting sources. Never fabricate a quote. If there are no quotable sources, return an empty array.
+- Never use em dashes anywhere in the output. Use commas, semicolons, or periods instead.
 
 Submit via the submit_context tool.`;
 
@@ -200,7 +201,7 @@ function renderAngleMarkdown(a: GeneratedAngle, fullName: string): string {
   ].filter(Boolean);
 
   const lines = [
-    `# ${fullName} — Career Context Document`,
+    `# ${fullName}: Career Context Document`,
     `**Story type:** ${STORY_TYPE_LABELS[a.story_type]}  ·  **Angle:** ${a.name}`,
     '',
     '## Identity',
@@ -228,7 +229,7 @@ function renderAngleMarkdown(a: GeneratedAngle, fullName: string): string {
   if (a.evidence_snippets.length > 0) {
     lines.push('## What Others Say');
     for (const e of a.evidence_snippets) {
-      lines.push(`> "${e.quote}"${e.source ? ` — ${e.source}` : ''}`, '');
+      lines.push(`> "${e.quote}"${e.source ? `, ${e.source}` : ''}`, '');
     }
   }
 
@@ -292,6 +293,7 @@ Rules:
 - Never invent. Every claim must trace to the current document or the new material.
 - Refresh the evidence snippets from the supporting sources -- up to 4 VERBATIM third-party quotes that actually appear in them. Empty array if there are none.
 - Write the narrative in third person about the candidate; write the hard-question answer in first person ("I ...").
+- Never use em dashes anywhere in the output. Use commas, semicolons, or periods instead.
 
 Submit the updated angle via the submit_updated tool.`;
 

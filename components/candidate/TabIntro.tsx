@@ -7,7 +7,7 @@ interface Props {
 }
 
 // A compact, plain-language "what this is / why it matters" intro shown at the top
-// of an AI Studio tab. Contextual help at the moment of need — teaches without a
+// of an AI Studio tab. Contextual help at the moment of need, teaches without a
 // manual. Styled on the shared design tokens so it reads as native.
 export default function TabIntro({ Icon, title, children }: Props) {
   return (

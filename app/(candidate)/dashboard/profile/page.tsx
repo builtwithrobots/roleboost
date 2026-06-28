@@ -30,7 +30,7 @@ export default async function CandidateProfilePage() {
   let profile = rawProfile as CandidateProfile | null;
 
   if (!profile) {
-    // First visit after onboarding — bootstrap the profile row and use the
+    // First visit after onboarding, bootstrap the profile row and use the
     // returned row directly. Re-querying here would be deduplicated by Next.js
     // fetch memoization against the read above and return the stale empty
     // result, so we rely on the row ensureCandidateProfile() returns.
@@ -38,7 +38,7 @@ export default async function CandidateProfilePage() {
   }
 
   if (!profile) {
-    // Creation failed — show minimal error state
+    // Creation failed, show minimal error state
     return (
       <main className="p-8">
         <p className="text-sm text-red-600">

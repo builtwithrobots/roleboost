@@ -101,7 +101,7 @@ export default function AudioPlayer({ src, title }: Props) {
         </div>
         <div className="flex justify-between text-xs font-data text-[var(--rb-text-muted)]">
           <span>{formatTime(currentTime)}</span>
-          <span>{isLoading ? '—:——' : formatTime(duration)}</span>
+          <span>{isLoading ? '-:--' : formatTime(duration)}</span>
         </div>
       </div>
 

@@ -14,12 +14,12 @@ const steps = [
   {
     number: '2',
     heading: 'Get your complete asset suite',
-    body: 'RoleBoost produces your audio overview, video, infographic, slide deck, AI summary, and ATS resume — all from one upload.',
+    body: 'RoleBoost produces your audio overview, video, infographic, slide deck, AI summary, and ATS resume, all from one upload.',
   },
   {
     number: '3',
     heading: 'Share one link. Let your AI do the talking.',
-    body: 'Paste your RoleBoost link anywhere. Employers click it, explore your assets, and chat with your career AI — before they ever schedule a call.',
+    body: 'Paste your RoleBoost link anywhere. Employers click it, explore your assets, and chat with your career AI, before they ever schedule a call.',
   },
 ]
 

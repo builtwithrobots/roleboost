@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'RoleBoost',
-  description: 'When everyone sounds the same on paper — be heard.',
+  description: 'When everyone sounds the same on paper, be heard.',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: '/icons/32',

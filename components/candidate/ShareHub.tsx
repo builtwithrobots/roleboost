@@ -25,7 +25,7 @@ function useCopy(text: string) {
 }
 
 // QR code generator using the canvas API with a simple matrix approach
-// For production you'd use a proper QR lib — this is a lightweight inline version
+// For production you'd use a proper QR lib, this is a lightweight inline version
 function QRCanvas({ url, size }: { url: string; size: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

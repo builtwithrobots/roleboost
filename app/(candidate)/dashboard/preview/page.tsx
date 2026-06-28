@@ -15,7 +15,7 @@ export default function CandidatePreviewPage() {
         <EmptyState
           icon={Eye}
           title="Preview is on the way"
-          description="The live employer-view modal — audio, video, deck, infographic, resume, and your AI chat — will render here so you can check it before you share."
+          description="The live employer-view modal, audio, video, deck, infographic, resume, and your AI chat, will render here so you can check it before you share."
         />
       </div>
     </DashboardPage>

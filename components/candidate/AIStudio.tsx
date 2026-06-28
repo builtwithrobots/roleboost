@@ -276,7 +276,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
           className="flex flex-col gap-6"
         >
           <TabIntro Icon={Hammer} title="Teach your AI about your career">
-            This is where your AI learns who you are — your wins, the hard questions, the things a
+            This is where your AI learns who you are, your wins, the hard questions, the things a
             résumé can&apos;t say. Use the guided interview to do it fast, or fill in the details
             yourself. Everything here saves automatically and applies to your AI right away.
           </TabIntro>
@@ -293,7 +293,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
               <div>
                 <h2 className="text-sm font-semibold text-[var(--rb-text)]">Build with a guided interview</h2>
                 <p className="mt-0.5 text-xs text-[var(--rb-text-muted)]">
-                  Let the AI read your résumé and interview you — it fills the fields below for you.
+                  Let the AI read your résumé and interview you, it fills the fields below for you.
                 </p>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
             </h2>
             <p className="mb-5 text-xs text-[var(--rb-text-muted)]">
               The more honest detail you give, the better your AI answers the hard questions. Everything
-              here stays private to your AI — it is never shown raw on your public profile.
+              here stays private to your AI, it is never shown raw on your public profile.
             </p>
 
             <div className="flex flex-col gap-5">
@@ -385,7 +385,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
                     value={pair.question}
                     onChange={(e) => updateQa(i, 'question', e.target.value)}
                     onBlur={() => save()}
-                    placeholder="Recruiter question — e.g. Why did you leave Bedgear?"
+                    placeholder="Recruiter question, e.g. Why did you leave Bedgear?"
                     maxLength={500}
                     className={`${inputClass} mb-2`}
                     aria-label={`Question for custom answer ${i + 1}`}
@@ -422,7 +422,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
               Redirect topics
             </h2>
             <p className="mb-4 text-xs text-[var(--rb-text-muted)]">
-              Topics your AI should never answer and instead route to a direct conversation — e.g. salary
+              Topics your AI should never answer and instead route to a direct conversation, e.g. salary
               expectations, references, start date.
             </p>
 
@@ -480,8 +480,8 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
           className="flex flex-col gap-4"
         >
           <TabIntro Icon={FlaskConical} title="Try your AI before recruiters do">
-            Ask your AI the tough questions a recruiter would — about a gap, a short stint, a big
-            number — and see exactly how it answers. Anything that comes out weak points you to the
+            Ask your AI the tough questions a recruiter would, about a gap, a short stint, a big
+            number, and see exactly how it answers. Anything that comes out weak points you to the
             field to strengthen. Edits in Build apply here instantly.
           </TabIntro>
           {aiEnabled ? (
@@ -508,7 +508,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
         >
           <TabIntro Icon={ShieldCheck} title="Sharpen with real conversations">
             Already had recruiter calls or practice interviews? Paste a transcript and your AI finds
-            the exact questions it isn&apos;t ready for yet — then shows you how to close each gap.
+            the exact questions it isn&apos;t ready for yet, then shows you how to close each gap.
             Transcripts are analyzed and never stored.
           </TabIntro>
           <HardenPanel

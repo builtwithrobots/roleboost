@@ -107,7 +107,7 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
 
   function onPaste() {
     if (text.trim().length < 30) {
-      setError('Paste a bit more text — at least a couple of sentences.');
+      setError('Paste a bit more text, at least a couple of sentences.');
       return;
     }
     const form = new FormData();
@@ -136,7 +136,7 @@ export default function OnboardingSourcesStep({ onContinue }: Props) {
         </h1>
         <p className="mt-2 text-sm text-[var(--rb-text-secondary)]">
           Add your LinkedIn or Indeed export, a GitHub profile, or a recommendation. Your AI uses them
-          as context and cross-checks them against your résumé. Totally optional — you can always add
+          as context and cross-checks them against your résumé. Totally optional, you can always add
           more later.
         </p>
       </div>

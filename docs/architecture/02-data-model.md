@@ -1,7 +1,7 @@
-# 02 — Data Model
+# 02, Data Model
 
 **The schema's source of truth is `supabase/migrations/`.** Never reproduce it by
-hand and never edit the database manually — migrations auto-apply on PR merge via
+hand and never edit the database manually, migrations auto-apply on PR merge via
 the Supabase branching integration. This doc is a map, not the schema.
 
 ## Conventions
@@ -27,7 +27,7 @@ the Supabase branching integration. This doc is a map, not the schema.
   `is_published = TRUE`. To stop sensitive brain columns leaking, the
   `20260626000000_ai_brain.sql` migration does `REVOKE SELECT … FROM anon` then
   `GRANT SELECT (<safe columns>)`. **Because the grant is an explicit column
-  list, every column added afterward is automatically unreadable by anon** —
+  list, every column added afterward is automatically unreadable by anon**,
   including all brain fields, `context_package_md`, and `career_context_drafts`.
   New sensitive columns therefore need *no* extra grant work; new *public* columns
   must be added to the grant deliberately. The chat path reads the full brain

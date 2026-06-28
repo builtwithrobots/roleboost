@@ -9,7 +9,7 @@ import HowItWorks from './HowItWorks';
 
 // Persistent help affordance in the dashboard chrome. Opens the "How it works"
 // explainer in a dialog (Headless UI gives focus trap, ESC, scroll lock, focus
-// return for free — WCAG AA). Links inside close the dialog first, because the
+// return for free, WCAG AA). Links inside close the dialog first, because the
 // dashboard layout persists across client navigation and would otherwise leave
 // the modal open over the new page.
 export default function HelpButton() {

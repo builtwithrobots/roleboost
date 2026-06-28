@@ -1,4 +1,4 @@
-# 03 — Auth & Entitlements
+# 03, Auth & Entitlements
 
 ## Clerk = authentication only
 
@@ -15,7 +15,7 @@ role/subscription); `user.updated` syncs email; `user.deleted` deletes the row
 (`app/(auth)/onboarding/actions.ts` → `setUserRole`), which refuses to reassign an
 existing role.
 
-## `getUserContext` — the gate every server entry point uses
+## `getUserContext`, the gate every server entry point uses
 
 `lib/auth/user-context.ts`:
 
@@ -36,10 +36,10 @@ const { userId, supabase, role, isAdmin, user } = await getUserContext('candidat
    the user record (which carries `is_admin`, `subscription_status`,
    `subscription_tier`).
 
-`AuthError` codes map to HTTP/error-envelope codes — see
-[10 — Conventions](./10-conventions-and-ops.md).
+`AuthError` codes map to HTTP/error-envelope codes, see
+[10, Conventions](./10-conventions-and-ops.md).
 
-## The three Supabase clients — one purpose each
+## The three Supabase clients, one purpose each
 
 `lib/supabase/`:
 
@@ -57,9 +57,9 @@ Why the chat path uses the admin client: recruiters are anonymous (no Clerk JWT)
 and the brain spans columns the anon role can't read. `getCandidateBrainBySlug`
 therefore reads server-side via the service-role client and the route enforces
 visibility itself (`is_published` or owner-preview). See
-[07 — Chat](./07-chat-and-transcripts.md).
+[07, Chat](./07-chat-and-transcripts.md).
 
-## Entitlements — the AI-access seam
+## Entitlements, the AI-access seam
 
 `lib/auth/entitlements.ts` is the **single** place that decides whether a
 candidate may use AI Studio, generate/augment a context document, and (eventually)
@@ -71,8 +71,8 @@ candidateHasAiAccess(user);      // boolean
 ```
 
 Today it is **open to all candidates during rollout** (`BILLING_ENFORCED =
-false`). The real check is already written — admin or
-`subscription_status === 'active'` — and gated behind that flag. When candidate
+false`). The real check is already written, admin or
+`subscription_status === 'active'`, and gated behind that flag. When candidate
 subscriptions/trials ship, flipping `BILLING_ENFORCED` to `true` activates the
 paywall with **no caller changes**.
 

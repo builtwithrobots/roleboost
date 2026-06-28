@@ -57,7 +57,7 @@ export default async function AIStudioPage({
   let profile = rawProfile as CandidateProfile | null;
 
   if (!profile) {
-    // First visit before the profile tab was opened — bootstrap the row and
+    // First visit before the profile tab was opened, bootstrap the row and
     // fill the brain fields with their defaults (the row was just created with
     // these exact DB defaults). Re-querying here would hit fetch memoization.
     const base = await ensureCandidateProfile();

@@ -82,7 +82,7 @@ export default async function AdminPage() {
           </h2>
           <p className="mb-5 text-sm text-[var(--rb-text-muted)]">
             Switch into a role to experience the dashboard exactly as that user type sees it.
-            Your admin session is preserved — exit any time via the banner at the top.
+            Your admin session is preserved, exit any time via the banner at the top.
           </p>
           <div className="flex gap-4">
             <form action={previewAsCandidate}>

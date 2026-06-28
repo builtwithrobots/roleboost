@@ -54,7 +54,7 @@ function BoardCard({ candidate, onStageChange }: { candidate: Candidate; onStage
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-[var(--rb-text)] truncate text-xs">{profile.fullName}</div>
           <div className="text-[var(--rb-text-muted)] truncate text-xs">
-            {profile.targetRole ?? profile.headline ?? '—'}
+            {profile.targetRole ?? profile.headline ?? '-'}
           </div>
         </div>
         <Link
@@ -145,7 +145,7 @@ export default function CandidateBoard({ candidates: initialCandidates }: Props)
         </p>
       </div>
 
-      {/* Board columns — horizontal scroll */}
+      {/* Board columns, horizontal scroll */}
       <div className="flex-1 overflow-x-auto px-6 py-6">
         <div className="flex gap-4 min-w-max h-full">
           {STAGES.map(({ key, label, header, accent }) => {

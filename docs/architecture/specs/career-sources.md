@@ -1,4 +1,4 @@
-# Spec — Career Sources
+# Spec, Career Sources
 
 > Status: in progress · Owner: AI Studio / Brain · Branch: `claude/career-assets-context-325jtw`
 > Last updated: June 2026
@@ -13,8 +13,8 @@ A candidate's chatbot brain is currently built from two inputs only:
 The intake dialog *already* lets a candidate paste "extra career text" (LinkedIn About, Indeed
 profile, etc.), but that text is:
 
-- **ephemeral** — held in client state, never persisted; and
-- **half-used** — it feeds Pass-1 inconsistency detection only. It is **never** passed to
+- **ephemeral**, held in client state, never persisted; and
+- **half-used**, it feeds Pass-1 inconsistency detection only. It is **never** passed to
   `assembleBrainFromIntake`, so nothing the candidate brings beyond the résumé ever enriches the
   brain fields. It is discarded when the dialog closes.
 
@@ -24,12 +24,12 @@ analysis.
 
 ## Goal
 
-Let candidates bring external career sources — by **upload** (PDF/DOCX/TXT) or **paste** — that are
+Let candidates bring external career sources, by **upload** (PDF/DOCX/TXT) or **paste**, that are
 **persisted**, **typed/labelled**, and used for all three jobs:
 
-1. **Chatbot context / brain enrichment** — sources become grounding for brain assembly.
-2. **Discrepancy analysis** — sources cross-check against the résumé in intake Pass 1.
-3. **Profile enhancement** — (later) pre-fill profile metadata.
+1. **Chatbot context / brain enrichment**, sources become grounding for brain assembly.
+2. **Discrepancy analysis**, sources cross-check against the résumé in intake Pass 1.
+3. **Profile enhancement**, (later) pre-fill profile metadata.
 
 Non-goal (handled by NotebookLM, explicitly out of scope per CLAUDE.md): media assets
 (audio/video/deck/infographic). Those are recruiter-facing display media, never AI inputs, and are
@@ -49,7 +49,7 @@ Non-goal (handled by NotebookLM, explicitly out of scope per CLAUDE.md): media a
 
 ## Data model
 
-New table `career_sources` — a sibling of `resume_documents` (text input to the brain, **not** a
+New table `career_sources`, a sibling of `resume_documents` (text input to the brain, **not** a
 displayable asset, so deliberately separate from `candidate_assets`). We store only the **extracted
 text**, never the original binary (mirrors the résumé-parse and transcript-hardening precedents).
 
@@ -70,7 +70,7 @@ career_sources
 ```
 
 - **RLS**: owner-only (`clerk_user_id = requesting_user_id()`), same shape as `resume_documents`.
-- **Anon**: never granted — `extracted_text` is private brain material (like intake data).
+- **Anon**: never granted, `extracted_text` is private brain material (like intake data).
 - Index on `candidate_profile_id`.
 
 `AssembledBrain` and the brain prompt are unchanged; sources flow in as additional grounding
@@ -80,10 +80,10 @@ career_sources
 
 Each phase is its own commit on the working branch, sequential PRs into `main`.
 
-### Phase 1 — Backend foundation (no behaviour change risk)
+### Phase 1, Backend foundation (no behaviour change risk)
 - Migration `*_career_sources.sql` (table + RLS + index; no anon grant).
 - Types: `CareerSource`, `CareerSourceType`, `SourceIngestMethod`.
-- `POST /api/sources` — multipart; accepts `file` **or** `text`, plus `source_type` + `label`.
+- `POST /api/sources`, multipart; accepts `file` **or** `text`, plus `source_type` + `label`.
   Extracts text via existing `extractResumeText` (generic PDF/DOCX/TXT), stores the row.
 - `deleteCareerSource(id)` server action.
 - Helper `getActiveCareerSources(profileId)` returning `IntakeDocument[]`.
@@ -91,18 +91,18 @@ Each phase is its own commit on the working branch, sequential PRs into `main`.
   key fix, into **assemble**: extend `assembleBrainFromIntake(resumeMarkdown, answers, sources)` so
   sources become grounding for the synthesized brain fields.
 
-### Phase 2 — AI Studio Career Sources UI + intake hookup
+### Phase 2, AI Studio Career Sources UI + intake hookup
 - New "Career sources" card in the AI Studio **Build** section: upload/paste, choose type, list
   with char counts + delete. Server component reads sources, passes to `AIStudio`.
 - Intake dialog notes that saved sources are auto-included (the standalone paste box stays for
   one-off text).
 
-### Phase 3 — Onboarding + résumé→profile pre-fill
+### Phase 3, Onboarding + résumé→profile pre-fill
 - Optional "bring your LinkedIn / Indeed" step after the résumé step in onboarding.
 - On résumé parse, pre-fill `headline` / `target_role` / `summary_bullets` from the parsed
   `canonical_json` when those profile fields are still empty.
 
-### Phase 4 — Structured imports ✅
+### Phase 4, Structured imports ✅
 - LinkedIn data-export **ZIP** parsing (`lib/career-sources/linkedin-export.ts` + `csv.ts`,
   dependency `jszip`): pulls Profile, Positions, Education, Skills, Certifications, and
   Recommendations Received into one consolidated grounding source.

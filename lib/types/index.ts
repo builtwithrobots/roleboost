@@ -105,10 +105,10 @@ export interface CareerContextAngle {
   positioning: string;
   /**
    * Verbatim third-party quotes pulled from career sources (recommendations,
-   * reviews) — curated evidence, not raw source text. Empty when no sources.
+   * reviews), curated evidence, not raw source text. Empty when no sources.
    */
   evidence_snippets: EvidenceSnippet[];
-  /** The full document rendered to markdown — what lands in context_package_md. */
+  /** The full document rendered to markdown, what lands in context_package_md. */
   markdown: string;
 }
 

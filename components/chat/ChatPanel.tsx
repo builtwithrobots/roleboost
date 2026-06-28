@@ -156,7 +156,7 @@ export default function ChatPanel({
               : `Ask ${firstName}'s career AI anything`}
           </p>
           {mode === 'preview' ? (
-            <p className="text-xs text-[var(--rb-text-muted)]">Private test — nothing is sent.</p>
+            <p className="text-xs text-[var(--rb-text-muted)]">Private test, nothing is sent.</p>
           ) : (
             <p className="text-xs text-[var(--rb-text-muted)]">Honest by design · you both get the transcript</p>
           )}

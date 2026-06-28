@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
         code === 'NOT_FOUND'
           ? 'No public GitHub profile found at that link'
           : code === 'RATE_LIMITED'
-            ? 'GitHub is rate-limiting right now — try again in a few minutes'
+            ? 'GitHub is rate-limiting right now, try again in a few minutes'
             : code === 'INVALID_INPUT'
               ? 'That does not look like a GitHub profile link or username'
               : 'Could not fetch that GitHub profile';

@@ -71,7 +71,7 @@ const ASSET_META: Record<AssetType, {
   deck: {
     icon: Layout,
     label: 'Slide Deck',
-    description: 'Career snapshot deck — 5–10 slides in PDF format.',
+    description: 'Career snapshot deck, 5–10 slides in PDF format.',
     accept: 'application/pdf,.pdf',
     hint: 'PDF up to 25MB',
     maxSize: '25MB',

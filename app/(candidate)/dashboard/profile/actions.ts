@@ -76,7 +76,7 @@ export async function updateCandidateProfile(input: unknown) {
 }
 
 // Bootstraps the candidate's profile row on first dashboard visit and returns
-// the created row. The caller must use the returned row directly — re-querying
+// the created row. The caller must use the returned row directly, re-querying
 // candidate_profiles in the same render would hit Next.js fetch memoization and
 // return the pre-insert (empty) result, leaving the page thinking no profile
 // exists. Returning the row here avoids that second read entirely.

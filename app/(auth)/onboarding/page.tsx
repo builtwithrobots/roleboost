@@ -58,7 +58,7 @@ export default function OnboardingPage() {
       try {
         await ensureCandidateProfile();
       } catch {
-        // Non-fatal — the profile page will bootstrap it on first visit.
+        // Non-fatal, the profile page will bootstrap it on first visit.
       }
       setStep('resume');
       setPendingRole(null);

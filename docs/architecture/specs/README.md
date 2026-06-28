@@ -21,4 +21,4 @@ time.
 Product/vision/marketing docs (`PRD.md`, `VISION.md`, `MARKET-RESEARCH.md`,
 `MARKETING_SITE_BUILD.md`) and operational content
 (`CANDIDATE_ASSET_PRODUCTION_SKILL.md`, `prompts/`) intentionally remain in
-`docs/` — they aren't architecture.
+`docs/`, they aren't architecture.

@@ -86,7 +86,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
   let classes = clsx(
     // Base
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-[var(--rb-text)] sm:py-2 sm:text-sm/5',
-    // Leading icon/icon-only — lucide icons are stroke-based, so color via text/currentColor
+    // Leading icon/icon-only, lucide icons are stroke-based, so color via text/currentColor
     '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:text-[var(--rb-text-muted)] sm:*:data-[slot=icon]:size-5',
     // Trailing icon (down chevron or similar)
     '*:last:data-[slot=icon]:ml-auto *:last:data-[slot=icon]:size-5 sm:*:last:data-[slot=icon]:size-4',

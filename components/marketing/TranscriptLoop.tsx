@@ -64,7 +64,7 @@ export default function TranscriptLoop() {
             The first feedback loop in hiring history.
           </h2>
           <p className="font-inter text-lg text-gray-600 leading-relaxed">
-            Every recruiter conversation is logged and delivered by email to both sides —
+            Every recruiter conversation is logged and delivered by email to both sides,
             immediately. Candidates learn exactly what recruiters are curious about. Recruiters get a
             full transcript with a direct link to save the candidate or send feedback.
           </p>
@@ -78,7 +78,7 @@ export default function TranscriptLoop() {
           animate={prefersReduced || cardsInView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto"
         >
-          {/* Candidate card — navy left border */}
+          {/* Candidate card, navy left border */}
           <motion.div
             variants={scaleIn}
             className="bg-[#FFFBF5] rounded-2xl border border-[#E8E0D0] border-l-4 border-l-[#1E3A5F] shadow-sm p-8"
@@ -94,7 +94,7 @@ export default function TranscriptLoop() {
             </ul>
           </motion.div>
 
-          {/* Employer card — amber left border */}
+          {/* Employer card, amber left border */}
           <motion.div
             variants={scaleIn}
             className="bg-[#FFFBF5] rounded-2xl border border-[#E8E0D0] border-l-4 border-l-[#D97706] shadow-sm p-8"

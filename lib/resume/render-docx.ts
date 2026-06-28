@@ -10,7 +10,7 @@ import {
 import type { CanonicalResume } from '@/lib/ai/canonical-resume';
 
 // Render the canonical résumé to a clean, ATS-readable .docx Buffer.
-// Pure JS (no native deps) — safe in a Vercel Node serverless function.
+// Pure JS (no native deps), safe in a Vercel Node serverless function.
 
 export async function renderResumeDocx(resume: CanonicalResume): Promise<Buffer> {
   const c = resume.contact;

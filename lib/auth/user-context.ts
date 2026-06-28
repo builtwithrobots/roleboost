@@ -37,7 +37,7 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
 
   // adminClient: Supabase Third-Party Auth (OIDC) is not required when we already
   // have the verified Clerk userId from auth(). We filter by clerk_user_id for
-  // isolation — equivalent to what RLS would enforce.
+  // isolation, equivalent to what RLS would enforce.
   const result = await (adminClient.from('users') as any)
     .select('role, is_admin, subscription_tier, subscription_status')
     .eq('clerk_user_id', userId)
@@ -48,7 +48,7 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   if (!user) throw new AuthError('NO_USER');
 
   // A row can exist before onboarding (the Clerk webhook creates it with a NULL
-  // role). Such a user hasn't chosen candidate vs employer yet — route them to
+  // role). Such a user hasn't chosen candidate vs employer yet, route them to
   // onboarding rather than into a dashboard. Admins always have role 'admin'.
   if (!user.role) throw new AuthError('NO_ROLE');
 
@@ -67,7 +67,7 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
 
   // Return the request-scoped RLS-enforced client for all downstream queries.
   // adminClient is only used above for the bootstrap user-row lookup (before we
-  // know the role) — all other writes and reads must go through this client.
+  // know the role), all other writes and reads must go through this client.
   const supabase = await getRequestClient();
   return {
     userId,

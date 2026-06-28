@@ -2,18 +2,18 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    ROLEBOOST DESIGN SYSTEM
-   Style: Enterprise SaaS — Linear × Notion × Spotify
+   Style: Enterprise SaaS - Linear × Notion × Spotify
    Stack: Next.js 16 · Tailwind v4 · Catalyst UI Kit · Headless UI
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Class-based dark mode — add .dark to <html> to activate */
+/* Class-based dark mode - add .dark to <html> to activate */
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* ── Typography ─────────────────────────────────────────────────
-     Display: Plus Jakarta Sans — headings, hero text, labels
-     Body:    Inter            — all prose, UI text, inputs
-     Mono:    JetBrains Mono   — stats, data values, timestamps
+     Display: Plus Jakarta Sans - headings, hero text, labels
+     Body:    Inter            - all prose, UI text, inputs
+     Mono:    JetBrains Mono   - stats, data values, timestamps
   ─────────────────────────────────────────────────────────────── */
   --font-display: var(--font-display), "Plus Jakarta Sans", sans-serif;
   --font-body:    var(--font-body), "Inter", sans-serif;
@@ -24,8 +24,8 @@
   --font-inter:   var(--font-body), "Inter", sans-serif;
 
   /* ── Brand: Indigo-Violet gradient identity ─────────────────────
-     Primary #4F46E5 — buttons, active nav, links, focus rings
-     Secondary #7C3AED — gradient terminus, hover accents
+     Primary #4F46E5 - buttons, active nav, links, focus rings
+     Secondary #7C3AED - gradient terminus, hover accents
   ─────────────────────────────────────────────────────────────── */
   --color-brand-50:  #EEF2FF;
   --color-brand-100: #E0E7FF;
@@ -47,11 +47,11 @@
   /* ── Candidate Stage Colors (board columns, badges) ─────────────
      Each stage has a foreground-safe value meeting WCAG 3:1 on white.
   ─────────────────────────────────────────────────────────────── */
-  --color-stage-saved:      #64748B;   /* slate-500  — neutral, entry */
-  --color-stage-screening:  #2563EB;   /* blue-600   — active review  */
-  --color-stage-interview:  #D97706;   /* amber-600  — high priority  */
-  --color-stage-offer:      #059669;   /* emerald-600— positive       */
-  --color-stage-passed:     #DC2626;   /* red-600    — closed         */
+  --color-stage-saved:      #64748B;   /* slate-500  - neutral, entry */
+  --color-stage-screening:  #2563EB;   /* blue-600   - active review  */
+  --color-stage-interview:  #D97706;   /* amber-600  - high priority  */
+  --color-stage-offer:      #059669;   /* emerald-600- positive       */
+  --color-stage-passed:     #DC2626;   /* red-600    - closed         */
 
   /* Stage backgrounds (column fills, badge backgrounds) */
   --color-stage-saved-bg:      #F1F5F9;  /* slate-100  */
@@ -73,13 +73,13 @@
   /* ── Border Radius Scale ────────────────────────────────────────
      Applied consistently: inputs=md, buttons=md, cards=xl, modals=2xl
   ─────────────────────────────────────────────────────────────── */
-  --radius-xs:   0.25rem;   /*  4px — tags, tiny chips        */
-  --radius-sm:   0.375rem;  /*  6px — small badges, tooltips  */
-  --radius-md:   0.5rem;    /*  8px — inputs, buttons         */
-  --radius-lg:   0.625rem;  /* 10px — default cards           */
-  --radius-xl:   0.75rem;   /* 12px — dashboard cards         */
-  --radius-2xl:  1rem;      /* 16px — modals, drawers         */
-  --radius-3xl:  1.5rem;    /* 24px — hero cards              */
+  --radius-xs:   0.25rem;   /*  4px - tags, tiny chips        */
+  --radius-sm:   0.375rem;  /*  6px - small badges, tooltips  */
+  --radius-md:   0.5rem;    /*  8px - inputs, buttons         */
+  --radius-lg:   0.625rem;  /* 10px - default cards           */
+  --radius-xl:   0.75rem;   /* 12px - dashboard cards         */
+  --radius-2xl:  1rem;      /* 16px - modals, drawers         */
+  --radius-3xl:  1.5rem;    /* 24px - hero cards              */
   --radius-full: 9999px;    /* pills, avatars, progress bars  */
 
   /* ── Shadow Scale ───────────────────────────────────────────────
@@ -107,7 +107,7 @@
   --ease-standard:   cubic-bezier(0.4, 0, 0.2, 1);   /* Material standard */
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);      /* enter from below */
   --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);      /* exit upward */
-  --ease-spring:     cubic-bezier(0.16, 1, 0.3, 1);   /* expo.out — premium */
+  --ease-spring:     cubic-bezier(0.16, 1, 0.3, 1);   /* expo.out - premium */
 
   /* ── Z-Index Scale ──────────────────────────────────────────────
      Defined once. Referenced everywhere. No ad-hoc z values.
@@ -125,13 +125,13 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    SEMANTIC COLOR TOKENS
-   Light-mode defaults in :root — override in .dark
+   Light-mode defaults in :root - override in .dark
    Reference in components as: bg-[var(--rb-bg-page)], text-[var(--rb-text)]
-   (Tailwind v4 requires the explicit var() wrapper — bare [--rb-*] does not resolve.)
+   (Tailwind v4 requires the explicit var() wrapper - bare [--rb-*] does not resolve.)
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   /* Surfaces */
-  --rb-bg-page:          #F5F0E8;   /* Warm Gray — outermost bg  */
+  --rb-bg-page:          #F5F0E8;   /* Warm Gray - outermost bg  */
   --rb-bg-surface:       #FFFFFF;   /* cards, panels             */
   --rb-bg-surface-raised:#F5F0E8;   /* Warm hover, raised        */
   --rb-bg-surface-sunken:#EDE7DC;   /* Warm inset areas          */
@@ -140,8 +140,8 @@
   --rb-bg-input:         #FFFFFF;   /* input field background    */
 
   /* Text */
-  --rb-text:             #1E3A5F;   /* Deep Navy — primary text  */
-  --rb-text-secondary:   #4B6580;   /* Muted navy — secondary    */
+  --rb-text:             #1E3A5F;   /* Deep Navy - primary text  */
+  --rb-text-secondary:   #4B6580;   /* Muted navy - secondary    */
   --rb-text-muted:       #8FA3B8;   /* placeholder, readable     */
   --rb-text-inverse:     #FFFFFF;   /* on dark backgrounds       */
   --rb-text-brand:       #92400E;   /* Amber-800 brand text      */
@@ -154,12 +154,12 @@
 
   /* Interactive */
   --rb-brand:            #D97706;
-  --rb-brand-hover:      #B45309;   /* Amber dark — hover        */
-  --rb-brand-subtle:     #FEF3C7;   /* Amber-50  — subtle tint   */
+  --rb-brand-hover:      #B45309;   /* Amber dark - hover        */
+  --rb-brand-subtle:     #FEF3C7;   /* Amber-50  - subtle tint   */
   --rb-brand-gradient:   linear-gradient(135deg, #D97706 0%, #B45309 100%);
 
   /* Playlist player */
-  --rb-player-bg:        #0F172A;   /* slate-900 — Spotify-dark  */
+  --rb-player-bg:        #0F172A;   /* slate-900 - Spotify-dark  */
   --rb-player-text:      #F1F5F9;
   --rb-player-muted:     #64748B;
   --rb-player-border:    #1E293B;   /* slate-800                 */
@@ -181,11 +181,11 @@
   --rb-bg-input:         #131326;   /* input in dark mode        */
 
   /* Text */
-  --rb-text:             #F1F5F9;   /* slate-100 — primary text  */
-  --rb-text-secondary:   #94A3B8;   /* slate-400 — secondary     */
-  --rb-text-muted:       #475569;   /* slate-600 — placeholder   */
+  --rb-text:             #F1F5F9;   /* slate-100 - primary text  */
+  --rb-text-secondary:   #94A3B8;   /* slate-400 - secondary     */
+  --rb-text-muted:       #475569;   /* slate-600 - placeholder   */
   --rb-text-inverse:     #0F172A;
-  --rb-text-brand:       #818CF8;   /* brand-400 — lighter brand */
+  --rb-text-brand:       #818CF8;   /* brand-400 - lighter brand */
 
   /* Borders */
   --rb-border:           rgb(255 255 255 / 0.08);
@@ -194,8 +194,8 @@
   --rb-border-focus:     #6366F1;
 
   /* Interactive */
-  --rb-brand:            #6366F1;   /* brand-500 — slightly lighter*/
-  --rb-brand-hover:      #818CF8;   /* brand-400 — lighter hover  */
+  --rb-brand:            #6366F1;   /* brand-500 - slightly lighter*/
+  --rb-brand-hover:      #818CF8;   /* brand-400 - lighter hover  */
   --rb-brand-subtle:     rgb(79 70 229 / 0.12);
   --rb-brand-gradient:   linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
 
@@ -227,14 +227,14 @@ body {
   background-color: var(--rb-bg-page);
   color: var(--rb-text);
   font-family: var(--font-body), "Inter", sans-serif;
-  font-size: 1rem;        /* 16px — prevents iOS auto-zoom on inputs */
+  font-size: 1rem;        /* 16px - prevents iOS auto-zoom on inputs */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Focus Styles ───────────────────────────────────────────────────
-   2px solid brand ring + 2px offset — WCAG 2.1 AA compliant
+   2px solid brand ring + 2px offset - WCAG 2.1 AA compliant
    Respect prefers-reduced-motion for all transitions
 ────────────────────────────────────────────────────────────────── */
 :focus-visible {
@@ -263,7 +263,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--rb-text);
 }
 
-/* Stat values, timestamps, asset counts — tabular figures */
+/* Stat values, timestamps, asset counts - tabular figures */
 .font-data {
   font-family: var(--font-mono), "JetBrains Mono", monospace;
   font-variant-numeric: tabular-nums;
@@ -371,7 +371,7 @@ a {
    Applied by PlaylistContext to the employer layout wrapper.
 ────────────────────────────────────────────────────────────────── */
 .has-player {
-  padding-bottom: 5rem; /* 80px — player bar height */
+  padding-bottom: 5rem; /* 80px - player bar height */
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -412,7 +412,7 @@ a {
 }
 
 /* ── Featured Card (gradient border) ───────────────────────────────
-   Cards that need to stand out — pricing featured tier, onboarding
+   Cards that need to stand out - pricing featured tier, onboarding
    highlights, etc. Gradient border via ::before pseudo-element.
    Usage: <div class="rb-card rb-card-featured p-8">…</div>
 ────────────────────────────────────────────────────────────────── */
@@ -463,7 +463,7 @@ a {
 }
 
 /* ── Feature Icon Containers ────────────────────────────────────────
-   Each feature gets its own accent color — not all indigo.
+   Each feature gets its own accent color - not all indigo.
    Usage: <div class="rb-icon-indigo">…</div>
 ────────────────────────────────────────────────────────────────── */
 .rb-icon-indigo {
@@ -503,7 +503,7 @@ a {
 }
 
 /* ── Brand Glow ─────────────────────────────────────────────────────
-   Adds a soft indigo glow — use on featured elements or hero art.
+   Adds a soft indigo glow - use on featured elements or hero art.
 ────────────────────────────────────────────────────────────────── */
 .rb-glow {
   box-shadow: 0 0 48px rgb(79 70 229 / 0.22), 0 0 16px rgb(124 58 237 / 0.14);

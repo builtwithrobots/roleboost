@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 // Computes the candidate's "getting started" progress from real signals across
 // the brain-building journey. Owner-scoped: pass an authenticated (RLS) client.
-// This powers the Getting Started checklist on the dashboard — it both explains
+// This powers the Getting Started checklist on the dashboard, it both explains
 // the journey and shows the candidate exactly where they are and what is next.
 
 export interface OnboardingProgress {
@@ -15,7 +15,7 @@ export interface OnboardingProgress {
   contextReady: boolean;
   /** The candidate has tried their AI at least once (a sandbox session exists). */
   tested: boolean;
-  /** Published with the AI on — recruiters can reach it. */
+  /** Published with the AI on, recruiters can reach it. */
   live: boolean;
   completed: number;
   total: number;

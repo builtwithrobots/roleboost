@@ -44,7 +44,7 @@ function Hero() {
       {/* Dot grid */}
       <div className="rb-dot-grid pointer-events-none absolute inset-0 -z-10 opacity-60" />
 
-      {/* Gradient orbs — larger and more colourful */}
+      {/* Gradient orbs, larger and more colourful */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-[-120px] h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-[--rb-brand-subtle] opacity-80 blur-[140px]" />
         <div className="absolute right-[-80px] top-[60px] h-[380px] w-[500px] rounded-full bg-violet-200 opacity-50 blur-[90px]" />
@@ -68,7 +68,7 @@ function Hero() {
 
         {/* Subtext */}
         <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[--rb-text-secondary] sm:text-xl">
-          Upload your career story once. Get a personal AI that represents you 24/7 to every hiring manager — audio, video, deck, resume, and a live chatbot they can interrogate anytime.
+          Upload your career story once. Get a personal AI that represents you 24/7 to every hiring manager, audio, video, deck, resume, and a live chatbot they can interrogate anytime.
         </p>
 
         {/* CTA row */}
@@ -114,7 +114,7 @@ const features = [
     icon: Mic2,
     iconClass: 'rb-icon-indigo',
     title: 'Multi-format career narrative',
-    description: 'Audio overview, debate clips, video intro, slide deck, infographic, and ATS resume — all living behind one shareable link.',
+    description: 'Audio overview, debate clips, video intro, slide deck, infographic, and ATS resume, all living behind one shareable link.',
   },
   {
     icon: Bot,
@@ -126,7 +126,7 @@ const features = [
     icon: Share2,
     iconClass: 'rb-icon-cyan',
     title: 'One link, everything',
-    description: 'Share a single URL or QR code. Hiring managers get your full career story in the format they prefer — no attachments, no scheduling friction.',
+    description: 'Share a single URL or QR code. Hiring managers get your full career story in the format they prefer, no attachments, no scheduling friction.',
   },
   {
     icon: BarChart3,
@@ -277,7 +277,7 @@ function Pricing() {
             </Link>
           </div>
 
-          {/* Employer card — featured with gradient border */}
+          {/* Employer card, featured with gradient border */}
           <div className="rb-card rb-card-featured relative flex flex-col overflow-hidden p-8">
             {/* Interior gradient wash */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[--rb-brand-subtle]/70 via-transparent to-violet-50/40" />
@@ -332,7 +332,7 @@ function CTA() {
           Ready to be heard?
         </h2>
         <p className="mb-10 text-lg text-violet-200/80">
-          Join candidates who are giving hiring managers everything they need — in minutes.
+          Join candidates who are giving hiring managers everything they need, in minutes.
         </p>
         <Link
           href="/sign-up"
@@ -355,7 +355,7 @@ function Footer() {
           <div>
             <RoleBoostLogo />
             <p className="mt-2 max-w-xs text-sm text-[--rb-text-muted]">
-              When everyone sounds the same on paper — be heard.
+              When everyone sounds the same on paper, be heard.
             </p>
           </div>
           <nav className="flex flex-wrap gap-x-8 gap-y-3">

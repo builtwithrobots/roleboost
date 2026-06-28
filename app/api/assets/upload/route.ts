@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
   }
 
-  // Validate both the client-supplied MIME type and the file extension — the
+  // Validate both the client-supplied MIME type and the file extension, the
   // MIME type can be spoofed in the multipart envelope, so the extension acts
   // as an independent guard.
   const allowedExtensions: Record<string, string[]> = {

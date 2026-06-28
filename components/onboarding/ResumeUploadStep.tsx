@@ -48,7 +48,7 @@ export default function ResumeUploadStep({ onParsed, onSkip }: Props) {
           Upload your résumé
         </h1>
         <p className="mt-2 text-sm text-[var(--rb-text-secondary)]">
-          Any format works. We&apos;ll turn it into a clean, ATS-ready profile you can edit — it only takes a moment.
+          Any format works. We&apos;ll turn it into a clean, ATS-ready profile you can edit, it only takes a moment.
         </p>
       </div>
 

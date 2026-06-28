@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 interface Props {
-  /** Called when a link is clicked — lets a host modal close itself before navigating. */
+  /** Called when a link is clicked, lets a host modal close itself before navigating. */
   onLinkClick?: () => void;
 }
 
@@ -39,7 +39,7 @@ const STEPS = [
   {
     n: 2,
     title: 'Build your career AI',
-    body: 'Answer a few questions so it can speak for you — gaps, wins, the hard stuff.',
+    body: 'Answer a few questions so it can speak for you, gaps, wins, the hard stuff.',
     href: '/dashboard/ai?tab=build',
     cta: 'AI Studio',
     Icon: Bot,
@@ -79,7 +79,7 @@ export default function HowItWorks({ onLinkClick }: Props) {
         </h1>
         <p className="mt-1 text-sm text-[var(--rb-text-secondary)]">
           You build a personal career AI once. It answers recruiters for you, 24/7, over a single
-          link — and it gets smarter every time someone uses it.
+          link, and it gets smarter every time someone uses it.
         </p>
       </header>
 
@@ -100,7 +100,7 @@ export default function HowItWorks({ onLinkClick }: Props) {
         </div>
         <p className="mt-3 flex items-center gap-1.5 text-xs text-[var(--rb-text-muted)]">
           <RefreshCw className="size-3.5 text-[var(--rb-brand)]" aria-hidden />
-          And it repeats — every conversation shows you what to sharpen, so your AI keeps improving.
+          And it repeats, every conversation shows you what to sharpen, so your AI keeps improving.
         </p>
       </section>
 
@@ -134,8 +134,8 @@ export default function HowItWorks({ onLinkClick }: Props) {
       <section className="rounded-[var(--radius-lg)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] p-4">
         <p className="text-xs leading-relaxed text-[var(--rb-text-secondary)]">
           <span className="font-semibold text-[var(--rb-text)]">Why this beats a résumé alone:</span>{' '}
-          a résumé can’t answer “why did you leave?” or “walk me through that gap.” Your AI can — using
-          only what you’ve told it, never invented — and every recruiter conversation teaches you
+          a résumé can’t answer “why did you leave?” or “walk me through that gap.” Your AI can, using
+          only what you’ve told it, never invented, and every recruiter conversation teaches you
           exactly where to add more. The longer you use it, the stronger it gets.
         </p>
       </section>

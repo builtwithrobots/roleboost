@@ -130,7 +130,7 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
 
   function onPaste() {
     if (text.trim().length < 30) {
-      setError('Paste a bit more text — at least a couple of sentences.');
+      setError('Paste a bit more text, at least a couple of sentences.');
       return;
     }
     const form = base(new FormData());
@@ -165,7 +165,7 @@ export default function CareerSourcesCard({ sources, maxSources }: Props) {
         </span>
       </h2>
       <p className="mb-4 text-xs text-[var(--rb-text-muted)]">
-        Bring what you already have — your LinkedIn or Indeed export, a GitHub profile, a performance
+        Bring what you already have, your LinkedIn or Indeed export, a GitHub profile, a performance
         review or recommendation. Your AI uses them as grounding and the guided interview cross-checks
         them against your résumé. They&apos;re private to your AI, never shown raw to recruiters.
       </p>

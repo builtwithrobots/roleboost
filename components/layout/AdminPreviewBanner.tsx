@@ -16,7 +16,7 @@ export default function AdminPreviewBanner({ previewRole }: { previewRole: 'cand
     <div className="sticky top-0 z-50 flex items-center justify-between bg-amber-400 px-4 py-2 text-sm font-medium text-amber-950">
       <span className="flex items-center gap-2">
         <ShieldAlert className="size-4" strokeWidth={2} />
-        Admin preview — viewing as <strong>{previewRole}</strong>
+        Admin preview, viewing as <strong>{previewRole}</strong>
       </span>
       <button
         onClick={exitPreview}
