@@ -5,9 +5,11 @@ import {
   Sparkles,
   Loader2,
   RefreshCw,
+  RotateCcw,
   CheckCircle2,
   Star,
   Quote,
+  MessageSquareQuote,
   Hash,
   Compass,
 } from 'lucide-react';
@@ -35,8 +37,36 @@ const STORY_TYPE_LABELS: Record<CareerContextStoryType, string> = {
 export default function ContextDocumentPanel({ initialDrafts }: Props) {
   const [drafts, setDrafts] = useState<CareerContextDrafts | null>(initialDrafts);
   const [generating, setGenerating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  async function update() {
+    setError(null);
+    setUpdating(true);
+    try {
+      const res = await fetch('/api/career-context/augment', { method: 'POST' });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as
+          | { error?: { code?: string; message?: string } }
+          | null;
+        if (res.status === 402) {
+          setError('Updating your document needs an active subscription or trial.');
+        } else if (body?.error?.message) {
+          setError(body.error.message);
+        } else {
+          setError('Could not update your document just now. Please try again.');
+        }
+        return;
+      }
+      const data = (await res.json()) as { drafts: CareerContextDrafts };
+      setDrafts(data.drafts);
+    } catch {
+      setError('Could not update your document just now. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  }
 
   async function generate() {
     setError(null);
@@ -109,24 +139,40 @@ export default function ContextDocumentPanel({ initialDrafts }: Props) {
             ))}
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-[var(--rb-text-muted)]">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-md text-xs text-[var(--rb-text-muted)]">
               {drafts.selected
-                ? 'Your AI is using the selected angle. You can switch any time — no regeneration needed.'
+                ? 'Your AI is using the selected angle. Added new wins, answers, or sources since? Update folds them in — your document stays sharp instead of just longer.'
                 : 'Pick an angle above to make it active in your AI.'}
             </p>
-            <button
-              onClick={generate}
-              disabled={generating}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--rb-border)] px-3 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)] disabled:opacity-60"
-            >
-              {generating ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="size-3.5" />
+            <div className="flex shrink-0 items-center gap-2">
+              {drafts.selected && (
+                <button
+                  onClick={update}
+                  disabled={updating || generating}
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {updating ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  {updating ? 'Updating…' : 'Update document'}
+                </button>
               )}
-              Regenerate
-            </button>
+              <button
+                onClick={generate}
+                disabled={generating || updating}
+                className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--rb-border)] px-3 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)] disabled:opacity-60"
+              >
+                {generating ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="size-3.5" />
+                )}
+                Start over
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -242,6 +288,24 @@ function AngleCard({
             </li>
           ))}
         </ul>
+      )}
+
+      {(angle.evidence_snippets?.length ?? 0) > 0 && (
+        <div className="flex flex-col gap-2 border-t border-[var(--rb-border)] pt-3">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+            <MessageSquareQuote className="size-3 text-[var(--rb-brand)]" />
+            What others say
+          </span>
+          {angle.evidence_snippets.map((e, i) => (
+            <blockquote
+              key={i}
+              className="border-l-2 border-[var(--rb-border-brand)] pl-2.5 text-xs italic leading-relaxed text-[var(--rb-text-secondary)]"
+            >
+              “{e.quote}”
+              {e.source && <span className="mt-0.5 block not-italic text-[var(--rb-text-muted)]">— {e.source}</span>}
+            </blockquote>
+          ))}
+        </div>
       )}
 
       <div className="mt-auto pt-1">

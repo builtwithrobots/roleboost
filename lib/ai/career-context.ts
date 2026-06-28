@@ -6,6 +6,8 @@ import type {
   CareerContextAngle,
   CareerContextDrafts,
   CareerContextStoryType,
+  CustomQAPair,
+  EvidenceSnippet,
   IntakeDocument,
 } from '@/lib/types';
 
@@ -99,8 +101,22 @@ const ANGLE_SCHEMA = {
       description: '5-8 specific metrics and facts that must appear in every asset (scale, results, span, credentials).',
     },
     positioning: { type: 'string', description: 'A 1-2 sentence positioning statement.' },
+    evidence_snippets: {
+      type: 'array',
+      description:
+        'Up to 4 VERBATIM third-party quotes that appear in the supporting sources (recommendations, reviews, peer feedback). Copy the words exactly -- do not paraphrase or invent. Empty array if the sources contain no usable quotes.',
+      items: {
+        type: 'object',
+        properties: {
+          quote: { type: 'string', description: 'The exact quote, copied verbatim from a source.' },
+          source: { type: 'string', description: 'Where it came from, e.g. "LinkedIn recommendation" or a name/title.' },
+        },
+        required: ['quote', 'source'],
+        additionalProperties: false,
+      },
+    },
   },
-  required: ['name', 'story_type', 'headline', 'target_role', 'location', 'narrative', 'hook', 'hard_question', 'key_numbers', 'positioning'],
+  required: ['name', 'story_type', 'headline', 'target_role', 'location', 'narrative', 'hook', 'hard_question', 'key_numbers', 'positioning', 'evidence_snippets'],
   additionalProperties: false,
 };
 
@@ -131,13 +147,14 @@ Story types:
 - The Skeptic and the Champion: non-linear path, gap, pivot, or layoff that needs contextualizing.
 - The Specialist: deep domain expertise in a niche -- depth is the story, not breadth.
 
-For each angle produce: a name, the story type, a headline, the target role, location, a 2-3 sentence narrative, a one-line hook, the one hard question every recruiter will ask with a tight first-person answer, 5-8 key numbers, and a positioning statement.
+For each angle produce: a name, the story type, a headline, the target role, location, a 2-3 sentence narrative, a one-line hook, the one hard question every recruiter will ask with a tight first-person answer, 5-8 key numbers, a positioning statement, and up to 4 verbatim evidence quotes drawn from the supporting sources.
 
 Hard rules:
 - Every claim must be supported by the provided material. Never invent a number, metric, date, credential, or outcome. If the file is thin, work honestly with what is there.
 - The hook must be specific -- a number, a moment, a result -- never a generality like "strong results across a long career".
 - Write the narrative in third person about the candidate. Write the hard-question answer in first person ("I ...").
 - The hard-question answer is direct and confident, does not hedge or apologize, and ends on what the candidate brings.
+- Evidence snippets must be VERBATIM quotes that actually appear in the supporting sources. Never fabricate a quote. If there are no quotable sources, return an empty array.
 
 Submit via the submit_context tool.`;
 
@@ -159,7 +176,19 @@ function cleanAngle(raw: GeneratedAngle): GeneratedAngle {
       ? raw.key_numbers.map((n) => String(n).trim()).filter(Boolean)
       : [],
     positioning: (raw.positioning ?? '').trim(),
+    evidence_snippets: cleanEvidence(raw.evidence_snippets),
   };
+}
+
+function cleanEvidence(raw: unknown): EvidenceSnippet[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((e) => ({
+      quote: String((e as EvidenceSnippet)?.quote ?? '').trim(),
+      source: String((e as EvidenceSnippet)?.source ?? '').trim(),
+    }))
+    .filter((e) => e.quote.length > 0)
+    .slice(0, 4);
 }
 
 /** Renders one angle into the markdown document stored as context_package_md. */
@@ -195,6 +224,14 @@ function renderAngleMarkdown(a: GeneratedAngle, fullName: string): string {
     a.positioning,
     '',
   ];
+
+  if (a.evidence_snippets.length > 0) {
+    lines.push('## What Others Say');
+    for (const e of a.evidence_snippets) {
+      lines.push(`> "${e.quote}"${e.source ? ` — ${e.source}` : ''}`, '');
+    }
+  }
+
   return lines.join('\n');
 }
 
@@ -240,4 +277,87 @@ export async function generateCareerContext(
     selected: null,
     generated_at: new Date().toISOString(),
   };
+}
+
+// ── Augment loop -- re-synthesize the selected angle with newer material ───────
+// This is the "deepen the synthesis loop" path: rather than appending raw text to
+// the brain, new context (refined answers, new wins, career sources) is folded
+// back into the curated document so it stays distilled and contradiction-free.
+
+const AUGMENT_SYSTEM = `You are UPDATING an existing career-context document for a candidate. You are given the current document plus newer material the candidate has added since it was written (refined answers, new wins, additional career sources). Produce an updated version of the SAME document.
+
+Rules:
+- Preserve the existing story type and angle framing. This is a refinement of the chosen story, not a new direction.
+- Fold in the new material: sharpen the narrative, hook, hard-question answer, key numbers, and positioning wherever the new material adds specificity, evidence, or strength. Keep everything that is still strong; drop nothing accurate just to make room.
+- Never invent. Every claim must trace to the current document or the new material.
+- Refresh the evidence snippets from the supporting sources -- up to 4 VERBATIM third-party quotes that actually appear in them. Empty array if there are none.
+- Write the narrative in third person about the candidate; write the hard-question answer in first person ("I ...").
+
+Submit the updated angle via the submit_updated tool.`;
+
+function formatFields(fields: { label: string; value: string | null }[]): string {
+  const filled = fields.filter((f) => f.value?.trim());
+  if (filled.length === 0) return 'None provided.';
+  return filled.map((f) => `### ${f.label}\n${f.value!.trim()}`).join('\n\n');
+}
+
+function formatQA(pairs: CustomQAPair[]): string {
+  const filled = pairs.filter((p) => p.question.trim() && p.answer.trim());
+  if (filled.length === 0) return 'None provided.';
+  return filled.map((p) => `Q: ${p.question.trim()}\nA: ${p.answer.trim()}`).join('\n\n');
+}
+
+export interface AugmentInputs {
+  fullName: string;
+  /** The currently selected angle to refine -- its framing is preserved. */
+  base: CareerContextAngle;
+  resumeMarkdown: string | null;
+  sources: IntakeDocument[];
+  /** The candidate's authored brain fields, with display labels. */
+  brainFields: { label: string; value: string | null }[];
+  customQA: CustomQAPair[];
+}
+
+/**
+ * Re-synthesizes the selected angle, folding in the candidate's newer material.
+ * The story type and angle name are preserved (forced from the base) so the
+ * candidate's chosen framing is stable across updates. Throws if the model
+ * returns no structured output.
+ */
+export async function augmentCareerContextAngle(input: AugmentInputs): Promise<CareerContextAngle> {
+  const { fullName, base, resumeMarkdown, sources, brainFields, customQA } = input;
+
+  const sourceBlock = sources.filter((s) => s.text.trim()).length
+    ? `\n\nSUPPORTING SOURCES:\n${formatDocs(sources)}`
+    : '';
+  const content = `CANDIDATE: ${fullName}
+STORY TYPE TO PRESERVE: ${STORY_TYPE_LABELS[base.story_type]} (${base.name})
+
+CURRENT DOCUMENT:
+${base.markdown}
+
+NEWER CANDIDATE-AUTHORED MATERIAL:
+${formatFields(brainFields)}
+
+REFINED Q&A:
+${formatQA(customQA)}
+
+RÉSUMÉ (for grounding):
+${resumeMarkdown ?? 'None provided.'}${sourceBlock}`;
+
+  const response = await anthropic.messages.create({
+    model: GENERATION_MODEL,
+    max_tokens: 3000,
+    system: AUGMENT_SYSTEM,
+    tools: [tool('submit_updated', ANGLE_SCHEMA)],
+    tool_choice: { type: 'tool', name: 'submit_updated' },
+    messages: [{ role: 'user', content }],
+  });
+
+  const raw = firstToolInput<GeneratedAngle>(response);
+  const cleaned = cleanAngle(raw);
+  // Force the chosen framing to stay stable across refinements.
+  const updated: GeneratedAngle = { ...cleaned, name: base.name, story_type: base.story_type };
+
+  return { ...updated, markdown: renderAngleMarkdown(updated, fullName) };
 }

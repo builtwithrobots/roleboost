@@ -223,6 +223,11 @@ prompt sets in Section 2 are excluded from the candidate flow).
 - The selected angle's markdown — or an externally-generated doc uploaded on `/dashboard/assets` —
   lands in the **single** `context_package_md` slot. That column is the active document the brain
   reads and the assets page downloads.
+- **Augment loop** (`/api/career-context/augment`, `augmentCareerContextAngle`): re-synthesizes the
+  *selected* angle, folding in the candidate's newer authored material (brain fields, refined Q&A,
+  career sources) and refreshing verbatim third-party **evidence snippets** from sources. New context
+  enters the brain **distilled, not appended** — the deliberate "deepen the synthesis loop" decision
+  over adding raw context layers. The story-type/angle framing is preserved across updates.
 - `context_package_md` is sensitive brain material: it stays out of the anon column grant (the
   explicit-grant pattern from the 20260626 migration covers all later-added columns automatically).
 
