@@ -44,7 +44,7 @@ const STEPS: Step[] = [
     title: 'Build your career AI',
     blurb: 'Answer a few questions (or fill in the details) so your AI can speak for you — gaps, wins, the hard stuff.',
     cta: 'Open AI Studio',
-    href: '/dashboard/ai',
+    href: '/dashboard/ai?tab=build',
     Icon: Bot,
   },
   {
@@ -52,7 +52,7 @@ const STEPS: Step[] = [
     title: 'Create your context document',
     blurb: 'We write the story your AI leads with. Pick the version that sounds most like you.',
     cta: 'Go to Context Document',
-    href: '/dashboard/ai',
+    href: '/dashboard/ai?tab=context',
     Icon: Sparkles,
   },
   {
@@ -60,7 +60,7 @@ const STEPS: Step[] = [
     title: 'Try your AI',
     blurb: 'Ask it the tough questions a recruiter would, and see how it answers — before they do.',
     cta: 'Test your AI',
-    href: '/dashboard/ai',
+    href: '/dashboard/ai?tab=test',
     Icon: FlaskConical,
   },
   {

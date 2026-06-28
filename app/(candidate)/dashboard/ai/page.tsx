@@ -23,7 +23,21 @@ const SOURCE_COLUMNS = 'id, source_type, label, ingest_method, char_count, file_
 const AI_COLUMNS =
   'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, context_package_md, context_package_updated_at, career_context_drafts, created_at, updated_at';
 
-export default async function AIStudioPage() {
+const STUDIO_TABS = ['build', 'context', 'test', 'harden'] as const;
+type StudioTab = (typeof STUDIO_TABS)[number];
+
+export default async function AIStudioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  // Deep link: /dashboard/ai?tab=context opens that tab (used by the Getting
+  // Started checklist and any in-app link). Invalid values fall back to "build".
+  const { tab } = await searchParams;
+  const initialTab: StudioTab = STUDIO_TABS.includes(tab as StudioTab)
+    ? (tab as StudioTab)
+    : 'build';
+
   let ctx;
   try {
     ctx = await getUserContext('candidate');
@@ -112,6 +126,7 @@ export default async function AIStudioPage() {
     <DashboardPage>
       <AIStudio
         profile={profile}
+        initialTab={initialTab}
         gaps={gaps}
         hardeningSessions={hardeningSessions}
         sources={sources}
