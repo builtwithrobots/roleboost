@@ -5,6 +5,11 @@
 > code or schema — those live in the repo and drift; the repo is always the source of truth.
 > Last updated: June 2026
 
+> 📖 **The architecture bible lives in [`docs/architecture/`](docs/architecture/README.md)** —
+> the detailed, living reference for how every subsystem is built and works (brain, career
+> context document, AI Studio, chat/transcripts, data model, auth, employer side). This file
+> is durable rules and decisions; that folder is the how-it-works. Read both.
+
 ---
 
 ## What This Project Is
