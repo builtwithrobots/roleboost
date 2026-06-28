@@ -12,12 +12,25 @@ import type { CandidateBrain, CustomQAPair } from '@/lib/types';
 export function buildCandidateSystemPrompt(
   candidate: CandidateBrain,
   resumeMarkdown: string | null,
+  careerContextMarkdown: string | null = null,
 ): string {
   // Up to 3 custom QA pairs become worked examples in the candidate's voice.
   const exemplarBlock = buildExemplarBlock(candidate.custom_qa_pairs);
 
   // Explicit known / not-known boundary -- the strongest hallucination guard.
-  const boundaryBlock = buildKnowledgeBoundary(candidate, resumeMarkdown);
+  const boundaryBlock = buildKnowledgeBoundary(candidate, resumeMarkdown, careerContextMarkdown);
+
+  // Professionally synthesized narrative -- placed first for primacy, above the
+  // raw resume. Omitted entirely when the candidate has no context document.
+  const contextDocumentBlock = careerContextMarkdown
+    ? `
+<career_context_document>
+This is my professionally synthesized career narrative -- the authoritative summary of who I am, my story, and the evidence behind it. When a question touches my background, lead from this; the raw resume below is the factual backstop.
+
+${careerContextMarkdown}
+</career_context_document>
+`
+    : '';
 
   // Tone locked to the candidate's actual register, not a generic voice.
   const voiceDescriptor = deriveVoiceDescriptor(candidate);
@@ -28,7 +41,7 @@ You are the personal career AI for ${candidate.full_name}. You speak in first pe
 
 You are not a FAQ bot. You reason across the full picture of this career and give considered, human-sounding answers.
 </role>
-
+${contextDocumentBlock}
 <career_information>
 ${resumeMarkdown ?? 'No resume text provided.'}
 </career_information>
@@ -152,9 +165,11 @@ ${exampleXml}
 function buildKnowledgeBoundary(
   candidate: CandidateBrain,
   resumeMarkdown: string | null,
+  careerContextMarkdown: string | null = null,
 ): string {
   const knownSections: string[] = [];
 
+  if (careerContextMarkdown) knownSections.push('Professionally synthesized career context document');
   if (resumeMarkdown) knownSections.push('Full career history from resume');
   if (candidate.key_wins) knownSections.push('Key wins with documented context');
   if (candidate.departure_reasons) knownSections.push('Reasons for leaving each role');
@@ -176,7 +191,7 @@ function buildKnowledgeBoundary(
   return `
 <knowledge_boundary>
 <known>
-Everything in CAREER INFORMATION, CONTEXT, and CUSTOM ANSWERS above.
+Everything in${careerContextMarkdown ? ' CAREER CONTEXT DOCUMENT,' : ''} CAREER INFORMATION, CONTEXT, and CUSTOM ANSWERS above.
 Specifically:
 ${knownList}
 </known>

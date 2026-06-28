@@ -70,7 +70,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const systemPrompt = buildCandidateSystemPrompt(brain.candidate, brain.resumeMarkdown);
+  const systemPrompt = buildCandidateSystemPrompt(
+    brain.candidate,
+    brain.resumeMarkdown,
+    brain.careerContextMarkdown,
+  );
 
   // ── Complexity router ──────────────────────────────────────────────────────
   // Adversarial / multi-part / synthesis questions go to Sonnet for better
@@ -111,7 +115,12 @@ export async function POST(req: NextRequest) {
   let wasValidated = false;
   if (detectHighRiskContent(answer)) {
     wasValidated = true;
-    answer = await validateAndSanitize(answer, brain.candidate, brain.resumeMarkdown);
+    answer = await validateAndSanitize(
+      answer,
+      brain.candidate,
+      brain.resumeMarkdown,
+      brain.careerContextMarkdown,
+    );
   }
 
   // Owner self-tests are marked as sandbox so they don't pollute recruiter
@@ -219,8 +228,10 @@ async function validateAndSanitize(
   answer: string,
   candidate: CandidateBrain,
   resumeMarkdown: string | null,
+  careerContextMarkdown: string | null = null,
 ): Promise<string> {
   const careerData = [
+    careerContextMarkdown,
     resumeMarkdown,
     candidate.key_wins,
     candidate.departure_reasons,
