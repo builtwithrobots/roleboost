@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { auth } from '@clerk/nextjs/server';
 import { anthropic } from '@/lib/ai/client';
 import { CHAT_MODEL, GENERATION_MODEL } from '@/lib/ai/models';
-import { buildCandidateSystemPrompt } from '@/lib/ai/build-system-prompt';
+import { buildCandidateSystemPrompt, REDIRECT_SENTINEL } from '@/lib/ai/build-system-prompt';
 import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { ensureChatSession, logChatExchange } from '@/lib/ai/log-chat';
 import type { CandidateBrain } from '@/lib/types';
@@ -123,6 +123,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ── Honest redirect ────────────────────────────────────────────────────────
+  // When the assistant cannot answer from the candidate's information (or the
+  // grounding validator rejected an unsupported figure), the model emits the
+  // sentinel. Swap in the scripted handoff and tell the client to offer
+  // scheduling. No plausible-but-unsupported answer ever reaches the recruiter.
+  let offerSchedule = false;
+  if (answer.includes(REDIRECT_SENTINEL)) {
+    offerSchedule = true;
+    answer = buildRedirectMessage(brain.candidate.full_name.split(' ')[0] || brain.candidate.full_name);
+  }
+
   // Owner self-tests are marked as sandbox so they don't pollute recruiter
   // analytics. Anonymous recruiter sessions log the viewer id when present.
   const resolvedSessionId = await ensureChatSession(brain.candidateProfileId, sessionId, {
@@ -140,7 +151,12 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  return NextResponse.json({ answer, sessionId: resolvedSessionId ?? sessionId ?? null });
+  return NextResponse.json({ answer, sessionId: resolvedSessionId ?? sessionId ?? null, offerSchedule });
+}
+
+/** The scripted, honest handoff shown when the assistant cannot answer. */
+function buildRedirectMessage(firstName: string): string {
+  return `Great question. Unfortunately I do not have an adequate response to this available, but I know that ${firstName} would be more than happy to answer it when you connect. ${firstName} will have notes from this conversation to bring into the live conversation. Would you like to schedule a time to meet with ${firstName}?`;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -275,7 +291,8 @@ Return valid JSON only. No preamble, no markdown. Examples:
 
     if (result.grounded) return answer;
 
-    return "That specific figure is something I'd want to confirm before stating it -- I don't want to approximate a number that matters. It's best to ask me directly so I can give you the accurate detail. You can reach me via the Connect button on my profile.";
+    // Ungrounded figure: route to the honest redirect rather than approximating.
+    return REDIRECT_SENTINEL;
   } catch {
     // Validation failed (parse error, API error) -- let the original answer
     // through rather than break the chat experience.
