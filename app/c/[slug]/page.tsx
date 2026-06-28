@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
 import CallingCard from '@/components/modal/CallingCard';
@@ -90,21 +89,9 @@ export default async function CandidateProfilePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[var(--rb-bg-page)]">
-      {/* Slim brand header */}
-      <header className="sticky top-0 z-[var(--z-sticky)] bg-[var(--rb-bg-surface)]/90 backdrop-blur border-b border-[var(--rb-border)] px-6 py-3">
-        <div className="mx-auto max-w-3xl flex items-center justify-between">
-          <span className="text-sm font-bold tracking-tight text-[var(--rb-text)]">
-            Role<span className="text-[var(--rb-brand)]">Boost</span>
-          </span>
-          <Link
-            href="/"
-            className="text-xs text-[var(--rb-brand)] hover:underline font-medium"
-          >
-            Create your profile →
-          </Link>
-        </div>
-      </header>
-
+      {/* No marketing header here: this is the recruiter-facing calling card, kept
+          focused on the conversation and the candidate. RoleBoost is credited
+          subtly inside the chat panel ("Powered by RoleBoost AI"). */}
       <CallingCard
         slug={slug}
         fullName={profileData.full_name}
