@@ -24,6 +24,14 @@ const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
   message: z.string().min(1).max(2000),
   sessionId: z.string().uuid().optional(),
+  // Optional recruiter self-introduction, captured before the first message.
+  visitor: z
+    .object({
+      name: z.string().max(120).optional(),
+      company: z.string().max(160).optional(),
+      email: z.string().email().max(200).optional().or(z.literal('')),
+    })
+    .optional(),
   conversationHistory: z
     .array(
       z.object({
@@ -53,7 +61,10 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { candidateSlug, message, sessionId, conversationHistory = [] } = parsed.data;
+  const { candidateSlug, message, sessionId, visitor, conversationHistory = [] } = parsed.data;
+  const visitorName = visitor?.name?.trim() || null;
+  const visitorCompany = visitor?.company?.trim() || null;
+  const visitorEmail = (visitor?.email || '').trim() || null;
 
   // ── Abuse control ──────────────────────────────────────────────────────────
   // Edge rate limit (Vercel WAF) runs before the expensive brain load and up-to-
@@ -117,11 +128,14 @@ export async function POST(req: NextRequest) {
   const employerViewer =
     userId && !isOwner ? await resolveEmployerViewer(userId) : null;
 
-  // If the recruiter introduced themselves earlier in this conversation, the
-  // assistant addresses them by name. Scoped to this candidate's own session;
-  // falls back to a signed-in employer's company. No intro -> generic greeting.
+  // If the recruiter introduced themselves, the assistant addresses them by
+  // name. Prefer the intro carried on this (first) message; otherwise read it
+  // back from the session (later messages); otherwise fall back to a signed-in
+  // employer's company. No intro -> generic greeting.
   let chatViewer: { name?: string | null; company?: string | null } | null = null;
-  if (sessionId) {
+  if (visitorName || visitorCompany) {
+    chatViewer = { name: visitorName, company: visitorCompany };
+  } else if (sessionId) {
     const { data: sess } = await (adminClient.from('chat_sessions') as any)
       .select('recruiter_name, employer_company_name, candidate_profile_id')
       .eq('id', sessionId)
@@ -206,7 +220,10 @@ export async function POST(req: NextRequest) {
   const resolvedSessionId = await ensureChatSession(brain.candidateProfileId, sessionId, {
     viewerClerkUserId: userId ?? null,
     employerAccountId: employerViewer?.employerAccountId ?? null,
-    employerCompanyName: employerViewer?.employerCompanyName ?? null,
+    // Prefer a signed-in employer's company; otherwise the recruiter's own intro.
+    employerCompanyName: employerViewer?.employerCompanyName ?? visitorCompany,
+    recruiterName: visitorName,
+    recruiterEmail: visitorEmail,
     isSandbox: isOwner,
   });
   if (resolvedSessionId) {

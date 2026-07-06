@@ -32,6 +32,9 @@ interface SessionViewer {
   viewerClerkUserId?: string | null;
   employerAccountId?: string | null;
   employerCompanyName?: string | null;
+  /** Optional recruiter self-introduction captured before the first message. */
+  recruiterName?: string | null;
+  recruiterEmail?: string | null;
   isSandbox?: boolean;
 }
 
@@ -54,6 +57,8 @@ export async function ensureChatSession(
         viewer_clerk_user_id: viewer.viewerClerkUserId ?? null,
         employer_account_id: viewer.employerAccountId ?? null,
         employer_company_name: viewer.employerCompanyName ?? null,
+        recruiter_name: viewer.recruiterName ?? null,
+        recruiter_email: viewer.recruiterEmail ?? null,
         is_sandbox: viewer.isSandbox ?? false,
       })
       .select('id')
