@@ -27,12 +27,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 });
   }
 
-  const cutoff = new Date(Date.now() - IDLE_MINUTES * 60_000).toISOString();
+  const cutoff = Date.now() - IDLE_MINUTES * 60_000;
+
+  // Candidate sessions still awaiting delivery. Ordered oldest-first so a backlog
+  // drains steadily across runs.
   const { data: sessions, error } = await (adminClient.from('chat_sessions') as any)
     .select('id')
     .eq('transcript_sent', false)
     .eq('is_sandbox', false)
-    .lt('started_at', cutoff)
     .order('started_at', { ascending: true })
     .limit(BATCH);
 
@@ -41,11 +43,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: { code: 'INTERNAL' } }, { status: 500 });
   }
 
+  const ids = (sessions ?? []).map((s: { id: string }) => s.id);
+  if (ids.length === 0) return NextResponse.json({ ok: true, scanned: 0, delivered: 0 });
+
+  // Idle is measured from the LAST message, not session start, so an active
+  // conversation is never delivered mid-stream. Fetch the latest message time
+  // per candidate session (bounded by BATCH) and deliver only the truly idle.
+  const { data: msgs } = await (adminClient.from('chat_messages') as any)
+    .select('chat_session_id, created_at')
+    .in('chat_session_id', ids)
+    .order('created_at', { ascending: false });
+
+  const lastMessageAt = new Map<string, number>();
+  for (const m of (msgs ?? []) as { chat_session_id: string; created_at: string }[]) {
+    // Rows are newest-first, so the first time seen per session is its latest.
+    if (!lastMessageAt.has(m.chat_session_id)) {
+      lastMessageAt.set(m.chat_session_id, new Date(m.created_at).getTime());
+    }
+  }
+
   let delivered = 0;
-  for (const s of (sessions ?? []) as { id: string }[]) {
-    const result = await deliverTranscript(s.id);
+  let scanned = 0;
+  for (const id of ids as string[]) {
+    const last = lastMessageAt.get(id);
+    if (last === undefined || last >= cutoff) continue; // no messages, or still active
+    scanned += 1;
+    const result = await deliverTranscript(id);
     if (result.ok && result.delivered) delivered += 1;
   }
 
-  return NextResponse.json({ ok: true, scanned: (sessions ?? []).length, delivered });
+  return NextResponse.json({ ok: true, scanned, delivered });
 }
