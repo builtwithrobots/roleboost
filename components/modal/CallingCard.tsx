@@ -96,12 +96,12 @@ export default function CallingCard({
         variants={staggerContainer}
         initial={prefersReduced ? false : 'hidden'}
         animate="visible"
-        className={`relative mx-auto grid gap-6 px-4 py-6 sm:px-6 lg:h-[100svh] lg:items-stretch lg:gap-8 lg:py-8 ${
+        className={`relative mx-auto grid grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:h-[100svh] lg:items-stretch lg:gap-8 lg:py-8 ${
           hasRight ? 'max-w-7xl lg:grid-cols-2' : 'max-w-2xl'
         }`}
       >
         {/* ── Left, profile + live chat ─────────────────────────────────── */}
-        <motion.div variants={fadeUp} className="flex min-h-0 flex-col">
+        <motion.div variants={fadeUp} className="flex min-h-0 min-w-0 flex-col">
           <div className="flex items-center gap-4">
             <div
               className="rb-glow flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full text-xl font-bold text-white"
@@ -181,7 +181,7 @@ export default function CallingCard({
 
         {/* ── Right, the dossier: snapshot rolled up + assets ────────────── */}
         {hasRight && (
-          <motion.div variants={fadeUp} className="flex min-h-0 flex-col gap-4">
+          <motion.div variants={fadeUp} className="flex min-h-0 min-w-0 flex-col gap-4">
             {hasBullets && (
               <details open className="rb-card group [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4">
