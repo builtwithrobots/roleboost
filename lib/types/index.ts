@@ -175,7 +175,8 @@ export interface CandidateAsset {
 }
 
 // A recruiter's request to meet, captured when the Personal Assistant redirects.
-export type MeetingRequestStatus = 'new' | 'responded';
+// Lightweight inbound pipeline: new -> contacted -> scheduled -> closed.
+export type MeetingRequestStatus = 'new' | 'contacted' | 'scheduled' | 'closed';
 
 export interface MeetingRequest {
   id: string;
