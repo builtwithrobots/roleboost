@@ -32,7 +32,7 @@ export type DeliverResult =
 export async function deliverTranscript(sessionId: string): Promise<DeliverResult> {
   const { data: session } = await (adminClient.from('chat_sessions') as any)
     .select(
-      'id, candidate_profile_id, viewer_clerk_user_id, employer_company_name, transcript_sent, is_sandbox',
+      'id, candidate_profile_id, viewer_clerk_user_id, employer_company_name, recruiter_email, transcript_sent, is_sandbox',
     )
     .eq('id', sessionId)
     .maybeSingle();
@@ -75,6 +75,8 @@ export async function deliverTranscript(sessionId: string): Promise<DeliverResul
     .maybeSingle();
   const candidateEmail: string | null = candUser?.email ?? null;
 
+  // The recruiter's copy goes to their signed-in account email, or the email they
+  // optionally left when introducing themselves in the chat.
   let employerEmail: string | null = null;
   if (session.viewer_clerk_user_id && session.viewer_clerk_user_id !== profile.clerk_user_id) {
     const { data: viewer } = await (adminClient.from('users') as any)
@@ -82,6 +84,9 @@ export async function deliverTranscript(sessionId: string): Promise<DeliverResul
       .eq('clerk_user_id', session.viewer_clerk_user_id)
       .maybeSingle();
     employerEmail = viewer?.email ?? null;
+  }
+  if (!employerEmail && session.recruiter_email) {
+    employerEmail = session.recruiter_email as string;
   }
 
   if (isEmailConfigured()) {

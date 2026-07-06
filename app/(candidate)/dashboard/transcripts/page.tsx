@@ -42,7 +42,7 @@ export default async function TranscriptsPage() {
     // own link never looks like "nothing recorded". They are tagged as tests and
     // filterable, kept distinct from real recruiter conversations.
     const { data: sessions } = await (adminClient.from('chat_sessions') as any)
-      .select('id, employer_company_name, viewer_clerk_user_id, is_sandbox, started_at')
+      .select('id, employer_company_name, recruiter_name, recruiter_email, viewer_clerk_user_id, is_sandbox, started_at')
       .eq('candidate_profile_id', (profile as { id: string }).id)
       .order('started_at', { ascending: false })
       .limit(100);
@@ -64,19 +64,31 @@ export default async function TranscriptsPage() {
     transcripts = ((sessions ?? []) as {
       id: string;
       employer_company_name: string | null;
+      recruiter_name: string | null;
+      recruiter_email: string | null;
       viewer_clerk_user_id: string | null;
       is_sandbox: boolean;
       started_at: string;
     }[])
-      .map((s) => ({
-        id: s.id,
-        kind: s.is_sandbox ? ('test' as const) : ('recruiter' as const),
-        label: s.is_sandbox
+      .map((s) => {
+        const name = s.recruiter_name?.trim();
+        const company = s.employer_company_name?.trim();
+        const label = s.is_sandbox
           ? 'Your test'
-          : s.employer_company_name?.trim() || (s.viewer_clerk_user_id ? 'Signed-in recruiter' : 'Recruiter'),
-        date: s.started_at,
-        messages: bySession.get(s.id) ?? [],
-      }))
+          : name
+            ? company
+              ? `${name} · ${company}`
+              : name
+            : company || (s.viewer_clerk_user_id ? 'Signed-in recruiter' : 'Recruiter');
+        return {
+          id: s.id,
+          kind: s.is_sandbox ? ('test' as const) : ('recruiter' as const),
+          label,
+          contactEmail: s.is_sandbox ? null : s.recruiter_email?.trim() || null,
+          date: s.started_at,
+          messages: bySession.get(s.id) ?? [],
+        };
+      })
       .filter((t) => t.messages.length > 0);
   }
 
