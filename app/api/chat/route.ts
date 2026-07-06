@@ -7,8 +7,8 @@ import { buildCandidateSystemPrompt, REDIRECT_SENTINEL } from '@/lib/ai/build-sy
 import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { ensureChatSession, logChatExchange } from '@/lib/ai/log-chat';
 import { resolveEmployerViewer } from '@/lib/employer/resolve-viewer';
-import { checkRateLimit, clientIp } from '@/lib/security/rate-limit';
-import { verifyTurnstile, turnstileEnabled } from '@/lib/security/turnstile';
+import { checkRateLimit } from '@vercel/firewall';
+import { checkBotId } from 'botid/server';
 import type { CandidateBrain } from '@/lib/types';
 
 // Node runtime: the Anthropic SDK and service-role logging need Node APIs.
@@ -23,7 +23,6 @@ const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
   message: z.string().min(1).max(2000),
   sessionId: z.string().uuid().optional(),
-  turnstileToken: z.string().max(2048).optional(),
   conversationHistory: z
     .array(
       z.object({
@@ -53,22 +52,24 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { candidateSlug, message, sessionId, turnstileToken, conversationHistory = [] } = parsed.data;
+  const { candidateSlug, message, sessionId, conversationHistory = [] } = parsed.data;
 
   // ── Abuse control ──────────────────────────────────────────────────────────
-  // Cheap IP + per-session caps run before the expensive brain load and up-to-
-  // three Anthropic calls, so a flood costs the attacker, not us. Fail-open on
-  // limiter errors (see checkRateLimit) keeps real recruiters unblocked.
-  const ip = clientIp(req);
-  const [ipOk, sessionOk] = await Promise.all([
-    checkRateLimit(`chat:ip:${ip}`, 30, 60),
-    sessionId ? checkRateLimit(`chat:session:${sessionId}`, 40, 60) : Promise.resolve(true),
-  ]);
-  if (!ipOk || !sessionOk) {
-    return NextResponse.json(
-      { error: { code: 'RATE_LIMITED', message: 'Too many messages just now. Please slow down and try again shortly.' } },
-      { status: 429 },
-    );
+  // Edge rate limit (Vercel WAF) runs before the expensive brain load and up-to-
+  // three Anthropic calls, so a flood is blocked before it costs compute.
+  // Defaults to a per-IP bucket. No-ops until the matching WAF rule ("chat") is
+  // published, so it is safe to ship ahead of it.
+  try {
+    const { rateLimited } = await checkRateLimit('chat', { request: req });
+    if (rateLimited) {
+      return NextResponse.json(
+        { error: { code: 'RATE_LIMITED', message: 'Too many messages just now. Please slow down and try again shortly.' } },
+        { status: 429 },
+      );
+    }
+  } catch (e) {
+    // Fail-open: a limiter error must never block a real recruiter.
+    console.error('chat: rate limit check failed', e);
   }
 
   const brain = await getCandidateBrainBySlug(candidateSlug);
@@ -90,16 +91,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Bot check on the first message of a public (non-owner) conversation. Invisible
-  // for real recruiters; blocks automated clients. No-op until Turnstile keys are
-  // configured. Only gates conversation start (no sessionId yet) to stay frictionless.
-  if (turnstileEnabled() && !isOwner && !sessionId) {
-    const human = await verifyTurnstile(turnstileToken, ip);
-    if (!human) {
-      return NextResponse.json(
-        { error: { code: 'BOT_CHECK_FAILED', message: 'Could not verify you are human. Please reload and try again.' } },
-        { status: 403 },
-      );
+  // Bot check (Vercel BotID). Invisible for real recruiters; blocks automated
+  // clients (Playwright/Puppeteer, scrapers). Skipped for the owner previewing
+  // their own AI. Basic tier is free and active once deployed on Vercel; local
+  // dev always reports not-a-bot. Fail-open on any error so a misconfiguration
+  // never breaks the chat.
+  if (!isOwner) {
+    try {
+      const verification = await checkBotId();
+      if (verification.isBot) {
+        return NextResponse.json(
+          { error: { code: 'BOT_CHECK_FAILED', message: 'Could not verify you are human. Please reload and try again.' } },
+          { status: 403 },
+        );
+      }
+    } catch (e) {
+      console.error('chat: botid check failed', candidateSlug, e);
     }
   }
 

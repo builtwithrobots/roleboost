@@ -4,7 +4,7 @@ import { isEmailConfigured } from '@/lib/email/client';
 import { sendTranscriptEmails } from '@/lib/email/transcript';
 import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { analyzeTranscriptGaps } from '@/lib/ai/analyze-transcript';
-import { checkRateLimit } from '@/lib/security/rate-limit';
+import { checkAppRateLimit } from '@/lib/security/rate-limit';
 import type { ChatTurn } from '@/lib/types';
 
 // Shared transcript-delivery pipeline. Called from two places:
@@ -87,7 +87,7 @@ export async function deliverTranscript(sessionId: string): Promise<DeliverResul
   if (isEmailConfigured()) {
     // Throttle candidate-bound transcript emails so session-flooding cannot
     // bury a candidate's inbox. The recruiter copy is unaffected.
-    const withinCap = await checkRateLimit(
+    const withinCap = await checkAppRateLimit(
       `transcript-email:${session.candidate_profile_id}`,
       MAX_TRANSCRIPT_EMAILS_PER_HOUR,
       3600,
