@@ -3,6 +3,7 @@ import { after } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
+import { signCallingCardAssets } from '@/lib/candidate/calling-card';
 import CallingCard from '@/components/modal/CallingCard';
 import type { Metadata } from 'next';
 
@@ -49,39 +50,8 @@ export default async function CandidateProfilePage({ params }: Props) {
 
   if (!profileData) notFound();
 
-  // Fetch active assets, use admin client to generate signed URLs for private buckets
-  const { data: assetData } = await (adminClient.from('candidate_assets') as any)
-    .select('asset_type, file_name, storage_bucket, storage_path')
-    .eq('candidate_profile_id', profileData.id)
-    .eq('is_active', true);
-
-  const assets: Array<{
-    asset_type: string;
-    file_name: string;
-    signed_url: string;
-  }> = [];
-  // The avatar is pulled out of the gallery and rendered in the profile header.
-  let avatarUrl: string | null = null;
-
-  for (const asset of (assetData ?? [])) {
-    try {
-      const { data: signedData } = await (adminClient.storage
-        .from(asset.storage_bucket) as any)
-        .createSignedUrl(asset.storage_path, 3600);
-      if (!signedData?.signedUrl) continue;
-      if (asset.asset_type === 'avatar') {
-        avatarUrl = signedData.signedUrl;
-      } else {
-        assets.push({
-          asset_type: asset.asset_type,
-          file_name: asset.file_name,
-          signed_url: signedData.signedUrl,
-        });
-      }
-    } catch {
-      // Skip assets we can't sign, bucket may not exist yet
-    }
-  }
+  // Sign the active assets (private buckets) for the header avatar + gallery.
+  const { avatarUrl, assets } = await signCallingCardAssets(profileData.id);
 
   // Record the profile view reliably. A bare un-awaited insert during render is
   // dropped on serverless (the function returns before it completes), so defer it
