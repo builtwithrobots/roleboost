@@ -14,6 +14,7 @@ const ProfileInput = z.object({
   full_name: z.string().min(1).max(200),
   headline: z.string().max(200).optional(),
   target_role: z.string().max(100).optional(),
+  secondary_target_roles: z.array(z.string().min(1).max(120)).max(15).optional(),
   location: z.string().max(100).optional(),
   // Accept any string here and normalize below. A strict .url() check rejected
   // common bare URLs ("www.linkedin.com/in/me") and failed the whole save -- the
@@ -52,6 +53,7 @@ export async function updateCandidateProfile(input: unknown) {
         full_name: parsed.full_name,
         headline: parsed.headline || null,
         target_role: parsed.target_role || null,
+        secondary_target_roles: parsed.secondary_target_roles ?? [],
         location: parsed.location || null,
         linkedin_url: normalizeLinkedinUrl(parsed.linkedin_url),
         summary_bullets: parsed.summary_bullets.filter(Boolean),

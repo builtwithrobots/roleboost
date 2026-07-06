@@ -67,6 +67,16 @@ export async function getCandidateBrainBySlug(
     .eq('candidate_profile_id', row.id)
     .maybeSingle();
 
+  // Secondary target roles, read separately and resiliently so a not-yet-migrated
+  // DB (column absent) degrades to [] instead of breaking the public chat.
+  const { data: secondaryRow } = await (adminClient.from('candidate_profiles') as any)
+    .select('secondary_target_roles')
+    .eq('id', row.id)
+    .maybeSingle();
+  const secondaryTargetRoles = Array.isArray(secondaryRow?.secondary_target_roles)
+    ? (secondaryRow.secondary_target_roles as string[])
+    : [];
+
   // The selected generated angle's hard-question answer is the single most
   // important worked exemplar. Promote it into custom_qa_pairs (highest priority
   // + few-shot) ahead of the candidate's own pairs, unless they already pinned an
@@ -77,6 +87,7 @@ export async function getCandidateBrainBySlug(
   const candidate: CandidateBrain = {
     full_name: row.full_name,
     target_role: row.target_role,
+    secondary_target_roles: secondaryTargetRoles,
     leadership_philosophy: row.leadership_philosophy,
     key_wins: row.key_wins,
     departure_reasons: row.departure_reasons,

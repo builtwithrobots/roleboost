@@ -23,6 +23,7 @@ import {
   Check,
   Loader2,
   Camera,
+  X,
 } from 'lucide-react';
 
 interface Props {
@@ -40,7 +41,7 @@ function getInitials(name: string): string {
     .join('');
 }
 
-type Section = 'basic' | 'headline' | 'snapshot' | 'context';
+type Section = 'basic' | 'headline' | 'snapshot' | 'context' | 'roles';
 type Status = 'idle' | 'saving' | 'saved' | 'error';
 
 const ALL_CLEAN: Record<Section, boolean> = {
@@ -48,6 +49,7 @@ const ALL_CLEAN: Record<Section, boolean> = {
   headline: false,
   snapshot: false,
   context: false,
+  roles: false,
 };
 
 export default function ProfileEditor({ profile, avatarUrl }: Props) {
@@ -67,11 +69,14 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
   );
   const [isPublished, setIsPublished] = useState(profile.is_published);
 
+  const [secondaryRoles, setSecondaryRoles] = useState<string[]>(profile.secondary_target_roles ?? []);
+
   const [status, setStatus] = useState<Record<Section, Status>>({
     basic: 'idle',
     headline: 'idle',
     snapshot: 'idle',
     context: 'idle',
+    roles: 'idle',
   });
   const [dirty, setDirty] = useState<Record<Section, boolean>>(ALL_CLEAN);
   const [publishStatus, setPublishStatus] = useState<Status>('idle');
@@ -89,13 +94,14 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
       full_name: fullName,
       headline,
       target_role: targetRole,
+      secondary_target_roles: secondaryRoles,
       location,
       linkedin_url: linkedinUrl,
       summary_bullets: bullets.filter((b) => b.trim()),
       additional_context: additionalContext,
       is_published: isPublished,
     }),
-    [fullName, headline, targetRole, location, linkedinUrl, bullets, additionalContext, isPublished]
+    [fullName, headline, targetRole, secondaryRoles, location, linkedinUrl, bullets, additionalContext, isPublished]
   );
 
   // Each section's Save persists the whole profile (one row), so a successful
@@ -322,7 +328,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
               <div>
                 <label className="block text-xs font-medium text-[var(--rb-text-secondary)] mb-1.5">
                   <Briefcase className="inline size-3 mr-1" />
-                  Target role
+                  Primary target role
                 </label>
                 <input
                   type="text"
@@ -373,11 +379,53 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
             <SaveBar state={status.basic} dirty={dirty.basic} onSave={() => saveSection('basic')} />
           </section>
 
-          {/* AI role suggestions, fills the Target role field above */}
+          {/* Secondary target roles: other roles the candidate is open to. Fed by
+              "Use" on the recommendations below; the chat AI can reference these. */}
+          <section className="rb-card p-6">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
+              <Briefcase className="size-4 text-[var(--rb-brand)]" />
+              Secondary target roles
+            </h2>
+            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
+              Other roles you&apos;re open to. Add them from Recommended roles below. Your AI mentions
+              these when a recruiter&apos;s opportunity fits.
+            </p>
+            {secondaryRoles.length === 0 ? (
+              <p className="mt-3 rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-sunken)] px-3 py-2 text-xs text-[var(--rb-text-muted)]">
+                None yet. Tap &ldquo;Use&rdquo; on a recommended role below to add it here.
+              </p>
+            ) : (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {secondaryRoles.map((r) => (
+                  <li
+                    key={r}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] py-1 pl-3 pr-1.5 text-xs font-medium text-[var(--rb-text-secondary)]"
+                  >
+                    {r}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSecondaryRoles((prev) => prev.filter((x) => x !== r));
+                        markDirty('roles');
+                      }}
+                      aria-label={`Remove ${r}`}
+                      className="flex size-4 items-center justify-center rounded-full text-[var(--rb-text-muted)] transition-colors hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--color-error)]"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <SaveBar state={status.roles} dirty={dirty.roles} onSave={() => saveSection('roles')} />
+          </section>
+
+          {/* AI role suggestions; "Use" adds a role to the secondary list above. */}
           <RoleSuggestions
+            added={secondaryRoles}
             onUseRole={(title) => {
-              setTargetRole(title);
-              markDirty('basic');
+              setSecondaryRoles((prev) => (prev.includes(title) ? prev : [...prev, title].slice(0, 15)));
+              markDirty('roles');
             }}
           />
 

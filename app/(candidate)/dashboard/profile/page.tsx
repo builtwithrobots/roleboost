@@ -37,6 +37,19 @@ export default async function CandidateProfilePage() {
     profile = await ensureCandidateProfile();
   }
 
+  if (profile) {
+    // Read the secondary target roles separately and resiliently: the column is
+    // added by a later migration, so a not-yet-migrated DB just yields [] here
+    // rather than 500-ing the whole page.
+    const { data: sr } = await supabase
+      .from('candidate_profiles')
+      .select('secondary_target_roles')
+      .eq('clerk_user_id', userId)
+      .maybeSingle();
+    const roles = (sr as { secondary_target_roles?: string[] } | null)?.secondary_target_roles;
+    profile = { ...profile, secondary_target_roles: Array.isArray(roles) ? roles : [] };
+  }
+
   if (!profile) {
     // Creation failed, show minimal error state
     return (

@@ -36,6 +36,8 @@ export interface CustomQAPair {
 export interface CandidateBrain {
   full_name: string;
   target_role: string | null;
+  /** Additional roles the candidate is open to, beyond the primary target. */
+  secondary_target_roles: string[];
   leadership_philosophy: string | null;
   key_wins: string | null;
   departure_reasons: string | null;

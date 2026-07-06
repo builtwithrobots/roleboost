@@ -83,8 +83,9 @@ Submit via the submit_roles tool.`;
   const block = response.content.find((b) => b.type === 'tool_use');
   if (!block || block.type !== 'tool_use') return [];
   const raw = block.input as { roles?: RecommendedRole[] };
+  const noDash = (s: string) => s.replace(/\s*[—–]\s*/g, ', '); // house style: no em/en dashes
   return (raw.roles ?? [])
     .slice(0, 5)
-    .map((r) => ({ title: String(r.title).slice(0, 120), why: String(r.why).slice(0, 320) }))
+    .map((r) => ({ title: noDash(String(r.title)).slice(0, 120), why: noDash(String(r.why)).slice(0, 320) }))
     .filter((r) => r.title.trim());
 }
