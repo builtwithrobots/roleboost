@@ -47,9 +47,8 @@ function getInitials(name: string): string {
 /**
  * The public calling card, a two-pane recruiter cockpit that fits above the fold:
  * the live conversation on the left, the candidate dossier on the right (career
- * snapshot rolled up, then an asset selector). Résumé and deck read inline next
- * to the chat; infographic, audio, and video open full-size in a modal. Columns
- * stack on mobile.
+ * snapshot open at top, then each asset as its own collapsible bar, rolled up by
+ * default and loaded lazily when opened). Columns stack on mobile.
  */
 export default function CallingCard({
   slug,
@@ -178,7 +177,7 @@ export default function CallingCard({
         {hasRight && (
           <motion.div variants={fadeUp} className="flex min-h-0 flex-col gap-4">
             {hasBullets && (
-              <details className="rb-card group [&_summary::-webkit-details-marker]:hidden">
+              <details open className="rb-card group [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4">
                   <span className="rb-section-label">Career snapshot</span>
                   <ChevronDown className="size-4 text-[var(--rb-text-muted)] transition-transform group-open:rotate-180" />

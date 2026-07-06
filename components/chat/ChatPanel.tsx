@@ -146,9 +146,14 @@ export default function ChatPanel({
   // Optional recruiter self-introduction. Any subset of the fields is fine; the
   // email (if given) is also where the recruiter's transcript copy is sent.
   async function submitIdentify() {
-    const id = sessionIdRef.current;
-    if (!id) return;
     if (!rName.trim() && !rCompany.trim() && !rEmail.trim()) return;
+    const id = sessionIdRef.current;
+    // Pre-chat: no session yet -- just capture; it rides along on the first
+    // message. Post-chat: persist immediately to the existing session.
+    if (!id) {
+      setIdentifyState('done');
+      return;
+    }
     setIdentifyState('saving');
     try {
       const res = await fetch('/api/chat/identify', {
@@ -178,6 +183,13 @@ export default function ChatPanel({
     setLoading(true);
     setScheduleState('idle'); // a new question resets any prior scheduling offer
 
+    // On the first message, carry any pre-chat self-introduction so the session
+    // is created with it and the assistant can greet by name from its first reply.
+    const visitor =
+      !sessionIdRef.current && (rName.trim() || rCompany.trim() || rEmail.trim())
+        ? { name: rName.trim() || undefined, company: rCompany.trim() || undefined, email: rEmail.trim() || undefined }
+        : undefined;
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -186,6 +198,7 @@ export default function ChatPanel({
           candidateSlug,
           message: trimmed,
           sessionId: sessionId ?? undefined,
+          visitor,
           conversationHistory: history,
         }),
       });
@@ -197,6 +210,8 @@ export default function ChatPanel({
         setSessionId(data.sessionId);
         sessionIdRef.current = data.sessionId;
       }
+      // An intro carried on the first message is now persisted on the session.
+      if (visitor) setIdentifyState('done');
       const assistantAnswer = data.answer as string;
       setMessages((m) => [...m, { role: 'assistant', content: assistantAnswer }]);
       onExchange?.(trimmed, assistantAnswer);
@@ -230,6 +245,7 @@ export default function ChatPanel({
           candidateSlug,
           email: email.trim(),
           availability: availability.trim(),
+          name: rName.trim() || undefined,
           sessionId: sessionId ?? undefined,
         }),
       });
@@ -343,6 +359,54 @@ export default function ChatPanel({
                 ))}
               </div>
             )}
+
+            {/* Optional self-introduction, before chatting. Fully skippable -- the
+                recruiter can just ask a question. If they fill it in, it rides
+                along on the first message and the assistant greets them by name. */}
+            {mode === 'live' && (
+              <div className="w-full max-w-xs">
+                {identifyState === 'done' ? (
+                  <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-[var(--color-success)]">
+                    <Check className="size-3.5" />
+                    {firstName} will know it&apos;s {rName.trim() || rEmail.trim() || rCompany.trim()}
+                  </p>
+                ) : identifyState === 'idle' ? (
+                  <button
+                    type="button"
+                    onClick={() => setIdentifyState('form')}
+                    className="text-xs font-medium text-[var(--rb-text-secondary)] underline-offset-2 transition-colors hover:text-[var(--rb-brand)] hover:underline"
+                  >
+                    Introduce yourself first (optional)
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2 rounded-[var(--radius-lg)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] p-3 text-left">
+                    <p className="text-[11px] text-[var(--rb-text-secondary)]">
+                      Optional, so {firstName} knows who reached out. Any field is fine.
+                    </p>
+                    <input value={rName} onChange={(e) => setRName(e.target.value)} placeholder="Your name" aria-label="Your name" className={inputClass} />
+                    <input value={rCompany} onChange={(e) => setRCompany(e.target.value)} placeholder="Company" aria-label="Company" className={inputClass} />
+                    <input type="email" value={rEmail} onChange={(e) => setREmail(e.target.value)} placeholder="you@company.com (to get your copy)" aria-label="Your email" className={inputClass} />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void submitIdentify()}
+                        disabled={!rName.trim() && !rCompany.trim() && !rEmail.trim()}
+                        className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIdentifyState('idle')}
+                        className="rounded-[var(--radius-md)] px-2 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]"
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -377,7 +441,11 @@ export default function ChatPanel({
             {scheduleState === 'prompt' && (
               <div className="flex flex-wrap items-center gap-2">
                 <button
-                  onClick={() => setScheduleState('form')}
+                  onClick={() => {
+                    // Low friction: reuse the email they gave when introducing themselves.
+                    if (!email.trim() && rEmail.trim()) setEmail(rEmail.trim());
+                    setScheduleState('form');
+                  }}
                   className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                 >
                   <CalendarClock className="size-3.5" />
