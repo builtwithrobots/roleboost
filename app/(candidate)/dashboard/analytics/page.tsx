@@ -24,6 +24,18 @@ function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Pure relative-time formatter: takes the reference `now` so render stays pure. */
+function relativeTime(iso: string, now: number): string {
+  const mins = Math.round((now - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 /** Buckets ISO timestamps into a dense last-N-days daily series (oldest first). */
 function dailySeries(timestamps: string[], now: number, days: number): number[] {
   const counts = new Map<string, number>();
@@ -62,18 +74,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   additional_context: 'Other context',
 };
 
-export default async function CandidateAnalyticsPage() {
-  let ctx;
-  try {
-    ctx = await getUserContext('candidate');
-  } catch (e) {
-    if (e instanceof AuthError) redirect('/sign-in');
-    throw e;
-  }
-
+// Data loading + time math live outside the component render so the render
+// stays pure (Date.now() is not allowed during render).
+async function loadAnalyticsData(userId: string): Promise<AnalyticsData> {
   const { data: profile } = await (adminClient.from('candidate_profiles') as any)
     .select('id')
-    .eq('clerk_user_id', ctx.userId)
+    .eq('clerk_user_id', userId)
     .maybeSingle();
 
   const now = Date.now();
@@ -186,7 +192,8 @@ export default async function CandidateAnalyticsPage() {
       })),
     ]
       .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-      .slice(0, 12);
+      .slice(0, 12)
+      .map(({ kind, at, label }) => ({ kind, label, ago: relativeTime(at, now) }));
 
     data = {
       totals: {
@@ -211,6 +218,20 @@ export default async function CandidateAnalyticsPage() {
       windowDays: WINDOW_DAYS,
     };
   }
+
+  return data;
+}
+
+export default async function CandidateAnalyticsPage() {
+  let ctx;
+  try {
+    ctx = await getUserContext('candidate');
+  } catch (e) {
+    if (e instanceof AuthError) redirect('/sign-in');
+    throw e;
+  }
+
+  const data = await loadAnalyticsData(ctx.userId);
 
   return (
     <DashboardPage className="min-h-full">

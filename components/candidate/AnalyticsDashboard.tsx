@@ -21,7 +21,8 @@ export interface TopicRow {
 
 export interface ActivityEvent {
   kind: 'view' | 'chat' | 'meeting';
-  at: string;
+  /** Pre-formatted relative time (computed server-side to keep render pure). */
+  ago: string;
   label: string;
 }
 
@@ -38,18 +39,6 @@ export interface AnalyticsData {
   activity: ActivityEvent[];
   hasAnyData: boolean;
   windowDays: number;
-}
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.round(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
@@ -339,7 +328,7 @@ function ActivityItem({ event, last }: { event: ActivityEvent; last: boolean }) 
         <meta.Icon className="size-4 text-[var(--rb-brand)]" strokeWidth={1.75} />
       </span>
       <span className="min-w-0 flex-1 truncate text-sm text-[var(--rb-text-secondary)]">{event.label}</span>
-      <span className="shrink-0 text-xs text-[var(--rb-text-muted)]">{relativeTime(event.at)}</span>
+      <span className="shrink-0 text-xs text-[var(--rb-text-muted)]">{event.ago}</span>
     </li>
   );
 }
