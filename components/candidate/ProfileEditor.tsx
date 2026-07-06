@@ -4,6 +4,7 @@ import { useState, useTransition, useRef, useCallback } from 'react';
 import { updateCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
 import RoleSuggestions from '@/components/candidate/RoleSuggestions';
 import AvatarCropper from '@/components/candidate/AvatarCropper';
+import HeadlineAssist from '@/components/candidate/HeadlineAssist';
 import type { CandidateProfile } from '@/lib/types';
 import {
   User,
@@ -411,6 +412,12 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
                 </span>
               </div>
             </div>
+            <HeadlineAssist
+              onUse={(h) => {
+                setHeadline(h.slice(0, 200));
+                markDirty('headline');
+              }}
+            />
             <SaveBar state={status.headline} dirty={dirty.headline} onSave={() => saveSection('headline')} />
           </section>
 
