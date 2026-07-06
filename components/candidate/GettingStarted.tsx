@@ -192,7 +192,7 @@ export default function GettingStarted({ progress }: Props) {
               <div className="min-w-0 flex-1">
                 <p
                   className={`text-sm font-medium ${
-                    done ? 'text-[var(--rb-text-muted)] line-through decoration-[var(--rb-border)]' : 'text-[var(--rb-text)]'
+                    done ? 'text-[var(--rb-text-muted)]' : 'text-[var(--rb-text)]'
                   }`}
                 >
                   {step.title}
