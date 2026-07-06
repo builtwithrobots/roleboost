@@ -24,6 +24,23 @@ export default async function CandidateLayout({ children }: { children: React.Re
 
   const previewRole = ctx.isAdmin ? await getAdminPreviewRole() : null;
 
+  // New meeting-request count for the sidebar notification badge. RLS scopes both
+  // reads to the candidate's own rows.
+  let newMeetingRequests = 0;
+  const { data: prof } = await ctx.supabase
+    .from('candidate_profiles')
+    .select('id')
+    .eq('clerk_user_id', ctx.userId)
+    .maybeSingle();
+  if (prof) {
+    const { count } = await ctx.supabase
+      .from('meeting_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('candidate_profile_id', (prof as { id: string }).id)
+      .eq('status', 'new');
+    newMeetingRequests = count ?? 0;
+  }
+
   const sidebar = (
     <Sidebar>
       <SidebarHeader>
@@ -31,7 +48,7 @@ export default async function CandidateLayout({ children }: { children: React.Re
       </SidebarHeader>
 
       <SidebarBody>
-        <CandidateNav />
+        <CandidateNav newMeetingRequests={newMeetingRequests} />
         <SidebarSpacer />
         <HelpButton />
       </SidebarBody>
