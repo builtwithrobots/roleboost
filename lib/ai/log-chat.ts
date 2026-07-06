@@ -72,8 +72,14 @@ export async function ensureChatSession(
 
 /**
  * Logs the user question and the assistant answer for a session. The model and
- * validation tracking (Phase B) lives on the assistant turn; the user turn keeps
- * the column defaults.
+ * validation tracking (Phase B) is meaningful only on the assistant turn; the
+ * user turn carries the same columns at their defaults.
+ *
+ * Both rows MUST have identical keys. PostgREST derives the column list for a
+ * bulk insert from the row shape and rejects the whole batch with a 400 when the
+ * objects' keys differ -- so the user row explicitly carries the tracking
+ * columns too, rather than omitting them. (This mismatch is what silently
+ * dropped every transcript message before.)
  */
 export async function logChatExchange(params: {
   sessionId: string;
@@ -84,8 +90,15 @@ export async function logChatExchange(params: {
   wasValidated?: boolean;
 }): Promise<void> {
   try {
-    await (adminClient.from('chat_messages') as any).insert([
-      { chat_session_id: params.sessionId, role: 'user', content: params.question },
+    const { error } = await (adminClient.from('chat_messages') as any).insert([
+      {
+        chat_session_id: params.sessionId,
+        role: 'user',
+        content: params.question,
+        model_used: null,
+        was_complex: false,
+        was_validated: false,
+      },
       {
         chat_session_id: params.sessionId,
         role: 'assistant',
@@ -95,6 +108,9 @@ export async function logChatExchange(params: {
         was_validated: params.wasValidated ?? false,
       },
     ]);
+    // supabase-js returns errors as a value (no throw), so an unchecked insert
+    // failed silently before. Surface it through the same observability path.
+    if (error) reportRecordingFailure('logChatExchange insert', params.sessionId, error);
   } catch (e) {
     reportRecordingFailure('logChatExchange', params.sessionId, e);
   }
