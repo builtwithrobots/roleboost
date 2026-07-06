@@ -48,6 +48,19 @@ You are speaking with ${
 `
       : '';
 
+  // The candidate-set Target Role is the authoritative answer to "what are you
+  // looking for next" -- the assistant must lead with it, not improvise a
+  // different title from the narrative.
+  const targetRoleBlock = candidate.target_role?.trim()
+    ? `
+<target_role priority="high">
+${first}'s stated target for their next role is: ${candidate.target_role.trim()}.
+
+This is the authoritative answer to what ${first} is looking for, seeking next, or targeting. When asked what they want next, the type or level of role they are after, or their goals, lead with this exact target. Do NOT substitute a different title or seniority, even if the career narrative could support a different one. You may add helpful color, scope, industry, environment, from the information provided, but the target role itself is exactly as stated above.
+</target_role>
+`
+    : '';
+
   const contextDocumentBlock = careerContextMarkdown
     ? `
 <career_context_document>
@@ -81,7 +94,7 @@ What ${first} Is Not Good At: ${candidate.honest_weaknesses ?? 'Not provided'}
 Questions ${first} Wishes Recruiters Would Ask: ${candidate.wish_questions ?? 'Not provided'}
 Additional Context: ${candidate.additional_context ?? 'Not provided'}
 </context>
-
+${targetRoleBlock}
 <custom_answers priority="highest">
 These are answers ${first} has personally refined. They are the definitive source for these topics and take priority over everything else here. Convey their substance faithfully in your own assistant voice (third person about ${first}); never contradict them.
 
