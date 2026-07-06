@@ -39,6 +39,7 @@ you care about. Each doc is self-contained and references exact file paths.
 | [08, Assets, Résumé & Storage](./08-assets-resume-storage.md) | Buckets, signed URLs, résumé pipeline, the public calling card |
 | [09, Employer Side](./09-employer.md) | Accounts/members multi-tenancy, jobs, board, saved candidates, feedback |
 | [10, Conventions & Ops](./10-conventions-and-ops.md) | Server patterns, error envelope, webhooks, env vars, deployment, dev workflow |
+| [11, Anti-Spam & Abuse](./11-anti-spam.md) | BotID, WAF rate limits + recommended thresholds, per-candidate email throttle, recording observability |
 
 `./specs/` holds the **historical build specs**, the point-in-time design
 documents the features were built from. They are preserved for intent and

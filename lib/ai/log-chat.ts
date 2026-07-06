@@ -5,6 +5,28 @@ import { adminClient } from '@/lib/supabase/admin';
 // (no Clerk JWT), so RLS-scoped clients cannot write the session/message rows.
 // Every helper here is best-effort -- a logging failure must never break the
 // chat response the recruiter is waiting on.
+//
+// Because failures are swallowed, a broken config (e.g. an unset
+// SUPABASE_SERVICE_ROLE_KEY) would otherwise produce zero transcripts with no
+// signal at all. reportRecordingFailure() makes that loud and greppable: a
+// consistent tag on every failure, and a one-time, high-signal warning when the
+// root cause is missing admin env. Grep production logs for TRANSCRIPT_RECORDING.
+
+const RECORDING_TAG = 'TRANSCRIPT_RECORDING';
+let warnedMissingEnv = false;
+
+function reportRecordingFailure(stage: string, id: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`[${RECORDING_TAG}] ${stage} failed for ${id}:`, error);
+  if (message.includes('admin env vars not set') && !warnedMissingEnv) {
+    warnedMissingEnv = true;
+    console.error(
+      `[${RECORDING_TAG}] CRITICAL: SUPABASE_SERVICE_ROLE_KEY (or NEXT_PUBLIC_SUPABASE_URL) is ` +
+        'not set. Chats still answer, but NO transcripts are being recorded. Set the env var ' +
+        'to restore recording, delivery, and the AI-improvement gap loop.',
+    );
+  }
+}
 
 interface SessionViewer {
   viewerClerkUserId?: string | null;
@@ -38,12 +60,12 @@ export async function ensureChatSession(
       .single();
 
     if (error || !data) {
-      console.error('ensureChatSession: insert failed', candidateProfileId, error);
+      reportRecordingFailure('ensureChatSession insert', candidateProfileId, error);
       return null;
     }
     return data.id as string;
   } catch (e) {
-    console.error('ensureChatSession: threw', candidateProfileId, e);
+    reportRecordingFailure('ensureChatSession', candidateProfileId, e);
     return null;
   }
 }
@@ -74,6 +96,6 @@ export async function logChatExchange(params: {
       },
     ]);
   } catch (e) {
-    console.error('logChatExchange: failed', params.sessionId, e);
+    reportRecordingFailure('logChatExchange', params.sessionId, e);
   }
 }
