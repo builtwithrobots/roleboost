@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useCallback } from 'react';
 import { updateCandidateProfile } from '@/app/(candidate)/dashboard/profile/actions';
 import RoleSuggestions from '@/components/candidate/RoleSuggestions';
+import AvatarCropper from '@/components/candidate/AvatarCropper';
 import type { CandidateProfile } from '@/lib/types';
 import {
   User,
@@ -52,6 +53,7 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
   const [avatar, setAvatar] = useState<string | null>(avatarUrl ?? null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [fullName, setFullName] = useState(profile.full_name ?? '');
   const [headline, setHeadline] = useState(profile.headline ?? '');
@@ -137,13 +139,23 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
     });
   };
 
-  async function onAvatarFile(file: File | undefined) {
+  // Pick a file -> open the cropper (position/zoom). The cropped result is what
+  // gets uploaded, so recruiters see a well-framed round photo.
+  function onAvatarFile(file: File | undefined) {
     if (!file) return;
     setAvatarError(null);
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.onerror = () => setAvatarError('Could not read that photo.');
+    reader.readAsDataURL(file);
+    if (avatarInputRef.current) avatarInputRef.current.value = '';
+  }
+
+  async function uploadAvatarBlob(blob: Blob) {
     setAvatarUploading(true);
     try {
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', blob, 'avatar.jpg');
       form.append('asset_type', 'avatar');
       form.append('candidate_profile_id', profile.id);
       const res = await fetch('/api/assets/upload', { method: 'POST', body: form });
@@ -152,13 +164,13 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
         setAvatarError(json?.error?.message ?? 'Could not upload that photo.');
         return;
       }
-      // Instant preview from the local file; the signed URL loads on next visit.
-      setAvatar(URL.createObjectURL(file));
+      // Instant preview from the cropped blob; the signed URL loads on next visit.
+      setAvatar(URL.createObjectURL(blob));
+      setCropSrc(null);
     } catch {
       setAvatarError('Upload failed. Please try again.');
     } finally {
       setAvatarUploading(false);
-      if (avatarInputRef.current) avatarInputRef.current.value = '';
     }
   }
 
@@ -534,6 +546,15 @@ export default function ProfileEditor({ profile, avatarUrl }: Props) {
           </div>
         </div>
       </div>
+
+      {cropSrc && (
+        <AvatarCropper
+          src={cropSrc}
+          open={!!cropSrc}
+          onCancel={() => setCropSrc(null)}
+          onSave={uploadAvatarBlob}
+        />
+      )}
     </div>
   );
 }

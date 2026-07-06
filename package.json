@@ -26,6 +26,7 @@
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "react-easy-crop": "^6.1.0",
     "resend": "^6.16.0",
     "server-only": "^0.0.1",
     "svix": "^1.96.0",
