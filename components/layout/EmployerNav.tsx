@@ -6,6 +6,7 @@ import {
   Columns3,
   Briefcase,
   UserPlus,
+  MessagesSquare,
 } from 'lucide-react'
 import {
   SidebarDivider,
@@ -22,7 +23,8 @@ const workflowItems = [
 ]
 
 const secondaryItems = [
-  { href: '/dashboard/team', label: 'Team', Icon: UserPlus },
+  { href: '/dashboard/conversations', label: 'Transcripts', Icon: MessagesSquare },
+  { href: '/dashboard/team',        label: 'Team',        Icon: UserPlus },
 ]
 
 export default function EmployerNav() {

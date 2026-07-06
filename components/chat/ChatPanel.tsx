@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, useId } from 'react';
+import { useCallback, useEffect, useRef, useState, useId } from 'react';
 import { Send, Sparkles, X, Download, CalendarClock, Check } from 'lucide-react';
 import type { ChatTurn } from '@/lib/types';
+import TurnstileWidget from './TurnstileWidget';
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 interface Props {
   candidateSlug: string;
@@ -53,6 +56,35 @@ export default function ChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const deliveredRef = useRef(false);
+
+  // Turnstile: only active on the public (live) surface when a site key is set.
+  // The token feeds the first message; managed mode solves it near-invisibly.
+  const turnstileActive = mode === 'live' && !!TURNSTILE_SITE_KEY;
+  const turnstileTokenRef = useRef<string | null>(null);
+  const turnstileWaitersRef = useRef<((t: string | undefined) => void)[]>([]);
+
+  const onTurnstileToken = useCallback((token: string | null) => {
+    turnstileTokenRef.current = token;
+    if (token) {
+      turnstileWaitersRef.current.splice(0).forEach((resolve) => resolve(token));
+    }
+  }, []);
+
+  // Resolves the current token, or waits briefly for the widget to solve, so the
+  // first message carries a token without blocking the input. Degrades to
+  // undefined on timeout (the server then decides based on config).
+  const getTurnstileToken = useCallback((): Promise<string | undefined> => {
+    if (!turnstileActive) return Promise.resolve(undefined);
+    if (turnstileTokenRef.current) return Promise.resolve(turnstileTokenRef.current);
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(undefined), 4000);
+      turnstileWaitersRef.current.push((t) => {
+        clearTimeout(timer);
+        resolve(t);
+      });
+    });
+  }, [turnstileActive]);
 
   const firstName = candidateName.split(' ')[0] || candidateName;
   const assistantName = `${firstName}'s Personal Assistant`;
@@ -74,19 +106,37 @@ export default function ChatPanel({
     sessionIdRef.current = sessionId;
   }, [sessionId]);
 
-  // Deliver the transcript when a live conversation closes (the panel unmounts).
+  // Deliver the transcript when a live conversation ends. Unmount alone misses
+  // the common cases (tab close, refresh, mobile backgrounding), so we also fire
+  // on pagehide and when the page becomes hidden. Idempotent server-side, and
+  // guarded here so the beacon goes out at most once per session. A server-side
+  // cron sweep is the final safety net if every browser signal is lost.
   useEffect(() => {
-    return () => {
-      if (mode === 'live' && sessionIdRef.current && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        try {
-          const blob = new Blob([JSON.stringify({ sessionId: sessionIdRef.current })], {
-            type: 'application/json',
-          });
-          navigator.sendBeacon('/api/transcripts/deliver', blob);
-        } catch {
-          // best-effort
-        }
+    if (mode !== 'live') return;
+
+    function deliver() {
+      const id = sessionIdRef.current;
+      if (!id || deliveredRef.current) return;
+      if (typeof navigator === 'undefined' || !navigator.sendBeacon) return;
+      deliveredRef.current = true;
+      try {
+        const blob = new Blob([JSON.stringify({ sessionId: id })], { type: 'application/json' });
+        navigator.sendBeacon('/api/transcripts/deliver', blob);
+      } catch {
+        // best-effort; the cron sweep will catch anything that slips through.
       }
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') deliver();
+    }
+
+    window.addEventListener('pagehide', deliver);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', deliver);
+      document.removeEventListener('visibilitychange', onVisibility);
+      deliver();
     };
   }, [mode]);
 
@@ -100,6 +150,10 @@ export default function ChatPanel({
     setLoading(true);
     setScheduleState('idle'); // a new question resets any prior scheduling offer
 
+    // Bot token only for the first message of a conversation (before a session
+    // exists); afterwards the session id is the identity.
+    const turnstileToken = sessionIdRef.current ? undefined : await getTurnstileToken();
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -108,6 +162,7 @@ export default function ChatPanel({
           candidateSlug,
           message: trimmed,
           sessionId: sessionId ?? undefined,
+          turnstileToken,
           conversationHistory: history,
         }),
       });
@@ -389,6 +444,11 @@ export default function ChatPanel({
             <Send className="size-4" strokeWidth={2} />
           </button>
         </div>
+        {turnstileActive && !sessionId && (
+          <div className="mt-2 flex justify-center">
+            <TurnstileWidget siteKey={TURNSTILE_SITE_KEY!} onToken={onTurnstileToken} />
+          </div>
+        )}
         <p className="mt-2 text-center text-[11px] text-[var(--rb-text-muted)]">
           Powered by RoleBoost. {assistantName} represents {firstName}&apos;s career history and may
           not reflect every detail.

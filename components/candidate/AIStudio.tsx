@@ -509,7 +509,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
           <TabIntro Icon={ShieldCheck} title="Sharpen with real conversations">
             Already had recruiter calls or practice interviews? Paste a transcript and your AI finds
             the exact questions it isn&apos;t ready for yet, then shows you how to close each gap.
-            Transcripts are analyzed and never stored.
+            Anything you paste here is analyzed and never stored, only the plan is saved.
           </TabIntro>
           <HardenPanel
             candidateSlug={profile.slug}

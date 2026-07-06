@@ -26,6 +26,7 @@ export default async function MeetingRequestsPage() {
     .single();
 
   let requests: MeetingRequest[] = [];
+  const transcripts: Record<string, { role: 'user' | 'assistant'; content: string }[]> = {};
   if (profile) {
     const { data } = await supabase
       .from('meeting_requests')
@@ -34,6 +35,26 @@ export default async function MeetingRequestsPage() {
       .order('created_at', { ascending: false })
       .limit(100);
     requests = (data ?? []) as unknown as MeetingRequest[];
+
+    // Pull the conversation behind each request so the candidate can review the
+    // exact exchange before replying. RLS already scopes messages to the owner.
+    const sessionIds = Array.from(
+      new Set(requests.map((r) => r.chat_session_id).filter((id): id is string => !!id)),
+    );
+    if (sessionIds.length > 0) {
+      const { data: msgs } = await supabase
+        .from('chat_messages')
+        .select('chat_session_id, role, content, created_at')
+        .in('chat_session_id', sessionIds)
+        .order('created_at', { ascending: true });
+      for (const m of (msgs ?? []) as {
+        chat_session_id: string;
+        role: 'user' | 'assistant';
+        content: string;
+      }[]) {
+        (transcripts[m.chat_session_id] ??= []).push({ role: m.role, content: m.content });
+      }
+    }
   }
 
   return (
@@ -50,7 +71,7 @@ export default async function MeetingRequestsPage() {
             description="When your Personal Assistant cannot answer a recruiter's question, it offers to set up a live conversation. Those requests show up here."
           />
         ) : (
-          <MeetingRequestsList requests={requests} />
+          <MeetingRequestsList requests={requests} transcripts={transcripts} />
         )}
       </div>
     </DashboardPage>

@@ -156,8 +156,10 @@ export default function HardenPanel({ candidateSlug, focusBrainField, sessions }
       <div className="mb-5 flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface-raised)] p-3 text-xs text-[var(--rb-text-secondary)]">
         <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-[var(--rb-brand)]" />
         <span>
-          Your transcript is analyzed in the moment and <strong>never stored</strong>, only the
-          resulting plan is saved. No recruiter names or companies are kept.
+          Anything you paste here is analyzed in the moment and <strong>never stored</strong>, only
+          the resulting plan is saved, and no recruiter names or companies are kept. (Your live
+          recruiter conversations are different: those are saved to your Transcripts so you can
+          review them and keep training your AI.)
         </span>
       </div>
 

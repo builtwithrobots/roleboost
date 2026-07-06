@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { adminClient } from '@/lib/supabase/admin';
 import { isEmailConfigured } from '@/lib/email/client';
 import { sendMeetingRequestEmail } from '@/lib/email/meeting';
+import { checkRateLimit, clientIp } from '@/lib/security/rate-limit';
+import type { ChatTurn } from '@/lib/types';
 
 // Public endpoint. A recruiter (usually anonymous) submits availability + email
 // from the chat when the Personal Assistant offered to schedule. Stores the
@@ -20,6 +22,12 @@ const Input = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Meeting requests email the candidate, so cap them per IP to prevent abuse.
+  const withinLimit = await checkRateLimit(`schedule:${clientIp(req)}`, 6, 3600);
+  if (!withinLimit) {
+    return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -60,12 +68,38 @@ export async function POST(req: NextRequest) {
         .select('email')
         .eq('clerk_user_id', profile.clerk_user_id)
         .maybeSingle();
+
+      // Attach the conversation that led to the request so the candidate walks
+      // into the meeting with full context. Confirm the session belongs to this
+      // candidate before reading its messages (the sessionId is client-supplied).
+      let messages: ChatTurn[] | undefined;
+      if (sessionId) {
+        const { data: sess } = await (adminClient.from('chat_sessions') as any)
+          .select('id')
+          .eq('id', sessionId)
+          .eq('candidate_profile_id', profile.id)
+          .maybeSingle();
+        if (sess) {
+          const { data: msgs } = await (adminClient.from('chat_messages') as any)
+            .select('role, content, created_at')
+            .eq('chat_session_id', sessionId)
+            .order('created_at', { ascending: true });
+          if (msgs && msgs.length > 0) {
+            messages = (msgs as { role: ChatTurn['role']; content: string }[]).map((m) => ({
+              role: m.role,
+              content: m.content,
+            }));
+          }
+        }
+      }
+
       await sendMeetingRequestEmail({
         candidateName: profile.full_name,
         candidateEmail: candUser?.email ?? null,
         recruiterEmail: email,
         recruiterName: name,
         availability,
+        messages,
       });
     } catch (e) {
       console.error('schedule: email failed', candidateSlug, e);

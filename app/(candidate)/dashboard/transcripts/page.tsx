@@ -6,8 +6,10 @@ import EmptyState from '@/components/ui/empty-state';
 import TranscriptsList, { type TranscriptItem } from '@/components/candidate/TranscriptsList';
 import { MessagesSquare } from 'lucide-react';
 
-// Candidate-facing record of recruiter conversations with their Personal
-// Assistant. Sandbox self-tests are excluded. RLS scopes reads to the owner.
+// Candidate-facing record of every conversation with their Personal Assistant,
+// recruiter chats and their own preview tests (tagged and filterable). Retained
+// so the candidate can review, teach a better answer, and carry context into a
+// meeting. RLS scopes reads to the owner.
 export default async function TranscriptsPage() {
   let ctx;
   try {
@@ -26,13 +28,15 @@ export default async function TranscriptsPage() {
 
   let transcripts: TranscriptItem[] = [];
   if (profile) {
+    // Include the candidate's own preview sessions (is_sandbox) so testing your
+    // own link never looks like "nothing recorded". They are tagged as tests and
+    // filterable, kept distinct from real recruiter conversations.
     const { data: sessions } = await supabase
       .from('chat_sessions')
-      .select('id, employer_company_name, viewer_clerk_user_id, started_at')
+      .select('id, employer_company_name, viewer_clerk_user_id, is_sandbox, started_at')
       .eq('candidate_profile_id', (profile as { id: string }).id)
-      .eq('is_sandbox', false)
       .order('started_at', { ascending: false })
-      .limit(50);
+      .limit(100);
 
     const ids = (sessions ?? []).map((s: { id: string }) => s.id);
     const bySession = new Map<string, { role: 'user' | 'assistant'; content: string }[]>();
@@ -53,11 +57,15 @@ export default async function TranscriptsPage() {
       id: string;
       employer_company_name: string | null;
       viewer_clerk_user_id: string | null;
+      is_sandbox: boolean;
       started_at: string;
     }[])
       .map((s) => ({
         id: s.id,
-        label: s.employer_company_name?.trim() || (s.viewer_clerk_user_id ? 'Signed-in recruiter' : 'Recruiter'),
+        kind: s.is_sandbox ? ('test' as const) : ('recruiter' as const),
+        label: s.is_sandbox
+          ? 'Your test'
+          : s.employer_company_name?.trim() || (s.viewer_clerk_user_id ? 'Signed-in recruiter' : 'Recruiter'),
         date: s.started_at,
         messages: bySession.get(s.id) ?? [],
       }))
@@ -68,14 +76,14 @@ export default async function TranscriptsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Transcripts"
-        description="Every recruiter conversation with your Personal Assistant. View or download any of them."
+        description="Every conversation with your Personal Assistant, kept so you can review it, teach your AI a better answer, and walk into any meeting with the full context. Yours alone."
       />
       <div className="mx-auto max-w-6xl px-6 py-8">
         {transcripts.length === 0 ? (
           <EmptyState
             icon={MessagesSquare}
             title="No conversations yet"
-            description="When a recruiter chats with your Personal Assistant, the transcript lands here and in your inbox. Share your profile link to get started."
+            description="When a recruiter chats with your Personal Assistant, the transcript lands here and in your inbox. Your own tests show up here too. Share your profile link to get started."
           />
         ) : (
           <TranscriptsList transcripts={transcripts} candidateName={(profile as { full_name: string }).full_name} />

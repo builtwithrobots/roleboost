@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { Mail, Trash2, CalendarClock, ChevronDown } from 'lucide-react';
+import { Mail, Trash2, CalendarClock, ChevronDown, MessagesSquare } from 'lucide-react';
 import { setMeetingStatus, deleteMeetingRequest } from '@/app/(candidate)/dashboard/meeting-requests/actions';
 import type { MeetingRequest, MeetingRequestStatus } from '@/lib/types';
 
+type TranscriptMessage = { role: 'user' | 'assistant'; content: string };
+
 interface Props {
   requests: MeetingRequest[];
+  transcripts?: Record<string, TranscriptMessage[]>;
 }
 
 const STATUS_ORDER: MeetingRequestStatus[] = ['new', 'contacted', 'scheduled', 'closed'];
@@ -22,7 +25,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function MeetingRequestsList({ requests }: Props) {
+export default function MeetingRequestsList({ requests, transcripts = {} }: Props) {
   const [items, setItems] = useState(requests);
   const [filter, setFilter] = useState<'all' | MeetingRequestStatus>('all');
   const [pending, startTransition] = useTransition();
@@ -97,6 +100,31 @@ export default function MeetingRequestsList({ requests }: Props) {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">Availability</p>
               <p className="mt-0.5 whitespace-pre-wrap text-sm text-[var(--rb-text-secondary)]">{r.availability}</p>
             </div>
+
+            {r.chat_session_id && (transcripts[r.chat_session_id]?.length ?? 0) > 0 && (
+              <details className="group rounded-[var(--radius-md)] border border-[var(--rb-border)] [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)]">
+                  <MessagesSquare className="size-3.5" />
+                  The conversation that led here
+                  <ChevronDown className="ml-auto size-3.5 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="flex flex-col gap-2 border-t border-[var(--rb-border)] p-3">
+                  {transcripts[r.chat_session_id]!.map((m, i) => (
+                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div
+                        className={`max-w-[85%] whitespace-pre-wrap rounded-[var(--radius-lg)] px-3 py-2 text-xs leading-relaxed ${
+                          m.role === 'user'
+                            ? 'bg-[var(--rb-brand)] text-white'
+                            : 'border border-[var(--rb-border)] bg-[var(--rb-bg-page)] text-[var(--rb-text-secondary)]'
+                        }`}
+                      >
+                        {m.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs text-[var(--rb-text-muted)]">{formatDate(r.created_at)}</span>
