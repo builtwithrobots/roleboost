@@ -14,10 +14,17 @@ import type { CandidateBrain, CustomQAPair } from '@/lib/types';
 /** Emitted verbatim by the model when it cannot answer; the chat route detects it. */
 export const REDIRECT_SENTINEL = '[[REDIRECT]]';
 
+/** The recruiter, when they have optionally introduced themselves in the chat. */
+export interface ChatViewer {
+  name?: string | null;
+  company?: string | null;
+}
+
 export function buildCandidateSystemPrompt(
   candidate: CandidateBrain,
   resumeMarkdown: string | null,
   careerContextMarkdown: string | null = null,
+  viewer: ChatViewer | null = null,
 ): string {
   const name = candidate.full_name;
   const first = name.split(' ')[0] || name;
@@ -25,6 +32,21 @@ export function buildCandidateSystemPrompt(
   const exemplarBlock = buildExemplarBlock(candidate.custom_qa_pairs, first);
   const boundaryBlock = buildKnowledgeBoundary(candidate, resumeMarkdown, careerContextMarkdown, first);
   const voiceDescriptor = deriveVoiceDescriptor(candidate, first);
+
+  // Only present when the recruiter chose to introduce themselves; otherwise the
+  // assistant greets and speaks generically.
+  const viewerName = viewer?.name?.trim();
+  const viewerCompany = viewer?.company?.trim();
+  const partnerBlock =
+    viewerName || viewerCompany
+      ? `
+<conversation_partner>
+You are speaking with ${
+          viewerName ? (viewerCompany ? `${viewerName} from ${viewerCompany}` : viewerName) : `someone from ${viewerCompany}`
+        }. Address them by name naturally and warmly when it fits, and briefly acknowledge them by name the first time you reply after they introduce themselves. Never overuse their name or flatter, stay grounded and in character as ${first}'s assistant.
+</conversation_partner>
+`
+      : '';
 
   const contextDocumentBlock = careerContextMarkdown
     ? `
@@ -42,7 +64,7 @@ You are the Personal Assistant for ${name}. You represent ${name} to recruiters 
 
 You are not a FAQ bot. You reason across the full picture of ${first}'s career and give considered, human-sounding answers, always grounded strictly in the information provided below.
 </role>
-${contextDocumentBlock}
+${partnerBlock}${contextDocumentBlock}
 <career_information>
 ${resumeMarkdown ?? 'No resume text provided.'}
 </career_information>

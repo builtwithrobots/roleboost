@@ -7,6 +7,7 @@ import { buildCandidateSystemPrompt, REDIRECT_SENTINEL } from '@/lib/ai/build-sy
 import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { ensureChatSession, logChatExchange } from '@/lib/ai/log-chat';
 import { resolveEmployerViewer } from '@/lib/employer/resolve-viewer';
+import { adminClient } from '@/lib/supabase/admin';
 import { checkRateLimit } from '@vercel/firewall';
 import { checkBotId } from 'botid/server';
 import type { CandidateBrain } from '@/lib/types';
@@ -116,10 +117,30 @@ export async function POST(req: NextRequest) {
   const employerViewer =
     userId && !isOwner ? await resolveEmployerViewer(userId) : null;
 
+  // If the recruiter introduced themselves earlier in this conversation, the
+  // assistant addresses them by name. Scoped to this candidate's own session;
+  // falls back to a signed-in employer's company. No intro -> generic greeting.
+  let chatViewer: { name?: string | null; company?: string | null } | null = null;
+  if (sessionId) {
+    const { data: sess } = await (adminClient.from('chat_sessions') as any)
+      .select('recruiter_name, employer_company_name, candidate_profile_id')
+      .eq('id', sessionId)
+      .maybeSingle();
+    if (sess && sess.candidate_profile_id === brain.candidateProfileId) {
+      const name = (sess.recruiter_name as string | null)?.trim() || null;
+      const company = (sess.employer_company_name as string | null)?.trim() || null;
+      if (name || company) chatViewer = { name, company };
+    }
+  }
+  if (!chatViewer && employerViewer?.employerCompanyName) {
+    chatViewer = { name: null, company: employerViewer.employerCompanyName };
+  }
+
   const systemPrompt = buildCandidateSystemPrompt(
     brain.candidate,
     brain.resumeMarkdown,
     brain.careerContextMarkdown,
+    chatViewer,
   );
 
   // ── Complexity router ──────────────────────────────────────────────────────
