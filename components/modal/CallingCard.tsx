@@ -26,6 +26,11 @@ interface Props {
   aiEnabled: boolean;
   avatarUrl?: string | null;
   assets: Asset[];
+  /**
+   * Owner preview: renders the card exactly as recruiters see it, but runs the
+   * chat in preview mode so testing it never emails a transcript or logs a view.
+   */
+  preview?: boolean;
 }
 
 const OPENERS = [
@@ -61,6 +66,7 @@ export default function CallingCard({
   aiEnabled,
   avatarUrl,
   assets,
+  preview = false,
 }: Props) {
   const prefersReduced = useReducedMotion();
   const firstName = fullName.split(' ')[0] || fullName;
@@ -146,7 +152,7 @@ export default function CallingCard({
               <ChatPanel
                 candidateSlug={slug}
                 candidateName={fullName}
-                mode="live"
+                mode={preview ? 'preview' : 'live'}
                 suggestedQuestions={OPENERS}
                 fill
               />
