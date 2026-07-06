@@ -15,6 +15,7 @@ const Input = z.object({ sessionId: z.string().uuid() });
 export async function POST(req: NextRequest) {
   // Cheap edge guard: delivery is idempotent anyway, but this caps how hard an
   // anonymous caller can hammer the endpoint. No-ops until the WAF rule is set.
+  // Recommended rule: 60 requests / 60s per IP (see docs/anti-spam.md).
   try {
     const { rateLimited } = await checkRateLimit('deliver', { request: req });
     if (rateLimited) {
