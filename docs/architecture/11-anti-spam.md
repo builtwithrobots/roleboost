@@ -35,6 +35,7 @@ safe to ship ahead of configuration. Recommended starting values (per IP):
 |---|---|---|---|
 | `chat` | 30 requests | 60s | A human sends a handful of messages per minute; 30/min is generous headroom while blocking automated floods. |
 | `schedule` | 5 requests | 300s | Emails the candidate; a real recruiter schedules once. Tight. |
+| `identify` | 20 requests | 300s | Optional recruiter self-introduction; cheap, but capped so a session cannot be spammed. |
 | `deliver` | 60 requests | 60s | Idempotent beacon, fired ~once per conversation; only needs a ceiling on hammering. |
 
 Notes:

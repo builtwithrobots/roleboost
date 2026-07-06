@@ -61,6 +61,12 @@ export default function ChatPanel({
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [delivered, setDelivered] = useState(false);
 
+  // Optional recruiter self-introduction, so the candidate knows who reached out.
+  const [identifyState, setIdentifyState] = useState<'idle' | 'form' | 'saving' | 'done'>('idle');
+  const [rName, setRName] = useState('');
+  const [rCompany, setRCompany] = useState('');
+  const [rEmail, setREmail] = useState('');
+
   const firstName = candidateName.split(' ')[0] || candidateName;
   const assistantName = `${firstName}'s Personal Assistant`;
 
@@ -134,6 +140,31 @@ export default function ChatPanel({
       });
     } catch {
       // best-effort; the record is already saved server-side.
+    }
+  }
+
+  // Optional recruiter self-introduction. Any subset of the fields is fine; the
+  // email (if given) is also where the recruiter's transcript copy is sent.
+  async function submitIdentify() {
+    const id = sessionIdRef.current;
+    if (!id) return;
+    if (!rName.trim() && !rCompany.trim() && !rEmail.trim()) return;
+    setIdentifyState('saving');
+    try {
+      const res = await fetch('/api/chat/identify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: id,
+          name: rName.trim() || undefined,
+          company: rCompany.trim() || undefined,
+          email: rEmail.trim() || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('failed');
+      setIdentifyState('done');
+    } catch {
+      setIdentifyState('form');
     }
   }
 
@@ -411,28 +442,98 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Transparency + explicit "email it now". Reassures the recruiter the
-          conversation is on the record (honest by design) and gives a one-tap
-          way to close the loop, without forcing any action. */}
+      {/* Transparency + optional self-introduction + one-tap "email it now".
+          Reassures the recruiter the conversation is on the record (honest by
+          design), lets them optionally say who they are so the candidate can
+          follow up, and lets them close the loop, all without forcing anything. */}
       {mode === 'live' && messages.length > 0 && (
-        <div className="flex items-center justify-between gap-2 border-t border-[var(--rb-border)] px-3 py-1.5">
-          <span className="flex items-center gap-1.5 text-[11px] text-[var(--rb-text-muted)]">
-            <Lock className="size-3" strokeWidth={2} />
-            Saved for {firstName}, you&apos;ll both get a copy by email.
-          </span>
-          {delivered ? (
-            <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-[var(--color-success)]">
-              <Check className="size-3.5" />
-              Sent
+        <div className="border-t border-[var(--rb-border)]">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] text-[var(--rb-text-muted)]">
+              <Lock className="size-3" strokeWidth={2} />
+              Saved for {firstName}, you&apos;ll both get a copy by email.
             </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void deliverNow()}
-              className="shrink-0 text-[11px] font-medium text-[var(--rb-text-secondary)] underline-offset-2 transition-colors hover:text-[var(--rb-brand)] hover:underline"
-            >
-              Email it now
-            </button>
+            <div className="flex shrink-0 items-center gap-3">
+              {identifyState === 'done' ? (
+                <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--color-success)]">
+                  <Check className="size-3.5" />
+                  Introduced
+                </span>
+              ) : (
+                identifyState === 'idle' && (
+                  <button
+                    type="button"
+                    onClick={() => setIdentifyState('form')}
+                    className="text-[11px] font-medium text-[var(--rb-text-secondary)] underline-offset-2 transition-colors hover:text-[var(--rb-brand)] hover:underline"
+                  >
+                    Introduce yourself
+                  </button>
+                )
+              )}
+              {delivered ? (
+                <span className="flex items-center gap-1 text-[11px] font-medium text-[var(--color-success)]">
+                  <Check className="size-3.5" />
+                  Sent
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void deliverNow()}
+                  className="text-[11px] font-medium text-[var(--rb-text-secondary)] underline-offset-2 transition-colors hover:text-[var(--rb-brand)] hover:underline"
+                >
+                  Email it now
+                </button>
+              )}
+            </div>
+          </div>
+
+          {(identifyState === 'form' || identifyState === 'saving') && (
+            <div className="flex flex-col gap-2 border-t border-[var(--rb-border)] bg-[var(--rb-brand-subtle)]/30 p-3">
+              <p className="text-[11px] text-[var(--rb-text-secondary)]">
+                Optional, so {firstName} knows who reached out and can follow up. Any field is fine.
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <input
+                  value={rName}
+                  onChange={(e) => setRName(e.target.value)}
+                  placeholder="Your name"
+                  aria-label="Your name"
+                  className={inputClass}
+                />
+                <input
+                  value={rCompany}
+                  onChange={(e) => setRCompany(e.target.value)}
+                  placeholder="Company"
+                  aria-label="Company"
+                  className={inputClass}
+                />
+              </div>
+              <input
+                type="email"
+                value={rEmail}
+                onChange={(e) => setREmail(e.target.value)}
+                placeholder="you@company.com (to get your copy)"
+                aria-label="Your email"
+                className={inputClass}
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void submitIdentify()}
+                  disabled={identifyState === 'saving' || (!rName.trim() && !rCompany.trim() && !rEmail.trim())}
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {identifyState === 'saving' ? 'Saving…' : 'Save'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIdentifyState('idle')}
+                  className="rounded-[var(--radius-md)] px-2 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] hover:text-[var(--rb-text)]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

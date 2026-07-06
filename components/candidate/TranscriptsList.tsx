@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { Download, ChevronDown, Building2, FlaskConical, Sparkles, Check, X } from 'lucide-react';
+import { Download, ChevronDown, Building2, FlaskConical, Sparkles, Check, X, Mail } from 'lucide-react';
 import { teachAiFromTranscript } from '@/app/(candidate)/dashboard/transcripts/actions';
 
 export interface TranscriptItem {
   id: string;
   kind: 'recruiter' | 'test';
   label: string;
+  contactEmail?: string | null;
   date: string;
   messages: { role: 'user' | 'assistant'; content: string }[];
 }
@@ -138,8 +139,20 @@ function TranscriptCard({
               </span>
             )}
           </div>
-          <p className="text-xs text-[var(--rb-text-muted)]">
-            {formatDate(t.date)} · {t.messages.length} messages
+          <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-[var(--rb-text-muted)]">
+            <span>
+              {formatDate(t.date)} · {t.messages.length} messages
+            </span>
+            {t.contactEmail && (
+              <a
+                href={`mailto:${t.contactEmail}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-[var(--rb-text-brand)] hover:underline"
+              >
+                <Mail className="size-3" />
+                {t.contactEmail}
+              </a>
+            )}
           </p>
         </div>
         <button
