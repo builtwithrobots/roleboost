@@ -51,12 +51,20 @@ You are speaking with ${
   // The candidate-set Target Role is the authoritative answer to "what are you
   // looking for next" -- the assistant must lead with it, not improvise a
   // different title from the narrative.
-  const targetRoleBlock = candidate.target_role?.trim()
+  const secondaryRoles = (candidate.secondary_target_roles ?? []).map((r) => r.trim()).filter(Boolean);
+  const secondaryLine = secondaryRoles.length
+    ? `\n\n${first} is also open to these related roles: ${secondaryRoles.join('; ')}. If a recruiter describes an opportunity that fits one of these, you may acknowledge it as a strong fit; the primary target above is still what ${first} is most focused on.`
+    : '';
+  const targetRoleBlock = candidate.target_role?.trim() || secondaryRoles.length
     ? `
 <target_role priority="high">
-${first}'s stated target for their next role is: ${candidate.target_role.trim()}.
+${
+  candidate.target_role?.trim()
+    ? `${first}'s stated target for their next role is: ${candidate.target_role.trim()}.
 
-This is the authoritative answer to what ${first} is looking for, seeking next, or targeting. When asked what they want next, the type or level of role they are after, or their goals, lead with this exact target. Do NOT substitute a different title or seniority, even if the career narrative could support a different one. You may add helpful color, scope, industry, environment, from the information provided, but the target role itself is exactly as stated above.
+This is the authoritative answer to what ${first} is looking for, seeking next, or targeting. When asked what they want next, the type or level of role they are after, or their goals, lead with this exact target. Do NOT substitute a different title or seniority, even if the career narrative could support a different one. You may add helpful color, scope, industry, environment, from the information provided, but the target role itself is exactly as stated above.`
+    : `${first} is open to roles such as: ${secondaryRoles.join('; ')}.`
+}${candidate.target_role?.trim() ? secondaryLine : ''}
 </target_role>
 `
     : '';

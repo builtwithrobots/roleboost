@@ -9,16 +9,17 @@ interface Role {
 }
 
 interface Props {
-  /** Fill the candidate's Target role field with a chosen suggestion. */
+  /** Add a chosen suggestion to the candidate's secondary target roles. */
   onUseRole: (title: string) => void;
+  /** Titles already added, so those show as "Added". */
+  added?: string[];
 }
 
-export default function RoleSuggestions({ onUseRole }: Props) {
+export default function RoleSuggestions({ onUseRole, added = [] }: Props) {
   const [roles, setRoles] = useState<Role[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsUploads, setNeedsUploads] = useState(false);
-  const [usedTitle, setUsedTitle] = useState<string | null>(null);
 
   async function generate() {
     setLoading(true);
@@ -55,7 +56,8 @@ export default function RoleSuggestions({ onUseRole }: Props) {
             Recommended roles
           </h2>
           <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-            AI suggestions based on your résumé and career sources, pick one to set your target role.
+            AI suggestions based on your résumé and career sources. Tap Use to add one to your
+            secondary target roles.
           </p>
         </div>
         {(hasResults || needsUploads || error) && (
@@ -106,13 +108,11 @@ export default function RoleSuggestions({ onUseRole }: Props) {
                 <p className="mt-0.5 text-xs text-[var(--rb-text-secondary)]">{role.why}</p>
               </div>
               <button
-                onClick={() => {
-                  onUseRole(role.title);
-                  setUsedTitle(role.title);
-                }}
-                className="shrink-0 self-center rounded-[var(--radius-md)] border border-[var(--rb-border-strong)] px-2.5 py-1 text-xs font-semibold text-[var(--rb-text-secondary)] transition-colors hover:border-[var(--rb-border-brand)] hover:text-[var(--rb-text-brand)]"
+                onClick={() => onUseRole(role.title)}
+                disabled={added.includes(role.title)}
+                className="shrink-0 self-center rounded-[var(--radius-md)] border border-[var(--rb-border-strong)] px-2.5 py-1 text-xs font-semibold text-[var(--rb-text-secondary)] transition-colors hover:border-[var(--rb-border-brand)] hover:text-[var(--rb-text-brand)] disabled:opacity-60 disabled:hover:border-[var(--rb-border-strong)] disabled:hover:text-[var(--rb-text-secondary)]"
               >
-                {usedTitle === role.title ? 'Added ✓' : 'Use'}
+                {added.includes(role.title) ? 'Added ✓' : 'Use'}
               </button>
             </li>
           ))}
