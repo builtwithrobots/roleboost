@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '@/lib/supabase/admin';
 import CallingCard from '@/components/modal/CallingCard';
@@ -81,11 +83,21 @@ export default async function CandidateProfilePage({ params }: Props) {
     }
   }
 
-  // Record the profile view (fire-and-forget, no await)
-  void (adminClient.from('profile_views') as any).insert({
-    candidate_profile_id: profileData.id,
-    viewed_at: new Date().toISOString(),
-  });
+  // Record the profile view reliably. A bare un-awaited insert during render is
+  // dropped on serverless (the function returns before it completes), so defer it
+  // with after() -- it runs after the response is sent and is guaranteed to
+  // execute. Skip the owner's own views so the stat reflects recruiter interest,
+  // not the candidate testing their own link (mirrors sandbox chats).
+  const { userId: viewerId } = await auth();
+  if (viewerId !== profileData.clerk_user_id) {
+    after(async () => {
+      const { error } = await (adminClient.from('profile_views') as any).insert({
+        candidate_profile_id: profileData.id,
+        viewer_clerk_user_id: viewerId ?? null,
+      });
+      if (error) console.error('profile_views insert failed', profileData.id, error);
+    });
+  }
 
   return (
     <div className="min-h-screen bg-[var(--rb-bg-page)]">
