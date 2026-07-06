@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withBotId } from 'botid/next/config';
 
 const nextConfig: NextConfig = {
   images: {
@@ -12,4 +13,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withBotId adds the proxy rewrites the BotID client challenge needs so it isn't
+// blocked by ad-blockers. The public chat surface is the protected route (see
+// instrumentation-client.ts).
+export default withBotId(nextConfig);

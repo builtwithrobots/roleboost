@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { adminClient } from '@/lib/supabase/admin';
 import { isEmailConfigured } from '@/lib/email/client';
 import { sendMeetingRequestEmail } from '@/lib/email/meeting';
-import { checkRateLimit, clientIp } from '@/lib/security/rate-limit';
+import { checkRateLimit } from '@vercel/firewall';
+import { checkBotId } from 'botid/server';
 import type { ChatTurn } from '@/lib/types';
 
 // Public endpoint. A recruiter (usually anonymous) submits availability + email
@@ -22,10 +23,24 @@ const Input = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  // Meeting requests email the candidate, so cap them per IP to prevent abuse.
-  const withinLimit = await checkRateLimit(`schedule:${clientIp(req)}`, 6, 3600);
-  if (!withinLimit) {
-    return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+  // Meeting requests email the candidate, so gate this endpoint hardest: a bot
+  // check plus an edge rate limit. Both degrade gracefully (BotID reports
+  // not-a-bot off Vercel; the WAF rule no-ops until published).
+  try {
+    const { rateLimited } = await checkRateLimit('schedule', { request: req });
+    if (rateLimited) {
+      return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+    }
+  } catch (e) {
+    console.error('schedule: rate limit check failed', e);
+  }
+  try {
+    const { isBot } = await checkBotId();
+    if (isBot) {
+      return NextResponse.json({ error: { code: 'BOT_CHECK_FAILED' } }, { status: 403 });
+    }
+  } catch (e) {
+    console.error('schedule: botid check failed', e);
   }
 
   let body: unknown;

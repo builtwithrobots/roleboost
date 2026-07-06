@@ -1,22 +1,20 @@
 import 'server-only';
-import { NextRequest } from 'next/server';
 import { adminClient } from '@/lib/supabase/admin';
 
-// Fixed-window rate limiting for the public, anonymous endpoints. Backed by the
-// rate_limits table + check_rate_limit() RPC (see 20260709 migration), which
-// increments and evaluates a bucket atomically. Runs through the service-role
-// client because the callers are unauthenticated recruiters.
+// Application-level fixed-window rate limiting, backed by the rate_limits table +
+// check_rate_limit() RPC (see 20260709 migration). Edge/IP flood protection now
+// lives in the Vercel WAF (@vercel/firewall); this remains for app-domain limits
+// the platform cannot express, e.g. "transcript emails per candidate per hour".
+// Runs through the service-role client (callers may be anonymous recruiters).
 //
-// Fail-open by design: if the limiter itself errors (DB hiccup, missing env),
-// we allow the request rather than lock out a legitimate recruiter. Turnstile
-// and the per-candidate email cap provide defense in depth.
+// Fail-open by design: if the limiter itself errors, we allow rather than block.
 
 /**
  * Records a hit against `key` and returns whether the caller is still within
- * `max` requests per `windowSeconds`. Returns true (allowed) on any limiter
- * error so an infra blip never breaks the chat.
+ * `max` events per `windowSeconds`. Returns true (allowed) on any error so an
+ * infra blip never breaks the flow.
  */
-export async function checkRateLimit(
+export async function checkAppRateLimit(
   key: string,
   max: number,
   windowSeconds: number,
@@ -28,23 +26,12 @@ export async function checkRateLimit(
       p_window_seconds: windowSeconds,
     });
     if (error) {
-      console.error('checkRateLimit: rpc error', key, error);
+      console.error('checkAppRateLimit: rpc error', key, error);
       return true;
     }
     return data === true;
   } catch (e) {
-    console.error('checkRateLimit: threw', key, e);
+    console.error('checkAppRateLimit: threw', key, e);
     return true;
   }
-}
-
-/**
- * Best-effort client IP from the standard proxy headers. Vercel sets
- * x-forwarded-for; we take the first hop. Falls back to a constant so a missing
- * header degrades to a shared bucket rather than throwing.
- */
-export function clientIp(req: NextRequest): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0]!.trim();
-  return req.headers.get('x-real-ip')?.trim() || 'unknown';
 }

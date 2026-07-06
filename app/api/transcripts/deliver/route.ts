@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { deliverTranscript } from '@/lib/transcripts/deliver';
-import { checkRateLimit, clientIp } from '@/lib/security/rate-limit';
+import { checkRateLimit } from '@vercel/firewall';
 
 // Public endpoint -- triggered by the chat surface on close/background
 // (sendBeacon + pagehide/visibilitychange), so the recruiter is usually
@@ -13,11 +13,15 @@ export const maxDuration = 30;
 const Input = z.object({ sessionId: z.string().uuid() });
 
 export async function POST(req: NextRequest) {
-  // Cheap IP guard: a session can only be delivered once anyway (idempotent),
-  // but this caps how hard an anonymous caller can hammer the endpoint.
-  const withinLimit = await checkRateLimit(`deliver:${clientIp(req)}`, 60, 60);
-  if (!withinLimit) {
-    return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+  // Cheap edge guard: delivery is idempotent anyway, but this caps how hard an
+  // anonymous caller can hammer the endpoint. No-ops until the WAF rule is set.
+  try {
+    const { rateLimited } = await checkRateLimit('deliver', { request: req });
+    if (rateLimited) {
+      return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+    }
+  } catch (e) {
+    console.error('deliver: rate limit check failed', e);
   }
 
   let body: unknown;
