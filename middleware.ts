@@ -13,6 +13,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/chat(.*)',
   // Transcript delivery is triggered by the chat surface on close (anonymous).
   '/api/transcripts(.*)',
+  // Cron sweep (transcript safety net); self-authenticates via CRON_SECRET.
+  '/api/cron/(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

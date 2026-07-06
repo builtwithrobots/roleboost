@@ -6,6 +6,9 @@ import { CHAT_MODEL, GENERATION_MODEL } from '@/lib/ai/models';
 import { buildCandidateSystemPrompt, REDIRECT_SENTINEL } from '@/lib/ai/build-system-prompt';
 import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { ensureChatSession, logChatExchange } from '@/lib/ai/log-chat';
+import { resolveEmployerViewer } from '@/lib/employer/resolve-viewer';
+import { checkRateLimit, clientIp } from '@/lib/security/rate-limit';
+import { verifyTurnstile, turnstileEnabled } from '@/lib/security/turnstile';
 import type { CandidateBrain } from '@/lib/types';
 
 // Node runtime: the Anthropic SDK and service-role logging need Node APIs.
@@ -20,6 +23,7 @@ const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
   message: z.string().min(1).max(2000),
   sessionId: z.string().uuid().optional(),
+  turnstileToken: z.string().max(2048).optional(),
   conversationHistory: z
     .array(
       z.object({
@@ -49,7 +53,23 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { candidateSlug, message, sessionId, conversationHistory = [] } = parsed.data;
+  const { candidateSlug, message, sessionId, turnstileToken, conversationHistory = [] } = parsed.data;
+
+  // ── Abuse control ──────────────────────────────────────────────────────────
+  // Cheap IP + per-session caps run before the expensive brain load and up-to-
+  // three Anthropic calls, so a flood costs the attacker, not us. Fail-open on
+  // limiter errors (see checkRateLimit) keeps real recruiters unblocked.
+  const ip = clientIp(req);
+  const [ipOk, sessionOk] = await Promise.all([
+    checkRateLimit(`chat:ip:${ip}`, 30, 60),
+    sessionId ? checkRateLimit(`chat:session:${sessionId}`, 40, 60) : Promise.resolve(true),
+  ]);
+  if (!ipOk || !sessionOk) {
+    return NextResponse.json(
+      { error: { code: 'RATE_LIMITED', message: 'Too many messages just now. Please slow down and try again shortly.' } },
+      { status: 429 },
+    );
+  }
 
   const brain = await getCandidateBrainBySlug(candidateSlug);
   if (!brain || !brain.aiEnabled) {
@@ -69,6 +89,24 @@ export async function POST(req: NextRequest) {
       { status: 404 },
     );
   }
+
+  // Bot check on the first message of a public (non-owner) conversation. Invisible
+  // for real recruiters; blocks automated clients. No-op until Turnstile keys are
+  // configured. Only gates conversation start (no sessionId yet) to stay frictionless.
+  if (turnstileEnabled() && !isOwner && !sessionId) {
+    const human = await verifyTurnstile(turnstileToken, ip);
+    if (!human) {
+      return NextResponse.json(
+        { error: { code: 'BOT_CHECK_FAILED', message: 'Could not verify you are human. Please reload and try again.' } },
+        { status: 403 },
+      );
+    }
+  }
+
+  // Attribute a signed-in recruiter to their employer account/company, so the
+  // candidate sees a real name and the employer transcripts view is populated.
+  const employerViewer =
+    userId && !isOwner ? await resolveEmployerViewer(userId) : null;
 
   const systemPrompt = buildCandidateSystemPrompt(
     brain.candidate,
@@ -138,6 +176,8 @@ export async function POST(req: NextRequest) {
   // analytics. Anonymous recruiter sessions log the viewer id when present.
   const resolvedSessionId = await ensureChatSession(brain.candidateProfileId, sessionId, {
     viewerClerkUserId: userId ?? null,
+    employerAccountId: employerViewer?.employerAccountId ?? null,
+    employerCompanyName: employerViewer?.employerCompanyName ?? null,
     isSandbox: isOwner,
   });
   if (resolvedSessionId) {
