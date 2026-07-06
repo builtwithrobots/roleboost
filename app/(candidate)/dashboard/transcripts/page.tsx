@@ -1,15 +1,26 @@
 import { redirect } from 'next/navigation';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
+import { adminClient } from '@/lib/supabase/admin';
 import DashboardPage from '@/components/layout/DashboardPage';
 import PageHeader from '@/components/ui/page-header';
 import EmptyState from '@/components/ui/empty-state';
 import TranscriptsList, { type TranscriptItem } from '@/components/candidate/TranscriptsList';
 import { MessagesSquare } from 'lucide-react';
 
+// Always render fresh: a conversation that just happened must show up on the
+// next load, never a cached-empty page.
+export const dynamic = 'force-dynamic';
+
 // Candidate-facing record of every conversation with their Personal Assistant,
 // recruiter chats and their own preview tests (tagged and filterable). Retained
 // so the candidate can review, teach a better answer, and carry context into a
-// meeting. RLS scopes reads to the owner.
+// meeting.
+//
+// Reads go through the service-role client, scoped explicitly to the
+// authenticated owner's own candidate_profile_id (resolved from their verified
+// clerk_user_id). Chat rows are written by anonymous recruiters via the
+// service-role path, and this owner-scoped read matches the employer transcripts
+// page -- it does not depend on Clerk->Supabase JWT forwarding for RLS.
 export default async function TranscriptsPage() {
   let ctx;
   try {
@@ -18,21 +29,19 @@ export default async function TranscriptsPage() {
     if (e instanceof AuthError) redirect('/sign-in');
     throw e;
   }
-  const { supabase, userId } = ctx;
+  const { userId } = ctx;
 
-  const { data: profile } = await supabase
-    .from('candidate_profiles')
+  const { data: profile } = await (adminClient.from('candidate_profiles') as any)
     .select('id, full_name')
     .eq('clerk_user_id', userId)
-    .single();
+    .maybeSingle();
 
   let transcripts: TranscriptItem[] = [];
   if (profile) {
     // Include the candidate's own preview sessions (is_sandbox) so testing your
     // own link never looks like "nothing recorded". They are tagged as tests and
     // filterable, kept distinct from real recruiter conversations.
-    const { data: sessions } = await supabase
-      .from('chat_sessions')
+    const { data: sessions } = await (adminClient.from('chat_sessions') as any)
       .select('id, employer_company_name, viewer_clerk_user_id, is_sandbox, started_at')
       .eq('candidate_profile_id', (profile as { id: string }).id)
       .order('started_at', { ascending: false })
@@ -41,8 +50,7 @@ export default async function TranscriptsPage() {
     const ids = (sessions ?? []).map((s: { id: string }) => s.id);
     const bySession = new Map<string, { role: 'user' | 'assistant'; content: string }[]>();
     if (ids.length > 0) {
-      const { data: msgs } = await supabase
-        .from('chat_messages')
+      const { data: msgs } = await (adminClient.from('chat_messages') as any)
         .select('chat_session_id, role, content, created_at')
         .in('chat_session_id', ids)
         .order('created_at', { ascending: true });
