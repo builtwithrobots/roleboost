@@ -40,6 +40,7 @@ you care about. Each doc is self-contained and references exact file paths.
 | [09, Employer Side](./09-employer.md) | Accounts/members multi-tenancy, jobs, board, saved candidates, feedback |
 | [10, Conventions & Ops](./10-conventions-and-ops.md) | Server patterns, error envelope, webhooks, env vars, deployment, dev workflow |
 | [11, Anti-Spam & Abuse](./11-anti-spam.md) | BotID, WAF rate limits + recommended thresholds, per-candidate email throttle, recording observability |
+| [12, Security](./12-security.md) | Living security overview: auth, RLS, service-role rules, validation, secrets, retention/privacy, known gaps |
 
 `./specs/` holds the **historical build specs**, the point-in-time design
 documents the features were built from. They are preserved for intent and

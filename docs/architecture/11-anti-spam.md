@@ -34,11 +34,14 @@ safe to ship ahead of configuration. Recommended starting values (per IP):
 | Rule ID | Recommended limit | Window | Rationale |
 |---|---|---|---|
 | `chat` | 30 requests | 60s | A human sends a handful of messages per minute; 30/min is generous headroom while blocking automated floods. |
-| `schedule` | 5 requests | 3600s | Emails the candidate; a real recruiter schedules once. Keep it tight. |
+| `schedule` | 5 requests | 300s | Emails the candidate; a real recruiter schedules once. Tight. |
 | `deliver` | 60 requests | 60s | Idempotent beacon, fired ~once per conversation; only needs a ceiling on hammering. |
 
-Note: WAF counters are per-region, so global traffic against one key can exceed
-the configured limit in aggregate. These are floors on abuse, not exact quotas.
+Notes:
+- Vercel's **Fixed Window** caps the window at **300s** (5 minutes). To block for
+  longer than the counting window, add a **Persistent Action** to the rule.
+- WAF counters are per-region, so global traffic against one key can exceed the
+  configured limit in aggregate. These are floors on abuse, not exact quotas.
 
 ## Per-candidate email throttle
 

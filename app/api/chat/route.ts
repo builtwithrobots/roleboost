@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   // three Anthropic calls, so a flood is blocked before it costs compute.
   // Defaults to a per-IP bucket. No-ops until the matching WAF rule ("chat") is
   // published, so it is safe to ship ahead of it.
-  // Recommended rule: 30 requests / 60s per IP (see docs/anti-spam.md).
+  // Recommended rule: 30 requests / 60s per IP (see docs/architecture/11-anti-spam.md).
   try {
     const { rateLimited } = await checkRateLimit('chat', { request: req });
     if (rateLimited) {

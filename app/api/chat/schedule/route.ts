@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
   // Meeting requests email the candidate, so gate this endpoint hardest: a bot
   // check plus an edge rate limit. Both degrade gracefully (BotID reports
   // not-a-bot off Vercel; the WAF rule no-ops until published).
-  // Recommended rule: 5 requests / 3600s per IP (see docs/anti-spam.md).
+  // Recommended rule: 5 requests / 300s per IP (Vercel Fixed Window caps at
+  // 300s; see docs/architecture/11-anti-spam.md).
   try {
     const { rateLimited } = await checkRateLimit('schedule', { request: req });
     if (rateLimited) {
