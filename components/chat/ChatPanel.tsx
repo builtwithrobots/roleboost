@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useId } from 'react';
-import { Send, Sparkles, X, Download, CalendarClock, Check } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, useId } from 'react';
+import { Send, Sparkles, X, Download, CalendarClock, Check, Lock } from 'lucide-react';
 import type { ChatTurn } from '@/lib/types';
 
 interface Props {
@@ -24,6 +24,10 @@ interface Props {
 }
 
 const HISTORY_LIMIT = 20;
+// Deliver the transcript after this much inactivity. Long enough that a recruiter
+// can step away and come back without triggering a premature send; the server
+// cron uses the same window as the backstop.
+const IDLE_MS = 30 * 60 * 1000;
 
 type ScheduleState = 'idle' | 'prompt' | 'form' | 'sending' | 'done';
 
@@ -54,6 +58,8 @@ export default function ChatPanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef<string | null>(null);
   const deliveredRef = useRef(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [delivered, setDelivered] = useState(false);
 
   const firstName = candidateName.split(' ')[0] || candidateName;
   const assistantName = `${firstName}'s Personal Assistant`;
@@ -75,39 +81,61 @@ export default function ChatPanel({
     sessionIdRef.current = sessionId;
   }, [sessionId]);
 
-  // Deliver the transcript when a live conversation ends. Unmount alone misses
-  // the common cases (tab close, refresh, mobile backgrounding), so we also fire
-  // on pagehide and when the page becomes hidden. Idempotent server-side, and
-  // guarded here so the beacon goes out at most once per session. A server-side
-  // cron sweep is the final safety net if every browser signal is lost.
+  // Fire-and-forget transcript delivery. Guarded so it goes out at most once per
+  // session. Uses sendBeacon so it survives the page unloading.
+  const deliverBeacon = useCallback(() => {
+    const id = sessionIdRef.current;
+    if (!id || deliveredRef.current) return;
+    if (typeof navigator === 'undefined' || !navigator.sendBeacon) return;
+    deliveredRef.current = true;
+    try {
+      const blob = new Blob([JSON.stringify({ sessionId: id })], { type: 'application/json' });
+      navigator.sendBeacon('/api/transcripts/deliver', blob);
+    } catch {
+      // best-effort; the cron sweep is the final backstop.
+    }
+  }, []);
+
+  // Restart the inactivity timer. After IDLE_MS with no new message we deliver,
+  // so a conversation left open but abandoned still reaches the inbox.
+  const armIdleTimer = useCallback(() => {
+    if (mode !== 'live') return;
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(deliverBeacon, IDLE_MS);
+  }, [mode, deliverBeacon]);
+
+  // Deliver only on a genuine exit -- navigation away, tab close, unmount -- NOT
+  // on tab-switch/backgrounding, so a recruiter can step away and return without
+  // triggering a partial send. Inactivity is handled by the idle timer above and
+  // the server cron; those cover the "left it open" and "browser killed" cases.
   useEffect(() => {
     if (mode !== 'live') return;
-
-    function deliver() {
-      const id = sessionIdRef.current;
-      if (!id || deliveredRef.current) return;
-      if (typeof navigator === 'undefined' || !navigator.sendBeacon) return;
-      deliveredRef.current = true;
-      try {
-        const blob = new Blob([JSON.stringify({ sessionId: id })], { type: 'application/json' });
-        navigator.sendBeacon('/api/transcripts/deliver', blob);
-      } catch {
-        // best-effort; the cron sweep will catch anything that slips through.
-      }
-    }
-
-    function onVisibility() {
-      if (document.visibilityState === 'hidden') deliver();
-    }
-
-    window.addEventListener('pagehide', deliver);
-    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', deliverBeacon);
     return () => {
-      window.removeEventListener('pagehide', deliver);
-      document.removeEventListener('visibilitychange', onVisibility);
-      deliver();
+      window.removeEventListener('pagehide', deliverBeacon);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      deliverBeacon();
     };
-  }, [mode]);
+  }, [mode, deliverBeacon]);
+
+  // Explicit "email it now" -- an awaitable send so we can confirm in the UI.
+  async function deliverNow() {
+    const id = sessionIdRef.current;
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    deliveredRef.current = true;
+    setDelivered(true);
+    if (!id) return;
+    try {
+      await fetch('/api/transcripts/deliver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: id }),
+        keepalive: true,
+      });
+    } catch {
+      // best-effort; the record is already saved server-side.
+    }
+  }
 
   async function send(explicitMessage?: string) {
     const trimmed = (explicitMessage ?? input).trim();
@@ -134,11 +162,17 @@ export default function ChatPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message ?? 'Request failed');
 
-      if (data.sessionId) setSessionId(data.sessionId);
+      if (data.sessionId) {
+        setSessionId(data.sessionId);
+        sessionIdRef.current = data.sessionId;
+      }
       const assistantAnswer = data.answer as string;
       setMessages((m) => [...m, { role: 'assistant', content: assistantAnswer }]);
       onExchange?.(trimmed, assistantAnswer);
       if (mode === 'live' && data.offerSchedule) setScheduleState('prompt');
+      // Each message restarts the inactivity clock, so the transcript only
+      // delivers after a real lull, not while the recruiter is still engaged.
+      armIdleTimer();
     } catch {
       setMessages((m) => [
         ...m,
@@ -376,6 +410,32 @@ export default function ChatPanel({
           </div>
         )}
       </div>
+
+      {/* Transparency + explicit "email it now". Reassures the recruiter the
+          conversation is on the record (honest by design) and gives a one-tap
+          way to close the loop, without forcing any action. */}
+      {mode === 'live' && messages.length > 0 && (
+        <div className="flex items-center justify-between gap-2 border-t border-[var(--rb-border)] px-3 py-1.5">
+          <span className="flex items-center gap-1.5 text-[11px] text-[var(--rb-text-muted)]">
+            <Lock className="size-3" strokeWidth={2} />
+            Saved for {firstName}, you&apos;ll both get a copy by email.
+          </span>
+          {delivered ? (
+            <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-[var(--color-success)]">
+              <Check className="size-3.5" />
+              Sent
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void deliverNow()}
+              className="shrink-0 text-[11px] font-medium text-[var(--rb-text-secondary)] underline-offset-2 transition-colors hover:text-[var(--rb-brand)] hover:underline"
+            >
+              Email it now
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Input */}
       <form
