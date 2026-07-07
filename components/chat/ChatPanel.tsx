@@ -23,11 +23,13 @@ interface Props {
   onClose?: () => void;
 }
 
-const HISTORY_LIMIT = 20;
 // Deliver the transcript after this much inactivity. Long enough that a recruiter
 // can step away and come back without triggering a premature send; the server
 // cron uses the same window as the backstop.
 const IDLE_MS = 30 * 60 * 1000;
+// After this long waiting on an answer, the typing indicator explains itself
+// (the grounding check adds a second model call on detail-heavy answers).
+const LONG_WAIT_MS = 4000;
 
 type ScheduleState = 'idle' | 'prompt' | 'form' | 'sending' | 'done';
 
@@ -45,6 +47,9 @@ export default function ChatPanel({
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [longWait, setLongWait] = useState(false);
+  // The last message that failed to send, so one tap retries it.
+  const [retryText, setRetryText] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Scheduling handoff, shown when the assistant cannot answer and offers to meet.
@@ -173,15 +178,32 @@ export default function ChatPanel({
     }
   }
 
-  async function send(explicitMessage?: string) {
+  const SEND_ERROR = 'Something went wrong reaching the assistant just now.';
+
+  async function send(explicitMessage?: string, opts?: { isRetry?: boolean }) {
     const trimmed = (explicitMessage ?? input).trim();
     if (!trimmed || loading) return;
 
-    const history = messages.slice(-HISTORY_LIMIT);
-    setMessages((m) => [...m, { role: 'user', content: trimmed }]);
-    if (explicitMessage === undefined) setInput('');
+    if (opts?.isRetry) {
+      // The question bubble is already in the thread; just drop the error bubble.
+      setMessages((m) =>
+        m.length && m[m.length - 1].role === 'assistant' && m[m.length - 1].content === SEND_ERROR
+          ? m.slice(0, -1)
+          : m,
+      );
+    } else {
+      setMessages((m) => [...m, { role: 'user', content: trimmed }]);
+    }
+    if (explicitMessage === undefined) {
+      setInput('');
+      if (inputRef.current) inputRef.current.style.height = 'auto';
+    }
     setLoading(true);
+    setRetryText(null);
     setScheduleState('idle'); // a new question resets any prior scheduling offer
+    // Long answers run a second grounding pass server-side; after a few seconds
+    // the typing indicator says so instead of leaving unexplained dead air.
+    const longWaitTimer = setTimeout(() => setLongWait(true), LONG_WAIT_MS);
 
     // On the first message, carry any pre-chat self-introduction so the session
     // is created with it and the assistant can greet by name from its first reply.
@@ -191,6 +213,8 @@ export default function ChatPanel({
         : undefined;
 
     try {
+      // No history in the payload: the server rebuilds it from the session's
+      // logged messages, which recruiters cannot tamper with.
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,7 +223,6 @@ export default function ChatPanel({
           message: trimmed,
           sessionId: sessionId ?? undefined,
           visitor,
-          conversationHistory: history,
         }),
       });
 
@@ -220,15 +243,11 @@ export default function ChatPanel({
       // delivers after a real lull, not while the recruiter is still engaged.
       armIdleTimer();
     } catch {
-      setMessages((m) => [
-        ...m,
-        {
-          role: 'assistant',
-          content:
-            'Something went wrong reaching the assistant just now. Please try sending that again in a moment.',
-        },
-      ]);
+      setRetryText(trimmed);
+      setMessages((m) => [...m, { role: 'assistant', content: SEND_ERROR }]);
     } finally {
+      clearTimeout(longWaitTimer);
+      setLongWait(false);
       setLoading(false);
     }
   }
@@ -427,11 +446,31 @@ export default function ChatPanel({
 
         {loading && (
           <div className="flex justify-start" aria-hidden="true">
-            <div className="flex items-center gap-1 rounded-[var(--radius-lg)] border border-[var(--rb-border)] bg-[var(--rb-bg-page)] px-3.5 py-3">
-              <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)] [animation-delay:-0.3s]" />
-              <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)] [animation-delay:-0.15s]" />
-              <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)]" />
+            <div className="flex items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--rb-border)] bg-[var(--rb-bg-page)] px-3.5 py-3">
+              <span className="flex items-center gap-1">
+                <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)] [animation-delay:-0.3s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)] [animation-delay:-0.15s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-[var(--rb-text-muted)]" />
+              </span>
+              {longWait && (
+                <span className="text-xs text-[var(--rb-text-muted)]">
+                  Double-checking the details against {firstName}&apos;s record…
+                </span>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* One-tap retry after a failed send. */}
+        {retryText && !loading && (
+          <div className="flex justify-start">
+            <button
+              type="button"
+              onClick={() => void send(retryText, { isRetry: true })}
+              className="rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--rb-text-secondary)] transition-colors hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)]"
+            >
+              Try again
+            </button>
           </div>
         )}
 
@@ -622,7 +661,12 @@ export default function ChatPanel({
             id={inputId}
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              // Auto-grow with the content, capped by max-h below.
+              e.currentTarget.style.height = 'auto';
+              e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
+            }}
             onKeyDown={onKeyDown}
             rows={1}
             placeholder={`Ask ${firstName} anything about their career`}

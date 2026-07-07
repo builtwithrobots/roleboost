@@ -12,7 +12,7 @@ import type {
 } from '@/lib/types';
 
 const GAP_COLUMNS =
-  'id, candidate_profile_id, chat_session_id, question_asked, chatbot_answer, gap_type, suggested_prompt, category, priority, is_addressed, pattern_count, created_at';
+  'id, candidate_profile_id, chat_session_id, question_asked, chatbot_answer, gap_type, suggested_prompt, suggested_answer, category, priority, is_addressed, pattern_count, created_at';
 
 const HARDENING_COLUMNS =
   'id, candidate_profile_id, transcript_source, source_context, questions_found, gaps_identified, gaps_addressed, hardening_plan, created_at, last_reanalyzed_at';

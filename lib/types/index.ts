@@ -326,6 +326,8 @@ export interface TranscriptGapItem {
   chatbotAnswer: string;
   gapType: TranscriptGapType;
   suggestedPrompt: string;
+  /** Ready-to-approve drafted answer; only when the brain already has the substance. */
+  suggestedAnswer?: string | null;
   category: string;
   priority: GapPriority;
 }
@@ -338,6 +340,7 @@ export interface TranscriptGap {
   chatbot_answer: string;
   gap_type: TranscriptGapType;
   suggested_prompt: string;
+  suggested_answer: string | null;
   category: string;
   priority: GapPriority;
   is_addressed: boolean;

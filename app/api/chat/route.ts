@@ -32,6 +32,10 @@ const ChatInput = z.object({
       email: z.string().email().max(200).optional().or(z.literal('')),
     })
     .optional(),
+  // Accepted for backward compatibility but IGNORED: history is rebuilt
+  // server-side from chat_messages. A client-supplied history is untrusted --
+  // fabricated assistant turns could plant "facts" the grounding rules would
+  // then treat as conversation context.
   conversationHistory: z
     .array(
       z.object({
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { candidateSlug, message, sessionId, visitor, conversationHistory = [] } = parsed.data;
+  const { candidateSlug, message, sessionId: claimedSessionId, visitor } = parsed.data;
   const visitorName = visitor?.name?.trim() || null;
   const visitorCompany = visitor?.company?.trim() || null;
   const visitorEmail = (visitor?.email || '').trim() || null;
@@ -128,25 +132,57 @@ export async function POST(req: NextRequest) {
   const employerViewer =
     userId && !isOwner ? await resolveEmployerViewer(userId) : null;
 
+  // ── Session verification + server-side history ────────────────────────────
+  // The sessionId is client-supplied, so it must be proven to belong to THIS
+  // candidate before anything reads from or writes to it; a mismatched id is
+  // treated as absent (a fresh session gets created at logging time).
+  // Conversation history is rebuilt from chat_messages rather than trusted from
+  // the client, so a fabricated assistant turn can never enter the prompt.
+  let sessionId: string | undefined;
+  let sessionIntro: { name: string | null; company: string | null } | null = null;
+  if (claimedSessionId) {
+    const { data: sess } = await (adminClient.from('chat_sessions') as any)
+      .select('id, recruiter_name, employer_company_name, candidate_profile_id')
+      .eq('id', claimedSessionId)
+      .eq('candidate_profile_id', brain.candidateProfileId)
+      .maybeSingle();
+    if (sess) {
+      sessionId = sess.id as string;
+      const name = (sess.recruiter_name as string | null)?.trim() || null;
+      const company = (sess.employer_company_name as string | null)?.trim() || null;
+      if (name || company) sessionIntro = { name, company };
+    }
+  }
+
+  let conversationHistory: { role: 'user' | 'assistant'; content: string }[] = [];
+  if (sessionId) {
+    // Both rows of an exchange are bulk-inserted with the same created_at, so
+    // 'role' breaks the tie: descending created_at + ascending role puts the
+    // assistant row first within a pair, which the reverse() below flips back
+    // to user-before-assistant in chronological order.
+    const { data: rows } = await (adminClient.from('chat_messages') as any)
+      .select('role, content')
+      .eq('chat_session_id', sessionId)
+      .order('created_at', { ascending: false })
+      .order('role', { ascending: true })
+      .limit(MAX_HISTORY);
+    conversationHistory = ((rows ?? []) as { role: 'user' | 'assistant'; content: string }[])
+      .reverse()
+      // The API requires alternating turns starting with 'user'; a partially
+      // logged exchange could leave an assistant row first after the window cut.
+      .filter((m, i, arr) => (i === 0 ? m.role === 'user' : m.role !== arr[i - 1].role));
+  }
+
   // If the recruiter introduced themselves, the assistant addresses them by
-  // name. Prefer the intro carried on this (first) message; otherwise read it
-  // back from the session (later messages); otherwise fall back to a signed-in
+  // name. Prefer the intro carried on this (first) message; otherwise the one
+  // recorded on the verified session; otherwise fall back to a signed-in
   // employer's company. No intro -> generic greeting.
   let chatViewer: { name?: string | null; company?: string | null } | null = null;
   if (visitorName || visitorCompany) {
     chatViewer = { name: visitorName, company: visitorCompany };
-  } else if (sessionId) {
-    const { data: sess } = await (adminClient.from('chat_sessions') as any)
-      .select('recruiter_name, employer_company_name, candidate_profile_id')
-      .eq('id', sessionId)
-      .maybeSingle();
-    if (sess && sess.candidate_profile_id === brain.candidateProfileId) {
-      const name = (sess.recruiter_name as string | null)?.trim() || null;
-      const company = (sess.employer_company_name as string | null)?.trim() || null;
-      if (name || company) chatViewer = { name, company };
-    }
-  }
-  if (!chatViewer && employerViewer?.employerCompanyName) {
+  } else if (sessionIntro) {
+    chatViewer = sessionIntro;
+  } else if (employerViewer?.employerCompanyName) {
     chatViewer = { name: null, company: employerViewer.employerCompanyName };
   }
 
@@ -168,7 +204,10 @@ export async function POST(req: NextRequest) {
     const response = await anthropic.messages.create({
       model,
       max_tokens: 500,
-      system: systemPrompt,
+      // The brain (resume + context doc + custom answers) is stable for the
+      // whole session, so a cache breakpoint here makes every turn after the
+      // first read the prompt at ~0.1x price with lower latency.
+      system: [{ type: 'text' as const, text: systemPrompt, cache_control: { type: 'ephemeral' as const } }],
       messages: [
         ...conversationHistory.map((m) => ({ role: m.role, content: m.content })),
         { role: 'user' as const, content: message },
@@ -177,6 +216,11 @@ export async function POST(req: NextRequest) {
     // Guard the block type rather than blind-indexing content[0].
     const textBlock = response.content.find((b) => b.type === 'text');
     if (textBlock && textBlock.type === 'text') answer = textBlock.text.trim();
+    // A max_tokens cutoff would otherwise end mid-sentence; trim back to the
+    // last completed sentence so the recruiter never sees a broken reply.
+    if (response.stop_reason === 'max_tokens') {
+      answer = trimToLastSentence(answer);
+    }
   } catch (e) {
     console.error('chat: generation failed', candidateSlug, e);
     return NextResponse.json(
@@ -207,12 +251,16 @@ export async function POST(req: NextRequest) {
   // ── Honest redirect ────────────────────────────────────────────────────────
   // When the assistant cannot answer from the candidate's information (or the
   // grounding validator rejected an unsupported figure), the model emits the
-  // sentinel. Swap in the scripted handoff and tell the client to offer
-  // scheduling. No plausible-but-unsupported answer ever reaches the recruiter.
+  // sentinel. A small Haiku call writes a natural handoff that acknowledges the
+  // specific question (stating no facts), so repeated deflections don't read as
+  // the same canned paragraph; the scripted message is the fallback. The client
+  // is told to offer scheduling. No plausible-but-unsupported answer ever
+  // reaches the recruiter.
   let offerSchedule = false;
   if (answer.includes(REDIRECT_SENTINEL)) {
     offerSchedule = true;
-    answer = buildRedirectMessage(brain.candidate.full_name.split(' ')[0] || brain.candidate.full_name);
+    const first = brain.candidate.full_name.split(' ')[0] || brain.candidate.full_name;
+    answer = await generateRedirectMessage(message, first);
   }
 
   // Owner self-tests are marked as sandbox so they don't pollute recruiter
@@ -240,9 +288,47 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ answer, sessionId: resolvedSessionId ?? sessionId ?? null, offerSchedule });
 }
 
-/** The scripted, honest handoff shown when the assistant cannot answer. */
+/** The scripted, honest handoff; the fallback when the model-written one fails. */
 function buildRedirectMessage(firstName: string): string {
-  return `Great question. Unfortunately I do not have an adequate response to this available, but I know that ${firstName} would be more than happy to answer it when you connect. ${firstName} will have notes from this conversation to bring into the live conversation. Would you like to schedule a time to meet with ${firstName}?`;
+  return `Great question, and an honest answer: I don't have that detail in what ${firstName} has shared with me. It's exactly the kind of thing ${firstName} would be glad to cover directly. Would you like to schedule a time to talk with ${firstName}?`;
+}
+
+/**
+ * Writes a natural, varied handoff for a question the assistant cannot answer.
+ * The model is forbidden from stating any fact; its only job is to acknowledge
+ * the specific question warmly and offer the direct conversation. Falls back to
+ * the scripted message on any failure.
+ */
+async function generateRedirectMessage(question: string, firstName: string): Promise<string> {
+  try {
+    const response = await anthropic.messages.create({
+      model: CHAT_MODEL,
+      max_tokens: 150,
+      system: `You write a short, warm handoff reply for ${firstName}'s career assistant when it cannot answer a recruiter's question from ${firstName}'s information.
+
+Rules, all strict:
+- 2 to 3 sentences. Acknowledge the specific topic of the question naturally, then say honestly that you don't have that detail, and offer to set up a time to talk with ${firstName} directly.
+- State NO facts about ${firstName} whatsoever: no numbers, no history, no claims, no guesses. You know nothing except that the detail is not available to you.
+- Sound like a thoughtful human assistant, not a bot. No apology theater, no corporate filler.
+- Never use em dashes ("--" or the long dash). Use commas, semicolons, or periods instead.`,
+      messages: [{ role: 'user', content: `The recruiter asked: "${question}"\n\nWrite the handoff reply.` }],
+    });
+    const block = response.content.find((b) => b.type === 'text');
+    const text = block && block.type === 'text' ? block.text.trim() : '';
+    // Guard: if the model produced something empty or suspiciously long, fall back.
+    if (text && text.length <= 600) return text;
+    return buildRedirectMessage(firstName);
+  } catch (e) {
+    console.error('chat: redirect generation failed', e);
+    return buildRedirectMessage(firstName);
+  }
+}
+
+/** Trims a max_tokens-truncated answer back to its last completed sentence. */
+function trimToLastSentence(answer: string): string {
+  const lastEnd = Math.max(answer.lastIndexOf('.'), answer.lastIndexOf('!'), answer.lastIndexOf('?'));
+  if (lastEnd > 0) return answer.slice(0, lastEnd + 1);
+  return answer;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -357,31 +443,44 @@ ${careerData}
 GENERATED ANSWER TO CHECK:
 "${answer}"
 
-Task: Does every specific number, dollar figure, percentage, multiplier, year, certification, or credential mentioned in the answer appear explicitly in the career data above?
-
-Return valid JSON only. No preamble, no markdown. Examples:
-{"grounded": true, "unsupported_claims": []}
-{"grounded": false, "unsupported_claims": ["$2.4M budget", "67% reduction"]}`;
+Task: Does every specific number, dollar figure, percentage, multiplier, year, certification, or credential mentioned in the answer appear explicitly in the career data above? Submit the verdict via the submit_validation tool.`;
 
   try {
+    // Forced tool call, same pattern as every other structured call in lib/ai,
+    // so a chatty preamble or markdown fence can never break the parse.
     const validation = await anthropic.messages.create({
       model: GENERATION_MODEL,
-      max_tokens: 200,
+      max_tokens: 300,
+      tools: [
+        {
+          name: 'submit_validation',
+          description: 'Submit the grounding verdict for the answer.',
+          input_schema: {
+            type: 'object' as const,
+            properties: {
+              grounded: { type: 'boolean' },
+              unsupported_claims: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['grounded', 'unsupported_claims'],
+            additionalProperties: false,
+          },
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'submit_validation' },
       messages: [{ role: 'user', content: validationPrompt }],
     });
 
-    const block = validation.content.find((b) => b.type === 'text');
-    const raw = block && block.type === 'text' ? block.text : '';
-    const jsonStr = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
-    const result = JSON.parse(jsonStr) as { grounded: boolean; unsupported_claims: string[] };
+    const block = validation.content.find((b) => b.type === 'tool_use');
+    if (!block || block.type !== 'tool_use') return answer;
+    const result = block.input as { grounded: boolean; unsupported_claims: string[] };
 
     if (result.grounded) return answer;
 
     // Ungrounded figure: route to the honest redirect rather than approximating.
     return REDIRECT_SENTINEL;
   } catch {
-    // Validation failed (parse error, API error) -- let the original answer
-    // through rather than break the chat experience.
+    // Validation failed (API error) -- let the original answer through rather
+    // than break the chat experience.
     return answer;
   }
 }

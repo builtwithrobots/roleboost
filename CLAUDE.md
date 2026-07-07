@@ -137,7 +137,7 @@ No fine-tuning, embeddings, or vector DB for MVP. Resume text is sourced from
 
 **Prompt structure (`lib/ai/build-system-prompt.ts`), data near the top, rules near the bottom:**
 
-1. `<role>`, first-person identity; not a FAQ bot
+1. `<role>`, third-person "Personal Assistant" identity, speaks ABOUT the candidate; not a FAQ bot
 2. `<career_information>`, full resume markdown
 3. `<context>`, named career-context fields
 4. `<custom_answers priority="highest">`, candidate-refined QA pairs; highest priority
@@ -154,10 +154,16 @@ multi-part / adversarial / synthesis → `GENERATION_MODEL` (Sonnet). Detection 
 heuristic (`detectComplexQuestion`), no API call.
 
 **Post-generation validation:** runs only when an answer contains numbers, dollars, percentages, or
-credential claims (`detectHighRiskContent`). A fast Sonnet call (`validateAndSanitize`) checks every
-such claim traces to the candidate's data; if not grounded, the answer becomes a safe deflection; if
-the validation call fails for any reason, the original answer is returned (fail-safe). Deliberately
-**no token streaming**, it conflicts with post-gen validation.
+credential claims (`detectHighRiskContent`). A forced-tool Sonnet call (`validateAndSanitize`) checks
+every such claim traces to the candidate's data; if not grounded, the answer becomes the honest
+handoff (a small Haiku call writes it per-question, scripted fallback); if the validation call fails
+for any reason, the original answer is returned (fail-safe). Deliberately **no token streaming**, it
+conflicts with post-gen validation.
+
+**Trust boundary:** conversation history is rebuilt server-side from `chat_messages`, never taken
+from the client (fabricated assistant turns are a jailbreak vector), and a client-supplied
+`sessionId` must be verified against the candidate's profile before it is read or written. The system
+prompt carries a `cache_control` breakpoint (prompt caching), so per-turn cost drops ~10x within a session.
 
 **Per-turn tracking:** each assistant `chat_messages` row records `model_used`, `was_complex`,
 `was_validated`. Blended cost ≈ $0.01 per 10-turn session.
@@ -420,13 +426,21 @@ fast-follow. **Working branch:** `claude/audit-and-build-plan-m4bci2`, one branc
 - **E3, External transcript hardening:** `brain_hardening_sessions`; `harden-transcript.ts`;
   `/api/transcript/harden` (transcript never stored); `HardenPanel` + history.
 - **Fast-follow, PWA + share:** `app/manifest.ts`; code-generated `app/icons/[size]`; `ShareButton`.
+- **Chat hardening + one-click learning (July 2026):** server-rebuilt history + verified sessionId
+  (trust boundary); prompt caching on the system prompt; forced-tool validator; model-written
+  handoffs; truncation guard; staged latency indicator + retry in `ChatPanel`; auto-grow input;
+  `transcript_gaps.suggested_answer` drafted by the analyzer + `adoptGapAnswer` one-click approve in
+  `PromptBot`; asset loading shimmers; dashboard `loading.tsx`.
 
 ### Next-session TODO (in order)
-1. **A11y + empty/loading-states audit** *(unblocked, start here)*, WCAG 2.1 AA + empty/skeleton
-   states across calling card, chat, AI Studio, dashboards. Keep the diff focused on high-traffic surfaces.
-2. **Distinctive visual refresh** *(needs founder steer)*, elevate cream/navy/amber; propose a
+1. **A11y + empty/loading-states audit** *(partially done: chat/calling-card/AI-Studio surfaces +
+   dashboard loading.tsx shipped July 2026)*, finish WCAG 2.1 AA sweep on employer dashboards.
+2. **Brain intelligence follow-ups** *(designed, not built)*: voice profile column (Sonnet-derived
+   tone descriptors injected into `<voice>`); cross-session question clustering + answer-rate metric;
+   returning-recruiter memory (needs founder steer on privacy).
+3. **Distinctive visual refresh** *(needs founder steer)*, elevate cream/navy/amber; propose a
    direction before any broad reskin.
-3. **Phase F, voice input (Whisper)** *(held)*, browser audio → `/api/transcribe` (OpenAI Whisper) →
+4. **Phase F, voice input (Whisper)** *(held)*, browser audio → `/api/transcribe` (OpenAI Whisper) →
    editable transcript before submit. Gated on: founder has tested A–E, and `OPENAI_API_KEY` is
    provisioned. Build with graceful degradation so it is safe to merge before the key is set.
 
