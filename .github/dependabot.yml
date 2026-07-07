@@ -1,0 +1,38 @@
+version: 2
+
+# Keeps dependencies patched without drowning the repo in one-PR-per-bump noise.
+# npm updates are grouped so a week's minor/patch bumps arrive as a couple of
+# reviewable PRs; the CI workflow gates each one. Major bumps stay separate so a
+# breaking upgrade (Next, React, Clerk, Supabase) gets its own focused review.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    groups:
+      # Non-breaking bumps, batched.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Framework majors are handled deliberately, not by a bot PR.
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+
+  # Keep the Actions in this repo's own workflows current too.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies

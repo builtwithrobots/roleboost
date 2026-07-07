@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminClient } from '@/lib/supabase/admin';
 import { deliverTranscript } from '@/lib/transcripts/deliver';
+import { guardCron } from '@/lib/cron/guard';
 
 // Safety-net sweep for the transcript pipeline. The browser beacon
 // (pagehide/visibilitychange) delivers most conversations, but tab kills and
@@ -18,14 +19,8 @@ const IDLE_MINUTES = 30;
 const BATCH = 100;
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    console.warn('cron/deliver-transcripts: CRON_SECRET not set; skipping');
-    return NextResponse.json({ ok: true, skipped: 'no_secret' });
-  }
-  if (req.headers.get('authorization') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 });
-  }
+  const guard = guardCron(req);
+  if (!guard.ok) return guard.response;
 
   const cutoff = Date.now() - IDLE_MINUTES * 60_000;
 
