@@ -78,3 +78,86 @@ function normalizeQA(raw: unknown): CustomQAPair[] {
       typeof (p as CustomQAPair).answer === 'string',
   );
 }
+
+const SessionInput = z.object({ sessionId: z.string().uuid() });
+
+/**
+ * Moves a reviewed transcript into the archive (soft state). RLS scopes the
+ * update to the candidate's own sessions; matching by primary key is enough.
+ */
+export async function archiveTranscript(input: unknown) {
+  try {
+    const { supabase } = await getUserContext('candidate');
+    const { sessionId } = SessionInput.parse(input);
+
+    const { error } = await supabase
+      .from('chat_sessions')
+      .update({ archived_at: new Date().toISOString() })
+      .eq('id', sessionId);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/transcripts');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
+
+/** Restores an archived transcript back to the active list. */
+export async function unarchiveTranscript(input: unknown) {
+  try {
+    const { supabase } = await getUserContext('candidate');
+    const { sessionId } = SessionInput.parse(input);
+
+    const { error } = await supabase
+      .from('chat_sessions')
+      .update({ archived_at: null })
+      .eq('id', sessionId);
+
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/transcripts');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
+
+/**
+ * Permanently deletes a transcript (chat_messages cascade). Only allowed from
+ * the archive: we require archived_at to be set, defense in depth beyond the UI
+ * only exposing delete on archived cards. Training taught from the transcript
+ * lives on candidate_profiles and is intentionally left untouched.
+ */
+export async function deleteTranscript(input: unknown) {
+  try {
+    const { supabase } = await getUserContext('candidate');
+    const { sessionId } = SessionInput.parse(input);
+
+    // RLS scopes this read to the candidate's own sessions.
+    const { data: sess } = await supabase
+      .from('chat_sessions')
+      .select('id, archived_at')
+      .eq('id', sessionId)
+      .maybeSingle();
+    if (!sess) return { ok: false as const, error: { code: 'NOT_FOUND' } };
+    if (!(sess as { archived_at: string | null }).archived_at) {
+      return {
+        ok: false as const,
+        error: { code: 'INVALID_INPUT', message: 'Archive the transcript before deleting it.' },
+      };
+    }
+
+    const { error } = await supabase.from('chat_sessions').delete().eq('id', sessionId);
+    if (error) return { ok: false as const, error: { code: 'INTERNAL', message: error.message } };
+    revalidatePath('/dashboard/transcripts');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
