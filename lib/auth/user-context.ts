@@ -19,10 +19,28 @@ type UserRecord = {
   role: UserRole | null;
   is_admin: boolean;
   email: string | null;
-  suspended_at: string | null;
   subscription_tier: SubscriptionTier | null;
   subscription_status: SubscriptionStatus;
 };
+
+/**
+ * Read suspended_at resiliently. suspended_at is added by a later migration, so on
+ * a DB where that migration has not landed yet the column is missing. Selecting it
+ * in the main user query would fail the WHOLE query and route established users to
+ * onboarding, so it is fetched separately and any error is treated as "not
+ * suspended" rather than breaking login.
+ */
+async function readSuspendedAt(clerkUserId: string): Promise<string | null> {
+  try {
+    const { data } = await (getAdminClient().from('users') as any)
+      .select('suspended_at')
+      .eq('clerk_user_id', clerkUserId)
+      .maybeSingle();
+    return (data as { suspended_at?: string | null } | null)?.suspended_at ?? null;
+  } catch {
+    return null;
+  }
+}
 
 // Cookie set by the admin role-switcher to preview a specific ROLE with the admin's
 // OWN data. Only respected when the authenticated user is an admin.
@@ -58,7 +76,7 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   // have the verified Clerk userId from auth(). We filter by clerk_user_id for
   // isolation, equivalent to what RLS would enforce.
   const result = await (adminClient.from('users') as any)
-    .select('role, is_admin, email, suspended_at, subscription_tier, subscription_status')
+    .select('role, is_admin, email, subscription_tier, subscription_status')
     .eq('clerk_user_id', userId)
     .single();
 
@@ -71,8 +89,9 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   const isAdmin = await ensureAdminBootstrap(userId, user.email, user.is_admin);
 
   // Suspended users are locked out of the whole app. Admins are exempt so a
-  // superadmin can never suspend themselves out of the platform.
-  if (user.suspended_at && !isAdmin) throw new AuthError('SUSPENDED');
+  // superadmin can never suspend themselves out of the platform. Read separately so
+  // a not-yet-migrated DB (missing column) can never break login.
+  if (!isAdmin && (await readSuspendedAt(userId))) throw new AuthError('SUSPENDED');
 
   // A row can exist before onboarding (the Clerk webhook creates it with a NULL
   // role). Such a user hasn't chosen candidate vs employer yet, route them to
