@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.5 | July 2026 | Rob Ramos, Founder**
+**Version 1.6 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -15,6 +15,7 @@
 | 1.3 | July 2026 | AI Mirror restructured into two tiers -- Tier 1 (Document Read) and Tier 2 (Market Read) -- with an expanded recruiter-level evaluation framework. Added the hype man mandate and no-speculation guardrail: the Mirror informs the narrative privately; all assets are positive, evidence-based, and built to sell the candidate. Gaps surface as coaching notes for the superadmin, never as weaknesses in any asset. |
 | 1.4 | July 2026 | Two major additions: (1) Avatar color palette expanded from 10 to 16 colors with a two-axis pairing guide (industry x candidate tone) replacing the previous industry-only map. Color rationale sentence now required in every Identity Snapshot output. (2) Story type table expanded from 6 to 10 types with the addition of The Promoter, The Reinventor, The Culture Builder, and The Steady Hand. All types now include a Do Not Use When column to help Claude make cleaner selections on ambiguous profiles. |
 | 1.5 | July 2026 | Three updates: (1) "Narrative angle" renamed to "narrative perspective" throughout -- terminology change only, no structural changes. (2) Short Video prompt format added as a fourth prompt type per perspective, using NotebookLM's Video Overview Custom Topic field. Each perspective now produces four prompts: Deep Dive, Brief, Infographic, Short Video. (3) NotebookLM Prompt Mapping table updated to include a Short Video row. |
+| 1.6 | July 2026 | Three updates based on live production session (Jordan Mills): (1) Audio and Short Video closing pitch instruction updated -- action sentence now directs hiring managers to "Learn more about [candidate first name] at roleboost.app" rather than a direct profile slug URL. (2) Infographic prompt format updated to explicitly permit Google-style icons as the visual anchor, with usage guidance (one icon per stat maximum, functional not decorative). Icon prohibition removed from Do NOT list. (3) Infographic accent color limit expanded from two to three. |
 
 ---
 
@@ -256,7 +257,7 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 - Name the specific situation where this candidate is the right hire (be explicit -- what problem, what environment, what need)
 - State plainly that this candidate is the person to onboard to get those results
 - Deliver the top proof facts in rapid sequence (3-4 facts, no full sentences needed)
-- Close with one action sentence that makes next steps obvious
+- Close with one action sentence: "Learn more about [candidate first name] at roleboost.app."
 - Add: "Do not soften this. Do not add qualifiers. The pitch is the last thing the hiring manager hears."
 
 **Do NOT lines -- required at the close of every audio prompt:**
@@ -277,7 +278,7 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 
 ---
 
-### Infographic Prompt Format (v1.2)
+### Infographic Prompt Format (v1.3)
 
 **Opening framing line:**
 One sentence that names the candidate, their core story perspective, and the one fact that anchors the entire infographic. This line tells NotebookLM what the design is arguing before it specifies any layout.
@@ -288,17 +289,19 @@ One sentence that describes what the infographic should feel like -- the emotion
 **Layout -- three sections with explicit breathing room:**
 Specify three distinct sections. State explicitly that sections must be separated by generous whitespace and that each section must breathe. Do not leave whitespace to interpretation -- name it as a requirement.
 
+**Icons:**
+Use clean, minimal icons to anchor each stat visually. Google-style icons are acceptable and preferred over decorative or thematic clip art. One icon per proof point maximum. Icons must be functional, not decorative -- their job is to give the eye a landing point, not to add personality or theme.
+
 **Visual direction:**
 - Dark professional background (do not specify exact hex -- let NotebookLM choose within that constraint)
 - Font pairing: left to NotebookLM, but must be clean, readable at a glance, and carry authority. No decorative or display fonts.
 - Typography hierarchy: specify roles only (hero stat size, section label size, body content size) -- do not specify exact sizes
-- Accent colors: no more than two. Name which element receives the primary accent to control visual hierarchy.
+- Accent colors: no more than three. Name which element receives the primary accent to control visual hierarchy.
 
 **Do NOT lines -- required at the close of every infographic prompt:**
 - "Do NOT use light or pastel colors."
-- "Do NOT use more than two accent colors total."
+- "Do NOT use more than three accent colors total."
 - "Do NOT use decorative dividers, background textures, or ornamental elements."
-- "Do NOT include generic stock imagery, icons, or clip art."
 - "Do NOT include a photo placeholder."
 - "Do NOT crowd sections together -- whitespace is part of the design, not wasted space."
 - "Do NOT use decorative or display fonts -- readability and authority are the only typographic goals."
@@ -319,7 +322,7 @@ Four beats in order: (1) hook stat presented as the opening visual, (2) first pr
 Every Short Video prompt must end with an explicit closing pitch instruction. Use "End with a direct closing pitch in this exact sequence:" to open it, then:
 - Name the specific situation where this candidate is the right hire
 - Deliver the top proof facts in rapid sequence (2-3 facts, no full sentences needed)
-- Final frame: candidate full name, target role, and public RoleBoost URL (roleboost.app/c/[slug])
+- Final frame: candidate full name, target role, and "Learn more about [candidate first name] at roleboost.app"
 - Add: "Do not soften this. The closing frame is the last thing the hiring manager sees."
 
 **Do NOT lines -- required at the close of every Short Video prompt:**
@@ -391,7 +394,7 @@ Claude must meet these standards before delivering the output:
 - Every audio prompt opens with "This is a Boost on [candidate full name]." No other opening is acceptable.
 - Every audio prompt ends with an explicit closing pitch instruction followed by the Do NOT lines.
 - Every infographic prompt includes a design intent statement and explicit whitespace requirements.
-- Every Short Video prompt includes an anchor statement, a four-beat visual sequence, an explicit closing pitch with candidate name, target role, and public RoleBoost URL as the final frame, and the full Do NOT list.
+- Every Short Video prompt includes an anchor statement, a four-beat visual sequence, an explicit closing pitch with candidate name, target role, and "Learn more about [candidate first name] at roleboost.app" as the final frame, and the full Do NOT list.
 - No em dashes anywhere in the output. Use commas, semicolons, or periods instead.
 
 ---
@@ -422,4 +425,4 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.5 -- roleboost.app -- Built by Rob Ramos*
+*RoleBoost Candidate Asset Production Skill v1.6 -- roleboost.app -- Built by Rob Ramos*
