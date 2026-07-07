@@ -4,6 +4,7 @@ import { SidebarLayout } from '@/components/ui/sidebar-layout';
 import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarSpacer } from '@/components/ui/sidebar';
 import RoleBoostLogo from '@/components/layout/RoleBoostLogo';
 import AdminNav from '@/components/layout/AdminNav';
+import AdminViewLaunchers from '@/components/layout/AdminViewLaunchers';
 import AdminPaletteLauncher from '@/components/admin/AdminPaletteLauncher';
 import UserMenu from '@/components/layout/UserMenu';
 
@@ -33,6 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       <SidebarBody>
         <AdminNav />
+        <AdminViewLaunchers />
         <SidebarSpacer />
         <div className="px-2">
           <AdminPaletteLauncher activeSession={false} />
