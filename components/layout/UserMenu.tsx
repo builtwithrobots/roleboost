@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown'
 import { SidebarItem, SidebarLabel } from '@/components/ui/sidebar'
 
-export default function UserMenu({ role }: { role: 'candidate' | 'employer' }) {
+export default function UserMenu({ role }: { role: 'candidate' | 'employer' | 'admin' }) {
   const { user } = useUser()
   const { signOut } = useClerk()
   const router = useRouter()
@@ -29,8 +29,9 @@ export default function UserMenu({ role }: { role: 'candidate' | 'employer' }) {
   const email = user.primaryEmailAddress?.emailAddress
 
   // Candidates have a dedicated settings page; employers have no settings
-  // surface yet, so their link is left as-is.
-  const accountSettingsHref = role === 'candidate' ? '/dashboard/settings' : '/account'
+  // surface yet, so their link is left as-is. Admins go back to the control center.
+  const accountSettingsHref =
+    role === 'candidate' ? '/dashboard/settings' : role === 'admin' ? '/admin' : '/account'
 
   return (
     <Dropdown>
