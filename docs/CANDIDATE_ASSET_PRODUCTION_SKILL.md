@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.4 | July 2026 | Rob Ramos, Founder**
+**Version 1.5 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -14,6 +14,7 @@
 | 1.2 | July 2026 | Four updates based on live production session (Robert Ramos): (1) Audio opening line guardrail -- explicit prohibition on format labels; only permitted opening is "This is a Boost on [candidate full name]." (2) Audio Brief close -- pitch must be an explicit instruction with required sequence, not a narrative suggestion. (3) Audio Deep Dive close -- closing pitch instruction added as a required step after the narrative close. (4) Infographic prompts -- added narrative intent statement, breathing room and whitespace as explicit requirements, and expanded Do NOT list covering accent color limits, decorative elements, crowding, and font restraint. |
 | 1.3 | July 2026 | AI Mirror restructured into two tiers -- Tier 1 (Document Read) and Tier 2 (Market Read) -- with an expanded recruiter-level evaluation framework. Added the hype man mandate and no-speculation guardrail: the Mirror informs the narrative privately; all assets are positive, evidence-based, and built to sell the candidate. Gaps surface as coaching notes for the superadmin, never as weaknesses in any asset. |
 | 1.4 | July 2026 | Two major additions: (1) Avatar color palette expanded from 10 to 16 colors with a two-axis pairing guide (industry x candidate tone) replacing the previous industry-only map. Color rationale sentence now required in every Identity Snapshot output. (2) Story type table expanded from 6 to 10 types with the addition of The Promoter, The Reinventor, The Culture Builder, and The Steady Hand. All types now include a Do Not Use When column to help Claude make cleaner selections on ambiguous profiles. |
+| 1.5 | July 2026 | Three updates: (1) "Narrative angle" renamed to "narrative perspective" throughout -- terminology change only, no structural changes. (2) Short Video prompt format added as a fourth prompt type per perspective, using NotebookLM's Video Overview Custom Topic field. Each perspective now produces four prompts: Deep Dive, Brief, Infographic, Short Video. (3) NotebookLM Prompt Mapping table updated to include a Short Video row. |
 
 ---
 
@@ -25,10 +26,10 @@ Given a candidate's resume and any available supporting context, this skill:
 
 1. Reads and analyzes all uploaded material
 2. Applies the AI Mirror -- an honest, non-biased read of what the evidence actually shows
-3. Determines the candidate's story type and narrative angle (two versions)
+3. Determines the candidate's story type and narrative perspective (two versions)
 4. Produces a complete candidate asset package in one pass:
    - Narrative Guide Block (6 sections, matches `PERSONA_NARRATIVE_GUIDE.md` format)
-   - Two personalized NotebookLM prompt sets -- one per narrative angle, fully written and ready to copy-paste into NotebookLM
+   - Two personalized NotebookLM prompt sets -- one per narrative perspective, fully written and ready to copy-paste into NotebookLM. Each set contains four prompts: Deep Dive, Brief, Infographic, and Short Video.
 
 **Output is one `.md` file per candidate.** Filename format: `[slug]-asset-package.md`
 
@@ -93,7 +94,7 @@ Claude evaluates how the evidence positions the candidate in the hiring market f
 - **Market positioning** -- where does this candidate sit relative to others competing for the same role? Overqualified, underqualified, or squarely in the pocket? State this based on evidence only. No speculation.
 - **Transferable vs. context-specific proof** -- which results will land with any hiring manager in the target role, and which are so environment-specific they need translation in the narrative or AI brain context? Flag the ones that need translation so the prompts address them.
 - **Departure pattern read** -- what does the timing and sequence of role changes actually show in the documented record? Note only what the evidence supports. Do not assign reasons not stated in the file.
-- **The strongest provable story** -- given everything the evidence shows, what is the most compelling narrative this candidate's record can honestly support? This is the north star the story type selection and narrative angles build toward.
+- **The strongest provable story** -- given everything the evidence shows, what is the most compelling narrative this candidate's record can honestly support? This is the north star the story type selection and narrative perspectives build toward.
 - **The evidence gap** -- what is the single most important context item missing from the file that the AI brain needs in order to handle recruiter questions with confidence? This is a coaching note for the superadmin only. It never appears in any asset as a weakness. Gaps get filled with evidence or they are not addressed at all.
 
 ---
@@ -111,9 +112,9 @@ Every asset produced from this session -- audio, infographic, narrative, hard qu
 
 Claude states the Tier 1 and Tier 2 reads in plain language before proceeding -- one paragraph per tier, direct and specific. This is the AI Mirror output. It is for the superadmin's eyes only and does not appear in the candidate asset package file.
 
-### Step 3 -- Determine Story Type and Two Narrative Angles
+### Step 3 -- Determine Story Type and Two Narrative Perspectives
 
-Based on the AI Mirror read, Claude selects the candidate's primary story type from the list below. It then defines two distinct narrative angles -- not two tones of the same story, but two genuinely different framings that a candidate could choose between.
+Based on the AI Mirror read, Claude selects the candidate's primary story type from the list below. It then defines two distinct narrative perspectives -- not two tones of the same story, but two genuinely different framings that a candidate could choose between.
 
 **Story types:**
 
@@ -142,9 +143,9 @@ Based on the AI Mirror read, Claude selects the candidate's primary story type f
 
 Claude states:
 - Which story type it selected and why (2-3 sentences)
-- Narrative Angle A -- what this framing leads with and why
-- Narrative Angle B -- what this framing leads with and why
-- Which angle it recommends and why
+- Narrative Perspective A -- what this framing leads with and why
+- Narrative Perspective B -- what this framing leads with and why
+- Which perspective it recommends and why
 
 ### Step 4 -- Produce the Candidate Asset Package
 
@@ -222,15 +223,15 @@ The one question every recruiter will ask and the AI chatbot must handle perfect
 A bulleted list of 5-8 metrics and specifics that must appear in every asset -- audio, infographic, chatbot, everything. These are the facts that cannot be wrong or missing. Include: career span, scale metrics (team size, revenue, volume, portfolio size), the most impressive quantified result, any certifications or credentials worth noting, and anything that directly addresses the likely hard question.
 
 **6. NotebookLM Prompt Mapping**
-A table showing which prompts from the RoleBoost NotebookLM Elite Prompt Library fit this candidate, with a one-line rationale and a tone note for each. Separate rows for Deep Dive, Brief, and Infographic.
+A table showing which prompts from the RoleBoost NotebookLM Elite Prompt Library fit this candidate, with a one-line rationale and a tone note for each. Separate rows for Deep Dive, Brief, Infographic, and Short Video.
 
 ---
 
 #### SECTION 2 -- PERSONALIZED NOTEBOOKLM PROMPTS
 
-Two complete prompt sets -- one for Narrative Angle A, one for Narrative Angle B. Each set contains three prompts: one Deep Dive, one Brief, one Infographic. All prompts are fully written out with the candidate's name, specialty, and relevant specifics already filled in. They are ready to copy and paste directly into NotebookLM with no editing required.
+Two complete prompt sets -- one for Narrative Perspective A, one for Narrative Perspective B. Each set contains four prompts: one Deep Dive, one Brief, one Infographic, and one Short Video. All prompts are fully written out with the candidate's name, specialty, and relevant specifics already filled in. They are ready to copy and paste directly into NotebookLM with no editing required.
 
-Each prompt follows the v1.2 format below. Audio prompts (Deep Dive and Brief) use this structure:
+Each prompt follows the format spec for its type. Audio prompts (Deep Dive and Brief) use this structure:
 
 ---
 
@@ -279,7 +280,7 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 ### Infographic Prompt Format (v1.2)
 
 **Opening framing line:**
-One sentence that names the candidate, their core story angle, and the one fact that anchors the entire infographic. This line tells NotebookLM what the design is arguing before it specifies any layout.
+One sentence that names the candidate, their core story perspective, and the one fact that anchors the entire infographic. This line tells NotebookLM what the design is arguing before it specifies any layout.
 
 **Design intent statement:**
 One sentence that describes what the infographic should feel like -- the emotional and professional register it should occupy. Examples: "This should feel like a builder's portfolio: structured, systematic, and evidence-stacked." or "This should feel like a credentials document: authoritative, spare, and built around the safety record as the lead proof point." This guides design decisions that layout specs alone cannot cover.
@@ -304,22 +305,54 @@ Specify three distinct sections. State explicitly that sections must be separate
 
 ---
 
+### Short Video Prompt Format (v1.0)
+
+The Short Video prompt is entered into the **Custom Topic** field in NotebookLM's Video Overview interface. Select **Short** as the format. Do not select a suggested topic -- use the Custom Topic field and paste the full prompt.
+
+**Line 1 -- Anchor statement:**
+One sentence that names the candidate, their core story perspective, and the single fact that the entire video is built to deliver. This is what NotebookLM is making a case for before it touches any visual or sequence decision.
+
+**Line 2 -- Visual sequence instruction:**
+Four beats in order: (1) hook stat presented as the opening visual, (2) first proof point, (3) second proof point, (4) closing frame. State each beat explicitly. Do not leave sequence to interpretation.
+
+**Closing pitch instruction -- required in every Short Video prompt:**
+Every Short Video prompt must end with an explicit closing pitch instruction. Use "End with a direct closing pitch in this exact sequence:" to open it, then:
+- Name the specific situation where this candidate is the right hire
+- Deliver the top proof facts in rapid sequence (2-3 facts, no full sentences needed)
+- Final frame: candidate full name, target role, and public RoleBoost URL (roleboost.app/c/[slug])
+- Add: "Do not soften this. The closing frame is the last thing the hiring manager sees."
+
+**Do NOT lines -- required at the close of every Short Video prompt:**
+- "Do NOT use casual, consumer, or lifestyle visuals -- the register is professional and recruiter-facing."
+- "Do NOT use animated text effects that distract from the content -- transitions should support the message, not call attention to themselves."
+- "Do NOT crowd the screen -- one idea per visual beat, with breathing room between them."
+- "Do NOT use stock footage of generic office scenes, handshakes, or people at computers."
+- "Do NOT use music that competes with the content -- audio should support the message, not overpower it."
+- "Do NOT use light or pastel color treatments -- the visual register should be dark and professional."
+- "Do NOT include a photo placeholder or headshot prompt."
+- "Do NOT run longer than 60 seconds."
+- "Do NOT use the words 'passionate,' 'journey,' or 'innovative.'"
+
+---
+
 ### Prompt Labeling
 
 Label each prompt clearly:
 
 ```
-NARRATIVE ANGLE A -- [angle name]
+NARRATIVE PERSPECTIVE A -- [perspective name]
 Deep Dive: [Prompt Name]
 Brief: [Prompt Name]
 Infographic: [Prompt Name]
+Short Video: [Prompt Name]
 ```
 
 ```
-NARRATIVE ANGLE B -- [angle name]
+NARRATIVE PERSPECTIVE B -- [perspective name]
 Deep Dive: [Prompt Name]
 Brief: [Prompt Name]
 Infographic: [Prompt Name]
+Short Video: [Prompt Name]
 ```
 
 ---
@@ -336,7 +369,7 @@ Candidate: [Full Name]
 Slug: [slug]
 Date: [date]
 Story type: [selected story type]
-Recommended angle: [A or B]
+Recommended perspective: [A or B]
 Package tier: [leave blank -- superadmin fills in based on Fiverr order]
 ```
 
@@ -358,6 +391,7 @@ Claude must meet these standards before delivering the output:
 - Every audio prompt opens with "This is a Boost on [candidate full name]." No other opening is acceptable.
 - Every audio prompt ends with an explicit closing pitch instruction followed by the Do NOT lines.
 - Every infographic prompt includes a design intent statement and explicit whitespace requirements.
+- Every Short Video prompt includes an anchor statement, a four-beat visual sequence, an explicit closing pitch with candidate name, target role, and public RoleBoost URL as the final frame, and the full Do NOT list.
 - No em dashes anywhere in the output. Use commas, semicolons, or periods instead.
 
 ---
@@ -369,7 +403,7 @@ This skill is designed to run in Claude chat today and plug into the superadmin 
 - Accept resume upload and optional URL list via form inputs
 - Trigger this workflow automatically on submission
 - Store the output `.md` file in the candidate's asset locker (roleboost.app/storage/[slug])
-- Display the two narrative angles for superadmin review and selection before asset production begins
+- Display the two narrative perspectives for superadmin review and selection before asset production begins
 - Track which NotebookLM prompts were run and which assets were delivered per package tier
 
 Until the dashboard is built, all steps above are handled manually in Claude chat and the output file is delivered to the candidate via their asset locker link once that system is built.
@@ -388,4 +422,4 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.4 -- roleboost.app -- Built by Rob Ramos*
+*RoleBoost Candidate Asset Production Skill v1.5 -- roleboost.app -- Built by Rob Ramos*
