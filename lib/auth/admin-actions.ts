@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { clerkClient } from '@clerk/nextjs/server';
 import { getUserContext } from '@/lib/auth/user-context';
 import { getAdminContext } from '@/lib/auth/admin-context';
 import { logAdminAction } from '@/lib/auth/audit';
@@ -128,6 +129,89 @@ export async function setUserAdmin(
   });
 
   revalidatePath('/admin');
+  return { ok: true };
+}
+
+/**
+ * Suspend or re-activate a user. A suspended user is locked out of the whole app
+ * (getUserContext throws SUSPENDED). Audited. You cannot suspend yourself.
+ */
+export async function setUserSuspended(
+  targetClerkUserId: string,
+  suspend: boolean,
+): Promise<AdminActionResult> {
+  const { actorUserId, adminClient } = await getAdminContext();
+
+  if (targetClerkUserId === actorUserId) {
+    return { ok: false, error: { code: 'INVALID_INPUT', message: 'You cannot suspend your own account.' } };
+  }
+
+  const { error } = await (adminClient.from('users') as any)
+    .update({ suspended_at: suspend ? new Date().toISOString() : null })
+    .eq('clerk_user_id', targetClerkUserId);
+
+  if (error) {
+    return { ok: false, error: { code: 'INTERNAL', message: error.message } };
+  }
+
+  await logAdminAction({
+    actorUserId,
+    action: suspend ? 'user.suspend' : 'user.unsuspend',
+    targetUserId: targetClerkUserId,
+  });
+
+  revalidatePath('/admin/users');
+  return { ok: true };
+}
+
+/**
+ * Permanently delete a user: their Clerk account AND all Supabase data (the users
+ * row cascade-deletes every child table). Irreversible. Audited. You cannot delete
+ * yourself. The audit context keeps the deleted id/email since the FK is nulled by
+ * the cascade.
+ */
+export async function deleteUser(targetClerkUserId: string): Promise<AdminActionResult> {
+  const { actorUserId, adminClient } = await getAdminContext();
+
+  if (targetClerkUserId === actorUserId) {
+    return { ok: false, error: { code: 'INVALID_INPUT', message: 'You cannot delete your own account.' } };
+  }
+
+  const lookup = await (adminClient.from('users') as any)
+    .select('email')
+    .eq('clerk_user_id', targetClerkUserId)
+    .single();
+  const email = (lookup.data as { email: string | null } | null)?.email ?? null;
+
+  // Log first, while the FK target still exists; keep the id in context so the
+  // record survives the ON DELETE SET NULL cascade.
+  await logAdminAction({
+    actorUserId,
+    action: 'user.delete',
+    targetUserId: targetClerkUserId,
+    context: { clerk_user_id: targetClerkUserId, email },
+  });
+
+  // Delete the Clerk account so they cannot sign back in. Best-effort: a Clerk
+  // failure (e.g. already deleted) should not block removing the app data.
+  try {
+    const client = await clerkClient();
+    await client.users.deleteUser(targetClerkUserId);
+  } catch (e) {
+    console.error('deleteUser: Clerk deletion failed for', targetClerkUserId, e);
+  }
+
+  // Remove the Supabase row (cascades to all child tables). Idempotent even if the
+  // Clerk user.deleted webhook already handled it.
+  const { error } = await (adminClient.from('users') as any)
+    .delete()
+    .eq('clerk_user_id', targetClerkUserId);
+
+  if (error) {
+    return { ok: false, error: { code: 'INTERNAL', message: error.message } };
+  }
+
+  revalidatePath('/admin/users');
   return { ok: true };
 }
 

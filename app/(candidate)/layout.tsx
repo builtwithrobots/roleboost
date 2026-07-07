@@ -16,6 +16,7 @@ export default async function CandidateLayout({ children }: { children: React.Re
   } catch (e) {
     if (e instanceof AuthError) {
       if (e.code === 'UNAUTHENTICATED') redirect('/sign-in');
+      if (e.code === 'SUSPENDED') redirect('/suspended');
       if (e.code === 'FORBIDDEN') redirect('/dashboard/candidates');
       redirect('/onboarding');
     }

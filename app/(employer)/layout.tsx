@@ -15,6 +15,7 @@ export default async function EmployerLayout({ children }: { children: React.Rea
   } catch (e) {
     if (e instanceof AuthError) {
       if (e.code === 'UNAUTHENTICATED') redirect('/sign-in');
+      if (e.code === 'SUSPENDED') redirect('/suspended');
       if (e.code === 'FORBIDDEN') redirect('/dashboard/profile');
       redirect('/onboarding');
     }
