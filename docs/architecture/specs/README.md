@@ -18,7 +18,8 @@ time.
 | `SUPERADMIN_DASHBOARD.md` | Superadmin dashboard spec (planned) |
 | `career-sources.md` | Career-sources ingestion spec |
 
-Product/vision/marketing docs (`PRD.md`, `VISION.md`, `MARKET-RESEARCH.md`,
-`MARKETING_SITE_BUILD.md`) and operational content
+Product/vision docs (`PRD.md`, `VISION.md`) and operational content
 (`CANDIDATE_ASSET_PRODUCTION_SKILL.md`, `prompts/`) intentionally remain in
-`docs/`, they aren't architecture.
+`docs/`, and marketing material (`MARKET-RESEARCH.md`, `MARKETING_SITE_BUILD.md`,
+the plain-English overview) lives in [`docs/marketing/`](../../marketing/README.md),
+none of it is architecture.
