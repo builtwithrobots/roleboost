@@ -463,7 +463,10 @@ sequential draft PRs into `main`.
   `SidebarLayout` (`app/(admin)/layout.tsx` + `AdminNav` + `UserMenu role="admin"` + palette
   launcher), split into `/admin` (Overview: stat cards, preview, provisioning note) and
   `/admin/users` (management table). Login routing (`app/page.tsx`) redirects `is_admin` users
-  (bootstrap-healed) to `/admin`, regardless of their candidate/employer role.
+  (bootstrap-healed) to `/admin`, regardless of their candidate/employer role. Users table shows
+  the Clerk user id and supports **disable** (`users.suspended_at`, gated in `getUserContext`,
+  suspended non-admins land on `/suspended`) and **full delete** (Clerk account + cascade Supabase
+  data, confirm-guarded); `/admin` sidebar has one-click Candidate/Employer view launchers.
 - **A, Minimum viable brain:** `candidate_profiles` brain columns + `chat_sessions`/`chat_messages`;
   `lib/ai/build-system-prompt.ts`; `getCandidateBrainBySlug`; `/api/chat`; `ChatPanel`; AI Studio
   context form; anon-column REVOKE/GRANT security fix.

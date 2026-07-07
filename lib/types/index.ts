@@ -18,6 +18,7 @@ export interface User {
   role: UserRole;
   email: string;
   is_admin: boolean;
+  suspended_at: string | null;
   paddle_subscription_id: string | null;
   subscription_status: SubscriptionStatus;
   subscription_tier: SubscriptionTier | null;

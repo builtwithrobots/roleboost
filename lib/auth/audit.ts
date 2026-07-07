@@ -10,7 +10,10 @@ export type AdminAction =
   | 'impersonate.start'
   | 'impersonate.stop'
   | 'admin.grant'
-  | 'admin.revoke';
+  | 'admin.revoke'
+  | 'user.suspend'
+  | 'user.unsuspend'
+  | 'user.delete';
 
 export async function logAdminAction(params: {
   actorUserId: string;

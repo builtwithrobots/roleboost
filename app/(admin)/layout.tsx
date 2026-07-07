@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } catch (e) {
     if (e instanceof AuthError) {
       if (e.code === 'UNAUTHENTICATED') redirect('/sign-in');
+      if (e.code === 'SUSPENDED') redirect('/suspended');
       redirect('/');
     }
     throw e;

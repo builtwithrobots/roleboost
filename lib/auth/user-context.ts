@@ -10,7 +10,7 @@ import type { UserRole, SubscriptionStatus, SubscriptionTier } from '@/lib/types
 export type { UserRole };
 
 export class AuthError extends Error {
-  constructor(public code: 'UNAUTHENTICATED' | 'NO_USER' | 'NO_ROLE' | 'FORBIDDEN') {
+  constructor(public code: 'UNAUTHENTICATED' | 'NO_USER' | 'NO_ROLE' | 'FORBIDDEN' | 'SUSPENDED') {
     super(code);
   }
 }
@@ -19,6 +19,7 @@ type UserRecord = {
   role: UserRole | null;
   is_admin: boolean;
   email: string | null;
+  suspended_at: string | null;
   subscription_tier: SubscriptionTier | null;
   subscription_status: SubscriptionStatus;
 };
@@ -57,7 +58,7 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   // have the verified Clerk userId from auth(). We filter by clerk_user_id for
   // isolation, equivalent to what RLS would enforce.
   const result = await (adminClient.from('users') as any)
-    .select('role, is_admin, email, subscription_tier, subscription_status')
+    .select('role, is_admin, email, suspended_at, subscription_tier, subscription_status')
     .eq('clerk_user_id', userId)
     .single();
 
@@ -68,6 +69,10 @@ export async function getUserContext(requiredRole?: 'candidate' | 'employer') {
   // Self-heal the SUPERADMIN_EMAILS allowlist into is_admin (one write, then never
   // again). This is how the very first admin is provisioned without hand-run SQL.
   const isAdmin = await ensureAdminBootstrap(userId, user.email, user.is_admin);
+
+  // Suspended users are locked out of the whole app. Admins are exempt so a
+  // superadmin can never suspend themselves out of the platform.
+  if (user.suspended_at && !isAdmin) throw new AuthError('SUSPENDED');
 
   // A row can exist before onboarding (the Clerk webhook creates it with a NULL
   // role). Such a user hasn't chosen candidate vs employer yet, route them to
