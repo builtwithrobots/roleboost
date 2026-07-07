@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { assertCandidateAiAccess, EntitlementError } from '@/lib/auth/entitlements';
-import type { CareerContextDrafts } from '@/lib/types';
+import type { CareerContextDrafts, CustomQAPair } from '@/lib/types';
 
 const BrainInput = z.object({
   leadership_philosophy: z.string().max(5000).optional(),
@@ -132,6 +132,82 @@ export async function deleteCareerSource(input: unknown) {
     return { ok: true as const };
   } catch (e) {
     if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
+    throw e;
+  }
+}
+
+const AdoptGapInput = z.object({ gapId: z.string().uuid() });
+
+/**
+ * One-click learning: approves a gap's drafted answer into custom_qa_pairs
+ * (highest-priority layer of the brain) and marks the gap addressed. The draft
+ * was generated grounded only in the brain's own data; the candidate's click is
+ * the human approval step.
+ */
+export async function adoptGapAnswer(input: unknown) {
+  try {
+    const { supabase, userId, user } = await getUserContext('candidate');
+    assertCandidateAiAccess(user);
+    const { gapId } = AdoptGapInput.parse(input);
+
+    // RLS scopes both reads to the candidate's own rows.
+    const { data: gap } = await supabase
+      .from('transcript_gaps')
+      .select('id, question_asked, suggested_answer, is_addressed')
+      .eq('id', gapId)
+      .maybeSingle();
+    const gapRow = gap as {
+      id: string;
+      question_asked: string;
+      suggested_answer: string | null;
+      is_addressed: boolean;
+    } | null;
+    if (!gapRow || !gapRow.suggested_answer?.trim()) {
+      return { ok: false as const, error: { code: 'NOT_FOUND', message: 'No drafted answer to adopt' } };
+    }
+
+    const { data: profile } = await supabase
+      .from('candidate_profiles')
+      .select('custom_qa_pairs')
+      .eq('clerk_user_id', userId)
+      .single();
+    if (!profile) return { ok: false as const, error: { code: 'NOT_FOUND' } };
+
+    const rawPairs = (profile as { custom_qa_pairs: unknown }).custom_qa_pairs;
+    const pairs: CustomQAPair[] = Array.isArray(rawPairs)
+      ? (rawPairs as CustomQAPair[]).filter(
+          (p) => p && typeof p.question === 'string' && typeof p.answer === 'string',
+        )
+      : [];
+
+    const question = gapRow.question_asked.trim();
+    const answer = gapRow.suggested_answer.trim();
+    const exists = pairs.some((p) => p.question.trim().toLowerCase() === question.toLowerCase());
+    if (!exists) {
+      if (pairs.length >= 50) {
+        return {
+          ok: false as const,
+          error: { code: 'INVALID_INPUT', message: 'Custom answers are full (50). Remove one first.' },
+        };
+      }
+      pairs.push({ question, answer });
+      const { error: updateError } = await supabase
+        .from('candidate_profiles')
+        .update({ custom_qa_pairs: pairs, updated_at: new Date().toISOString() })
+        .eq('clerk_user_id', userId);
+      if (updateError) {
+        return { ok: false as const, error: { code: 'INTERNAL', message: updateError.message } };
+      }
+    }
+
+    await supabase.from('transcript_gaps').update({ is_addressed: true }).eq('id', gapId);
+
+    revalidatePath('/dashboard/ai');
+    return { ok: true as const };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false as const, error: { code: 'INVALID_INPUT', details: e.issues } };
+    if (e instanceof EntitlementError) return { ok: false as const, error: { code: e.code } };
     if (e instanceof AuthError) return { ok: false as const, error: { code: e.code } };
     throw e;
   }

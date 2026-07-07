@@ -12,7 +12,9 @@ Compare the transcript to the candidate's verified career data and identify gaps
 - "weak": the AI answered vaguely, or the recruiter had to follow up to get specifics.
 - "new_topic": the recruiter raised a topic the brain does not cover at all.
 
-For each gap, write a specific, ready-to-show expansion prompt grounded in what the brain already has -- never generic. Map each to exactly one brain category: ${BRAIN_CATEGORIES.join(', ')}. Assign a priority (high = the recruiter clearly needed it and didn't get it). Return at most 5 gaps, highest priority first. If the AI handled everything well, return an empty array. Submit via the submit_gaps tool.`;
+For each gap, write a specific, ready-to-show expansion prompt grounded in what the brain already has -- never generic. Map each to exactly one brain category: ${BRAIN_CATEGORIES.join(', ')}. Assign a priority (high = the recruiter clearly needed it and didn't get it). Return at most 5 gaps, highest priority first. If the AI handled everything well, return an empty array. Submit via the submit_gaps tool.
+
+When the career data ALREADY contains the substance for a strong answer (typical for "weak" gaps, where the AI answered thinly despite good underlying data), also draft suggestedAnswer: a polished, first-person answer to the recruiter's question, 2 to 4 sentences, grounded ONLY in the career data. Never invent a fact, number, or credential; never use em dashes, use commas or periods instead. The candidate approves it with one click, so it must be safe to publish verbatim. When the data genuinely lacks the substance (most "deflection" and "new_topic" gaps), omit suggestedAnswer entirely, the candidate has to write that one.`;
 
 const GAPS_SCHEMA = {
   type: 'object',
@@ -26,6 +28,11 @@ const GAPS_SCHEMA = {
           chatbotAnswer: { type: 'string' },
           gapType: { type: 'string', enum: ['deflection', 'weak', 'new_topic'] },
           suggestedPrompt: { type: 'string' },
+          suggestedAnswer: {
+            type: 'string',
+            description:
+              'Ready-to-approve first-person answer, ONLY when the career data already contains the substance. Omit otherwise.',
+          },
           category: { type: 'string', enum: [...BRAIN_CATEGORIES] },
           priority: { type: 'string', enum: ['high', 'medium', 'low'] },
         },

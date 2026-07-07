@@ -136,6 +136,7 @@ export async function deliverTranscript(sessionId: string): Promise<DeliverResul
           chatbot_answer: g.chatbotAnswer,
           gap_type: g.gapType,
           suggested_prompt: g.suggestedPrompt,
+          suggested_answer: g.suggestedAnswer?.trim() || null,
           category: g.category,
           priority: patternCount >= 3 ? 'high' : g.priority,
           pattern_count: patternCount,

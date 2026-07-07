@@ -89,28 +89,47 @@ export default function AssetGallery({ firstName, assets, fill = false }: Props)
   );
 }
 
+/** Shimmer shown while a signed-URL asset loads, so opening a bar never shows a blank pane. */
+function LoadingShimmer({ heightClass }: { heightClass: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`w-full animate-pulse rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-raised)] ${heightClass}`}
+    />
+  );
+}
+
 function AssetBody({ type, asset, firstName }: { type: AssetType; asset: Asset; firstName: string }) {
+  const [loaded, setLoaded] = useState(false);
+
   if (type === 'audio' || type === 'debate_audio') {
     return <AudioPlayer src={asset.signed_url} title={asset.file_name} />;
   }
   if (type === 'video') {
     return (
-      <video
-        src={asset.signed_url}
-        controls
-        className="w-full rounded-[var(--radius-md)]"
-        aria-label={`${firstName}'s career video`}
-      />
+      <div>
+        {!loaded && <LoadingShimmer heightClass="h-48" />}
+        <video
+          src={asset.signed_url}
+          controls
+          preload="metadata"
+          onLoadedMetadata={() => setLoaded(true)}
+          className={`w-full rounded-[var(--radius-md)] ${loaded ? '' : 'h-0 opacity-0'}`}
+          aria-label={`${firstName}'s career video`}
+        />
+      </div>
     );
   }
   if (type === 'infographic') {
     return (
       <div className="flex flex-col gap-2">
+        {!loaded && <LoadingShimmer heightClass="h-64" />}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={asset.signed_url}
           alt={`${firstName}'s career infographic`}
-          className="w-full rounded-[var(--radius-md)]"
+          onLoad={() => setLoaded(true)}
+          className={`w-full rounded-[var(--radius-md)] ${loaded ? '' : 'h-0 opacity-0'}`}
         />
         <a
           href={asset.signed_url}
@@ -127,7 +146,14 @@ function AssetBody({ type, asset, firstName }: { type: AssetType; asset: Asset; 
   // Résumé / deck: read inline as a document.
   return (
     <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--rb-border)]">
-      <iframe src={asset.signed_url} title={asset.file_name} className="w-full" style={{ height: 'min(70vh, 520px)' }} />
+      {!loaded && <LoadingShimmer heightClass="h-64" />}
+      <iframe
+        src={asset.signed_url}
+        title={asset.file_name}
+        onLoad={() => setLoaded(true)}
+        className="w-full"
+        style={{ height: loaded ? 'min(70vh, 520px)' : 0 }}
+      />
     </div>
   );
 }

@@ -442,7 +442,7 @@ export default function AIStudio({ profile, initialTab, gaps, hardeningSessions,
                   />
                   <button
                     onClick={() => removeTopic(i)}
-                    className="rounded p-1 text-[var(--rb-text-muted)] opacity-0 transition-all hover:text-[var(--color-error)] group-hover:opacity-100"
+                    className="rounded p-1 text-[var(--rb-text-muted)] opacity-0 transition-all hover:text-[var(--color-error)] focus-visible:opacity-100 group-hover:opacity-100"
                     aria-label={`Remove redirect topic ${i + 1}`}
                   >
                     <Trash2 className="size-3.5" />
