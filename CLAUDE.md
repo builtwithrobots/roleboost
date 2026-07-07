@@ -306,8 +306,20 @@ to the client.
 
 ## Database
 
-**The schema's source of truth is `supabase/migrations/`, never reproduce it here, and never edit the
-database manually.** Migrations auto-apply via the Supabase branching integration on PR merge.
+**The schema's source of truth is `supabase/migrations/`, never reproduce it here.**
+
+**Migrations are applied MANUALLY by the founder, not auto-applied.** The Supabase branching
+integration is unreliable and has silently failed to reach the live DB (this caused a production
+login outage when a new column never landed). So for every schema change, Claude must do BOTH:
+1. **Commit the migration** as a file in `supabase/migrations/` (timestamped), the source of truth.
+2. **Surface the full SQL inline** so the founder can run it by hand, paste the exact `.sql` contents
+   into the chat reply AND into the PR description under a clear "Migration to apply" heading.
+
+Never assume a migration has been applied. Because deploys can ship before the founder runs the SQL,
+**write code defensively against not-yet-applied migrations**: read newly-added columns in a separate,
+error-tolerant query (see `readSuspendedAt` in `lib/auth/user-context.ts` and the resilient
+`secondary_target_roles` read) so a missing column degrades gracefully instead of breaking the app.
+Schema changes still go only through migration files, never ad-hoc edits in the Supabase console.
 
 Tables (as of July 2026):
 
@@ -516,6 +528,8 @@ sequential draft PRs into `main`.
 
 ### Standing decisions
 - Voice (F) is **last**, only after the rest is tested.
-- DB migrations auto-apply via the Supabase branching integration on PR merge, no manual step.
+- DB migrations are applied **manually by the founder**: always commit the migration file AND surface
+  the full SQL inline (chat + PR "Migration to apply" section). Code defensively for not-yet-applied
+  migrations. See the Database section.
 - Model ids come from `lib/ai/models.ts`, never hardcode.
 - New sensitive columns must stay out of the anon grant (REVOKE/GRANT pattern).
