@@ -28,16 +28,30 @@ export default async function HomePage() {
     let suspended = false;
     try {
       const { data: user } = await (adminClient.from('users') as any)
-        .select('role, is_admin, email, suspended_at')
+        .select('role, is_admin, email')
         .eq('clerk_user_id', userId)
         .single();
       role = user?.role ?? null;
-      suspended = Boolean(user?.suspended_at);
       // Self-heal the SUPERADMIN_EMAILS allowlist so a first-time admin is caught
       // here and routed to /admin even if their stored role is candidate/employer.
       isAdmin = await ensureAdminBootstrap(userId, user?.email ?? null, user?.is_admin ?? false);
     } catch {
       role = null;
+    }
+
+    // suspended_at is read separately and defensively: it is added by a later
+    // migration, so selecting it in the query above on a not-yet-migrated DB would
+    // fail the whole lookup and loop established users through onboarding.
+    if (!isAdmin) {
+      try {
+        const { data } = await (adminClient.from('users') as any)
+          .select('suspended_at')
+          .eq('clerk_user_id', userId)
+          .maybeSingle();
+        suspended = Boolean((data as { suspended_at?: string | null } | null)?.suspended_at);
+      } catch {
+        suspended = false;
+      }
     }
 
     // Admins get the superadmin dashboard regardless of their candidate/employer role.
