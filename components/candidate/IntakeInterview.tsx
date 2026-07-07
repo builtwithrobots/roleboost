@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Dialog, DialogPanel, DialogBackdrop } from '@headlessui/react';
-import { Loader2, Sparkles, ArrowRight, AlertTriangle, Check, X } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, AlertTriangle, Check, X, LogOut } from 'lucide-react';
 import type { BrainReadiness, IntakeAnswer, IntakeDocument, IntakeInconsistency, IntakeQuestion } from '@/lib/types';
 
 interface Props {
@@ -96,9 +96,46 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
       setReadiness(data.readiness ?? null);
       setPhase('done');
     } catch {
-      setError('Your answers are saved, but assembling the brain failed. Please try again.');
+      setError('Could not save to your brain just now. Your answers are still here, please try again.');
       setPhase('error');
     }
+  }
+
+  // Exit at any point without losing work: capture the in-progress answer, then
+  // synthesize whatever has been answered so far into the brain (assemble merges
+  // non-destructively, so a partial run only adds, never wipes). With nothing
+  // answered yet there is nothing to save, so it just closes.
+  async function saveAndExit() {
+    const q = questions[idx];
+    if (phase === 'questions' && q && answer.trim()) {
+      answersRef.current.push({
+        questionId: q.id,
+        questionText: q.question,
+        answerText: answer.trim(),
+        category: q.category,
+        pass: q.pass,
+      });
+      setAnswer('');
+    }
+    if (answersRef.current.length === 0) {
+      onClose();
+      return;
+    }
+    await assemble();
+  }
+
+  // Intercepts every close path (X, Escape, backdrop). Mid-interview with answers
+  // recorded, it saves to the brain first; otherwise it just closes. Never
+  // interrupts an in-flight analyze/assemble.
+  function handleClose() {
+    if (phase === 'analyzing' || phase === 'assembling') return;
+    const hasProgress =
+      answersRef.current.length > 0 || (phase === 'questions' && answer.trim().length > 0);
+    if ((phase === 'questions' || phase === 'inconsistencies') && hasProgress) {
+      void saveAndExit();
+      return;
+    }
+    onClose();
   }
 
   async function advance(record: boolean) {
@@ -137,7 +174,7 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
   const progress = Math.min(100, Math.round((answered / 12) * 100));
 
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-[var(--z-modal)]">
+    <Dialog open={open} onClose={handleClose} className="relative z-[var(--z-modal)]">
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-[var(--rb-scrim)] backdrop-blur-sm transition duration-[var(--duration-base)] data-[closed]:opacity-0"
@@ -164,8 +201,8 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
               )}
             </div>
             <button
-              onClick={onClose}
-              aria-label="Close interview"
+              onClick={handleClose}
+              aria-label="Save and close interview"
               className="flex size-9 items-center justify-center rounded-full text-[var(--rb-text-muted)] transition-colors hover:bg-[var(--rb-bg-surface-raised)] hover:text-[var(--rb-text)]"
             >
               <X className="size-5" />
@@ -297,7 +334,18 @@ export default function IntakeInterview({ open, onClose, onComplete }: Props) {
                   >
                     Skip
                   </button>
+                  <button
+                    onClick={() => void saveAndExit()}
+                    className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)]"
+                  >
+                    <LogOut className="size-4" />
+                    Save &amp; exit
+                  </button>
                 </div>
+                <p className="text-xs text-[var(--rb-text-muted)]">
+                  You can stop anytime. Everything you&apos;ve answered so far saves to your brain when
+                  you exit.
+                </p>
               </div>
             )}
 
