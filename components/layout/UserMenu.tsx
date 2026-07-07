@@ -28,6 +28,10 @@ export default function UserMenu({ role }: { role: 'candidate' | 'employer' }) {
   const displayName = user.fullName || user.primaryEmailAddress?.emailAddress || 'Account'
   const email = user.primaryEmailAddress?.emailAddress
 
+  // Candidates have a dedicated settings page; employers have no settings
+  // surface yet, so their link is left as-is.
+  const accountSettingsHref = role === 'candidate' ? '/dashboard/settings' : '/account'
+
   return (
     <Dropdown>
       <DropdownButton as={SidebarItem} className="w-full">
@@ -53,7 +57,7 @@ export default function UserMenu({ role }: { role: 'candidate' | 'employer' }) {
 
         <DropdownDivider />
 
-        <DropdownItem href="/account">
+        <DropdownItem href={accountSettingsHref}>
           <Settings data-slot="icon" strokeWidth={1.5} />
           Account settings
         </DropdownItem>
