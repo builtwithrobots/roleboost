@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
+import { ensureAdminBootstrap } from '@/lib/auth/superadmin';
 import Nav from '@/components/marketing/Nav';
 import HeroSection from '@/components/marketing/HeroSection';
 import SocialProofBar from '@/components/marketing/SocialProofBar';
@@ -23,19 +24,24 @@ export default async function HomePage() {
     // redirect() signals by throwing NEXT_REDIRECT, so catching here would swallow
     // the role-based redirect and send every user to /onboarding on each login.
     let role: string | null | undefined;
+    let isAdmin = false;
     try {
       const { data: user } = await (adminClient.from('users') as any)
-        .select('role')
+        .select('role, is_admin, email')
         .eq('clerk_user_id', userId)
         .single();
       role = user?.role ?? null;
+      // Self-heal the SUPERADMIN_EMAILS allowlist so a first-time admin is caught
+      // here and routed to /admin even if their stored role is candidate/employer.
+      isAdmin = await ensureAdminBootstrap(userId, user?.email ?? null, user?.is_admin ?? false);
     } catch {
       role = null;
     }
 
+    // Admins get the superadmin dashboard regardless of their candidate/employer role.
+    if (isAdmin) redirect('/admin');
     if (role === 'candidate') redirect('/dashboard/profile');
     if (role === 'employer') redirect('/dashboard/candidates');
-    if (role === 'admin') redirect('/admin');
 
     redirect('/onboarding');
   }

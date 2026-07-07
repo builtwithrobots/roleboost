@@ -459,6 +459,11 @@ sequential draft PRs into `main`.
   `createReadOnlyClient` Proxy, render-time bootstraps guarded); navy operator `AdminCommandBar`
   (absorbs the old preview banner) + ⌘K `AdminCommandPalette` (search/impersonate/grant-revoke);
   `/admin` users table wired with impersonate + grant/revoke (no self-revoke).
+- **Superadmin dashboard shell (July 2026):** admins get a first-class dashboard on the shared
+  `SidebarLayout` (`app/(admin)/layout.tsx` + `AdminNav` + `UserMenu role="admin"` + palette
+  launcher), split into `/admin` (Overview: stat cards, preview, provisioning note) and
+  `/admin/users` (management table). Login routing (`app/page.tsx`) redirects `is_admin` users
+  (bootstrap-healed) to `/admin`, regardless of their candidate/employer role.
 - **A, Minimum viable brain:** `candidate_profiles` brain columns + `chat_sessions`/`chat_messages`;
   `lib/ai/build-system-prompt.ts`; `getCandidateBrainBySlug`; `/api/chat`; `ChatPanel`; AI Studio
   context form; anon-column REVOKE/GRANT security fix.
