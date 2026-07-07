@@ -3,7 +3,7 @@
 > Project memory for Claude Code. Read at the start of every session.
 > Holds durable rules and decisions you can't infer from the code. It does **not** mirror
 > code or schema, those live in the repo and drift; the repo is always the source of truth.
-> Last updated: June 2026
+> Last updated: July 2026
 
 > 📖 **The architecture bible lives in [`docs/architecture/`](docs/architecture/README.md)**,
 > the detailed, living reference for how every subsystem is built and works (brain, career
@@ -62,21 +62,29 @@ After a failure, fix the underlying issue. Never suppress type errors with `@ts-
 
 ```
 app/
-  (auth)/                  Clerk auth pages
-  (candidate)/dashboard/   profile · assets · ai · transcripts · analytics · preview
-  (employer)/dashboard/    candidates · jobs · board · transcripts · team
+  (auth)/                  Clerk auth pages (sign-in · sign-up · onboarding)
+  (admin)/admin/           Superadmin dashboard + role-switch (is_admin)
+  (candidate)/dashboard/   profile · assets · ai · transcripts · analytics · feedback
+                           guide · meeting-requests · settings · share · preview
+  (employer)/dashboard/    candidates · jobs · board · conversations · team
   c/[slug]/                Public candidate calling card (chat-first experience)
-  api/                     chat · transcripts · candidates · employers · assets · jobs
-                           feedback · intake · sandbox · resume · webhooks/paddle
+  api/                     chat (+ identify · schedule) · transcripts/deliver
+                           cron/deliver-transcripts · career-context/{generate,augment}
+                           intake · sandbox · resume · transcript/harden · sources
+                           profile/{recommend-roles,suggest-headline} · assets/upload
+                           candidate/data-export · admin · webhooks/{paddle,clerk}
 lib/
-  auth/        getUserContext(), AuthError
-  supabase/    server.ts · admin.ts · browser.ts
-  storage/     signed-URL helpers
-  ai/          chat handler, prompt builder, models.ts, brain assembly
-  email/       Resend client + transcript templates
-  types/       shared TypeScript types
+  auth/            getUserContext(), AuthError, entitlements, admin-actions
+  supabase/        server.ts · admin.ts · browser.ts
+  storage/         signed-URL helpers
+  ai/              chat handler, prompt builder, models.ts, brain assembly
+  email/           Resend client + transcript templates
+  security/        rate limiting (check_rate_limit) + anti-spam helpers
+  candidate/ · employer/ · resume/ · career-sources/ · transcripts/ · types/
 components/
-  modal/ · chat/ · candidate/ · employer/ · ui/
+  modal/ · chat/ · candidate/ · employer/ · onboarding/ · landing/ · marketing/
+  layout/ · ui/
+design-system/roleboost/   MASTER.md, the visual design system reference
 supabase/migrations/       all database migrations (source of truth for schema)
 ```
 
@@ -178,10 +186,36 @@ are injected above base career data, giving them priority over resume-derived an
 
 Every AI chat session emails a transcript to both sides when the modal closes or after 30 min of
 inactivity. Trigger: `POST /api/transcripts/deliver` (idempotent, fired by `sendBeacon` on chat close).
-Candidate email: full transcript, company name if employer logged in, pattern insights at 3+ same-topic
-questions, fine-tune link. Employer email: full transcript, profile link, save-candidate + feedback CTAs.
-All email via Resend; client (`lib/email/client.ts`) and templates (`lib/email/`) are server-only,
-never send from client components.
+A sweep endpoint (`/api/cron/deliver-transcripts`) also delivers stale/abandoned sessions the beacon
+missed. Candidate email: full transcript, pattern insights at 3+ same-topic questions, fine-tune link.
+Employer email: full transcript, profile link, save-candidate + feedback CTAs. All email via Resend;
+client (`lib/email/client.ts`) and templates (`lib/email/`) are server-only, never send from client
+components.
+
+**Recruiter identity (anonymous viewers).** A recruiter on a public link is anonymous by default. They
+may optionally self-identify via `POST /api/chat/identify` `{ sessionId, name?, email, company? }`
+(public, service-role write onto `chat_sessions.recruiter_name` / `recruiter_email`, company reuses
+`employer_company_name`). When present, the recruiter receives their own transcript copy and the
+candidate's transcript names who they spoke with. A logged-in employer viewer still resolves via
+`viewer_clerk_user_id` as before; the captured identity is the fallback path for anonymous viewers.
+Candidates manage their own conversation records: archive (`chat_sessions.archived_at`) and permanent
+delete from the archive. Deleting a transcript never removes training, `custom_qa_pairs` live
+independently on `candidate_profiles`.
+
+### Meeting Requests
+
+When the Personal Assistant cannot answer a recruiter's question, it offers to schedule a live
+conversation. The recruiter submits availability ranges + email from the chat via
+`POST /api/chat/schedule`; that lands in `meeting_requests` (service-role insert, the recruiter is
+anonymous). The candidate reads/actions their own requests on `/dashboard/meeting-requests`; the
+employer-facing thread view is `/dashboard/conversations`.
+
+### Anti-Spam / Rate Limiting (`lib/security/`)
+
+The public chat pipeline (`/api/chat`, `/api/transcripts/deliver`, `/api/chat/schedule`) is abuse-
+controlled by a shared fixed-window counter in the `rate_limits` table, applied via `check_rate_limit()`
+(service-role only, never exposed to anon/authenticated roles). Keyed by an opaque bucket string
+(`ip:route`, `session:id`, `transcript-email:profile`, ...). See `docs/architecture/11-anti-spam.md`.
 
 ### Asset Storage
 
@@ -246,9 +280,11 @@ prompt sets in Section 2 are excluded from the candidate flow).
 
 - **Reads**, Server Components call Supabase via `getRequestClient()` (no API round-trip).
 - **Mutations**, Server Actions (`"use server"`): Zod-validate, write, `revalidatePath`.
-- **`/api` routes**, reserved for: Paddle webhook, AI chat (`/api/chat`), transcript delivery
-  (`/api/transcripts/deliver`), intake / sandbox / resume / harden endpoints, and any caller without
-  a Clerk session.
+- **`/api` routes**, reserved for: webhooks (Paddle, Clerk), AI chat (`/api/chat` + `identify` /
+  `schedule`), transcript delivery (`/api/transcripts/deliver` + the `cron/deliver-transcripts`
+  sweep), career-context / intake / sandbox / resume / harden / sources endpoints, and any caller
+  without a Clerk session (public recruiter actions on the calling card). Note: there are no
+  `candidates` / `employers` / `jobs` / `feedback` API routes; those are Server Actions.
 - **Default to Server Components.** Every `app/` `.tsx` is a Server Component unless it opts out with
   `"use client"`. Push interactive subtrees into small `*Client.tsx` children.
 
@@ -273,19 +309,22 @@ to the client.
 **The schema's source of truth is `supabase/migrations/`, never reproduce it here, and never edit the
 database manually.** Migrations auto-apply via the Supabase branching integration on PR merge.
 
-Tables (as of June 2026):
+Tables (as of July 2026):
 
 | Table | Purpose |
 |---|---|
 | `users` | Clerk-keyed user, role, subscription, `is_admin` |
-| `candidate_profiles` | Profile + AI-brain columns (context fields, `custom_qa_pairs`, intake/readiness) |
-| `candidate_assets` | Uploaded career assets (audio/video/deck/infographic/resume) |
+| `candidate_profiles` | Profile + AI-brain columns (context fields, `custom_qa_pairs`, intake/readiness, `context_package_md`, `career_context_drafts`, `secondary_target_roles`) |
+| `candidate_assets` | Uploaded career assets (audio/video/deck/infographic/resume/avatar) |
 | `resume_documents` | Parsed resume + `canonical_markdown` (the AI's resume source) |
-| `chat_sessions` / `chat_messages` | AI chat logs; messages track `model_used`/`was_complex`/`was_validated` |
+| `career_sources` | Candidate-supplied third-party sources feeding the career-context synthesis |
+| `chat_sessions` / `chat_messages` | AI chat logs; sessions track `recruiter_name`/`recruiter_email`/`archived_at`; messages track `model_used`/`was_complex`/`was_validated` |
+| `meeting_requests` | Recruiter-requested live conversations from the chat |
 | `intake_answers` | AI intake-interview answers |
 | `sandbox_sessions` | Candidate self-test sessions |
-| `transcript_gaps` | Gaps surfaced from transcripts to improve the brain |
+| `transcript_gaps` | Gaps surfaced from transcripts to improve the brain (+ `suggested_answer`) |
 | `brain_hardening_sessions` | External-transcript hardening runs |
+| `rate_limits` | Fixed-window anti-spam counters for the public pipeline (service-role only) |
 | `employer_accounts` / `employer_members` | Employer multi-tenancy + team |
 | `job_postings` / `saved_candidates` | Jobs + saved pool with stage |
 | `feedback` | Employer → candidate messages |
@@ -401,12 +440,15 @@ ATS integrations · advanced chatbot model selection.
 
 ## Current Build Status
 
-> Durable cross-session handoff, updated June 2026. The in-session task list (`TaskCreate`) and any
+> Durable cross-session handoff, updated July 2026. The in-session task list (`TaskCreate`) and any
 > scheduled check-ins are **ephemeral**, only what is committed here survives. Read this first.
+> The active build plan (recruiter conversion loop + polish) lives in `todo.md` at the repo root;
+> keep that and this section in sync rather than duplicating.
 
-**Phase:** The AI Brain (Phases A–E) is fully built and merged to `main`, plus the first polish
-fast-follow. **Working branch:** `claude/audit-and-build-plan-m4bci2`, one branch, sequential PRs into
-`main`.
+**Phase:** The AI Brain (Phases A–E) is fully built and merged to `main`, plus polish fast-follows,
+the recruiter conversation loop (identity capture + meeting requests), anti-spam, transcript archive,
+and the candidate Settings page. **Working branch:** one `claude/<task-slug>` branch per task,
+sequential draft PRs into `main`.
 
 ### Shipped & merged
 - **A, Minimum viable brain:** `candidate_profiles` brain columns + `chat_sessions`/`chat_messages`;
@@ -431,6 +473,17 @@ fast-follow. **Working branch:** `claude/audit-and-build-plan-m4bci2`, one branc
   handoffs; truncation guard; staged latency indicator + retry in `ChatPanel`; auto-grow input;
   `transcript_gaps.suggested_answer` drafted by the analyzer + `adoptGapAnswer` one-click approve in
   `PromptBot`; asset loading shimmers; dashboard `loading.tsx`.
+- **Career context document (July 2026):** self-serve generate → two angles → select → augment loop
+  (`lib/ai/career-context.ts`, `/api/career-context/*`); `context_package_md` slot; `career_sources`.
+- **Recruiter conversation loop (July 2026):** anonymous recruiter identity capture
+  (`/api/chat/identify`, `chat_sessions.recruiter_name/email`) so both sides get transcripts;
+  meeting requests when the AI can't answer (`meeting_requests`, `/api/chat/schedule`,
+  `/dashboard/meeting-requests`, employer `/dashboard/conversations`); cron transcript-delivery sweep.
+- **Anti-spam (July 2026):** `rate_limits` + `check_rate_limit()` on the public chat pipeline;
+  `lib/security/`; `docs/architecture/11-anti-spam.md`.
+- **Candidate self-management (July 2026):** transcript archive/delete (`chat_sessions.archived_at`),
+  Settings page with data export (`/api/candidate/data-export`) and fresh-start controls.
+- **Design system:** `design-system/roleboost/MASTER.md` now committed as the visual reference.
 
 ### Next-session TODO (in order)
 1. **A11y + empty/loading-states audit** *(partially done: chat/calling-card/AI-Studio surfaces +
@@ -438,8 +491,9 @@ fast-follow. **Working branch:** `claude/audit-and-build-plan-m4bci2`, one branc
 2. **Brain intelligence follow-ups** *(designed, not built)*: voice profile column (Sonnet-derived
    tone descriptors injected into `<voice>`); cross-session question clustering + answer-rate metric;
    returning-recruiter memory (needs founder steer on privacy).
-3. **Distinctive visual refresh** *(needs founder steer)*, elevate cream/navy/amber; propose a
-   direction before any broad reskin.
+3. **Distinctive visual refresh** *(design system committed at `design-system/roleboost/MASTER.md`;
+   apply, don't redesign)*, roll the documented direction across surfaces; propose before any
+   deviation from MASTER.md.
 4. **Phase F, voice input (Whisper)** *(held)*, browser audio → `/api/transcribe` (OpenAI Whisper) →
    editable transcript before submit. Gated on: founder has tested A–E, and `OPENAI_API_KEY` is
    provisioned. Build with graceful degradation so it is safe to merge before the key is set.
