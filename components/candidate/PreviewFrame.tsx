@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ElementType } from 'react';
+import { useEffect, useState, type ElementType } from 'react';
 import {
   Monitor,
   Tablet,
@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ExternalLink,
   EyeOff,
+  Wifi,
 } from 'lucide-react';
 
 type DeviceKey = 'desktop' | 'tablet' | 'phone';
@@ -28,6 +29,78 @@ const DEVICES: Record<DeviceKey, DeviceConfig> = {
   tablet: { label: 'Tablet', Icon: Tablet, width: 820, height: 1180 },
   phone: { label: 'Phone', Icon: Smartphone, width: 390, height: 844 },
 };
+
+/** Live clock for the simulated device status bar. Starts at Apple's classic
+ *  9:41 for the server render, then syncs to the viewer's real time on mount. */
+function useDeviceClock() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    const update = () => setNow(new Date());
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
+
+function SignalBars() {
+  return (
+    <span className="flex items-end gap-[2px]" aria-hidden="true">
+      {[4, 6, 8, 10].map((h) => (
+        <span key={h} className="w-[3px] rounded-[1px] bg-current" style={{ height: h }} />
+      ))}
+    </span>
+  );
+}
+
+function BatteryIcon() {
+  return (
+    <span className="flex items-center" aria-hidden="true">
+      <span className="flex h-[11px] w-[22px] items-center rounded-[3px] border border-current p-[1.5px] opacity-90">
+        <span className="h-full w-[82%] rounded-[1px] bg-current" />
+      </span>
+      <span className="ml-[1px] h-1 w-[2px] rounded-r-[1px] bg-current opacity-90" />
+    </span>
+  );
+}
+
+/** iOS/iPadOS-style status bar rendered inside the device bezel, above the
+ *  screen content, so the preview reads as a real phone or tablet. */
+function DeviceStatusBar({ device, rotated }: { device: DeviceKey; rotated: boolean }) {
+  const now = useDeviceClock();
+  const isPhone = device === 'phone';
+
+  const time = now
+    ? now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : '9:41 AM';
+  const date = now
+    ? now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
+    : 'Mon Jul 7';
+
+  return (
+    <div
+      aria-hidden="true"
+      className="relative flex h-9 shrink-0 select-none items-center justify-between bg-[var(--rb-bg-page)] px-5 text-[13px] font-semibold text-neutral-800"
+    >
+      <span className="flex items-baseline gap-2 tracking-tight">
+        <span className="font-data">{time}</span>
+        {!isPhone && <span className="text-xs font-medium text-neutral-500">{date}</span>}
+      </span>
+
+      {/* Dynamic-island pill on the phone in portrait. */}
+      {isPhone && !rotated && (
+        <span className="absolute left-1/2 top-1/2 h-[22px] w-[84px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-900" />
+      )}
+
+      <span className="flex items-center gap-1.5">
+        <SignalBars />
+        <Wifi className="size-4" strokeWidth={2.5} />
+        {!isPhone && <span className="text-xs font-medium">100%</span>}
+        <BatteryIcon />
+      </span>
+    </div>
+  );
+}
 
 interface Props {
   /** Same-origin, owner-only route that renders the real calling card. */
@@ -168,7 +241,10 @@ export default function PreviewFrame({ previewUrl, liveUrl, slug, isPublished }:
             className="relative max-h-full max-w-full overflow-hidden rounded-[2.25rem] border-[6px] border-neutral-800 bg-neutral-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.45)]"
             style={{ width: width ?? undefined, height: height ?? undefined }}
           >
-            <div className="size-full overflow-hidden rounded-[1.85rem]">{iframe}</div>
+            <div className="flex size-full flex-col overflow-hidden rounded-[1.85rem] bg-[var(--rb-bg-page)]">
+              <DeviceStatusBar device={device} rotated={rotated} />
+              <div className="min-h-0 flex-1">{iframe}</div>
+            </div>
           </div>
         )}
       </div>
