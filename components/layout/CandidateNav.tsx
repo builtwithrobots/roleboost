@@ -11,6 +11,7 @@ import {
   Bot,
   MessagesSquare,
   CalendarClock,
+  Settings,
 } from 'lucide-react'
 import {
   SidebarDivider,
@@ -36,6 +37,10 @@ const insightItems = [
 
 const aiItems = [
   { href: '/dashboard/ai', label: 'AI Studio', Icon: Bot },
+]
+
+const accountItems = [
+  { href: '/dashboard/settings', label: 'Settings', Icon: Settings },
 ]
 
 /** A small count pill shown on a nav item, e.g. new meeting requests. */
@@ -85,6 +90,18 @@ export default function CandidateNav({ newMeetingRequests = 0 }: { newMeetingReq
       <SidebarSection>
         <SidebarHeading>AI</SidebarHeading>
         {aiItems.map(({ href, label, Icon }) => (
+          <SidebarItem key={href} href={href} current={pathname === href}>
+            <Icon data-slot="icon" strokeWidth={1.5} />
+            <SidebarLabel>{label}</SidebarLabel>
+          </SidebarItem>
+        ))}
+      </SidebarSection>
+
+      <SidebarDivider />
+
+      <SidebarSection>
+        <SidebarHeading>Account</SidebarHeading>
+        {accountItems.map(({ href, label, Icon }) => (
           <SidebarItem key={href} href={href} current={pathname === href}>
             <Icon data-slot="icon" strokeWidth={1.5} />
             <SidebarLabel>{label}</SidebarLabel>
