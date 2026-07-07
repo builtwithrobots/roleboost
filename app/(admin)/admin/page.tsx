@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getUserContext, AuthError, getAdminPreviewRole } from '@/lib/auth/user-context';
-import { setAdminPreviewRole } from '@/lib/auth/admin-actions';
+import { setAdminPreviewRole, impersonateUser, setUserAdmin } from '@/lib/auth/admin-actions';
 import { getAdminClient } from '@/lib/supabase/admin';
+import AdminPaletteLauncher from '@/components/admin/AdminPaletteLauncher';
 
 type AdminUserRow = {
   clerk_user_id: string;
@@ -49,6 +50,19 @@ export default async function AdminPage() {
     await setAdminPreviewRole('employer');
   }
 
+  async function impersonate(formData: FormData) {
+    'use server';
+    await impersonateUser(formData.get('clerk_user_id') as string);
+  }
+
+  async function toggleAdmin(formData: FormData) {
+    'use server';
+    await setUserAdmin(
+      formData.get('clerk_user_id') as string,
+      formData.get('make') === 'true',
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--rb-bg-page)] p-8">
       <div className="mx-auto max-w-5xl space-y-8">
@@ -63,16 +77,19 @@ export default async function AdminPage() {
               Signed in as {ctx.userId}
             </p>
           </div>
-          {previewRole && (
-            <form action={exitPreview}>
-              <button
-                type="submit"
-                className="rounded-lg bg-amber-100 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-200"
-              >
-                Exit preview: {previewRole}
-              </button>
-            </form>
-          )}
+          <div className="flex items-center gap-3">
+            <AdminPaletteLauncher activeSession={!!previewRole} />
+            {previewRole && (
+              <form action={exitPreview}>
+                <button
+                  type="submit"
+                  className="min-h-[44px] rounded-lg bg-amber-100 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-200"
+                >
+                  Exit preview: {previewRole}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
 
         {/* Role Switcher */}
@@ -125,6 +142,7 @@ export default async function AdminPage() {
                   <th className="px-6 py-3 text-left font-medium text-[var(--rb-text-muted)]">Tier</th>
                   <th className="px-6 py-3 text-left font-medium text-[var(--rb-text-muted)]">Status</th>
                   <th className="px-6 py-3 text-left font-medium text-[var(--rb-text-muted)]">Joined</th>
+                  <th className="px-6 py-3 text-right font-medium text-[var(--rb-text-muted)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--rb-border)]">
@@ -144,11 +162,42 @@ export default async function AdminPage() {
                     <td className="px-6 py-3 text-[var(--rb-text-muted)]">
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {(u.role === 'candidate' || u.role === 'employer') && u.clerk_user_id !== ctx.userId && (
+                          <form action={impersonate}>
+                            <input type="hidden" name="clerk_user_id" value={u.clerk_user_id} />
+                            <button
+                              type="submit"
+                              className="rounded-md border border-[var(--rb-border)] px-3 py-1.5 text-xs font-semibold text-[var(--rb-text-primary)] hover:bg-[var(--rb-bg-subtle)]"
+                              title="View this user's dashboard, read-only"
+                            >
+                              Impersonate
+                            </button>
+                          </form>
+                        )}
+                        {u.clerk_user_id !== ctx.userId && (
+                          <form action={toggleAdmin}>
+                            <input type="hidden" name="clerk_user_id" value={u.clerk_user_id} />
+                            <input type="hidden" name="make" value={(!u.is_admin).toString()} />
+                            <button
+                              type="submit"
+                              className="rounded-md px-3 py-1.5 text-xs font-semibold text-[var(--rb-text-secondary)] hover:bg-[var(--rb-bg-subtle)]"
+                            >
+                              {u.is_admin ? 'Revoke admin' : 'Grant admin'}
+                            </button>
+                          </form>
+                        )}
+                        {u.clerk_user_id === ctx.userId && (
+                          <span className="text-xs text-[var(--rb-text-muted)]">you</span>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-[var(--rb-text-muted)]">
+                    <td colSpan={6} className="px-6 py-8 text-center text-[var(--rb-text-muted)]">
                       No users yet.
                     </td>
                   </tr>
@@ -156,6 +205,21 @@ export default async function AdminPage() {
               </tbody>
             </table>
           </div>
+        </section>
+
+        {/* Admin provisioning note */}
+        <section className="rounded-xl border border-[var(--rb-border)] bg-[var(--rb-bg-card)] p-6">
+          <h2 className="mb-2 font-display text-base font-semibold text-[var(--rb-text-primary)]">
+            How admin access is granted
+          </h2>
+          <p className="text-sm text-[var(--rb-text-secondary)]">
+            The first admin is bootstrapped from the{' '}
+            <code className="rounded bg-[var(--rb-bg-subtle)] px-1 font-mono text-xs">SUPERADMIN_EMAILS</code>{' '}
+            environment variable (comma-separated). Any user whose email is on that list is promoted
+            to admin the first time they sign in. After that, grant or revoke admin for anyone from the
+            table above; every grant, revoke, and impersonation is written to the audit log. You cannot
+            revoke your own access.
+          </p>
         </section>
 
         {/* Webhook Setup Instructions */}

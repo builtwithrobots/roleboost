@@ -4,7 +4,10 @@ import { adminClient } from '@/lib/supabase/admin';
 import CandidateGrid from '@/components/employer/CandidateGrid';
 import DashboardPage from '@/components/layout/DashboardPage';
 
-async function ensureEmployerAccount(userId: string): Promise<string> {
+async function ensureEmployerAccount(
+  userId: string,
+  create: boolean,
+): Promise<string | null> {
   // Check for existing membership
   const { data: existing } = await (adminClient.from('employer_members') as any)
     .select('employer_account_id')
@@ -12,6 +15,10 @@ async function ensureEmployerAccount(userId: string): Promise<string> {
     .single();
 
   if (existing?.employer_account_id) return existing.employer_account_id;
+
+  // During read-only impersonation we never bootstrap a row, return null and let
+  // the page render an empty state for this employer instead.
+  if (!create) return null;
 
   // Auto-create employer account for first-time employers
   // adminClient: bootstrapping employer account before RLS row exists
@@ -44,7 +51,17 @@ export default async function EmployerCandidatesPage() {
   }
 
   const { userId } = ctx;
-  const employerAccountId = await ensureEmployerAccount(userId);
+  const employerAccountId = await ensureEmployerAccount(userId, !ctx.impersonating);
+
+  if (!employerAccountId) {
+    return (
+      <DashboardPage>
+        <p className="p-8 text-sm text-[var(--rb-text-secondary)]">
+          This employer has not set up their workspace yet.
+        </p>
+      </DashboardPage>
+    );
+  }
 
   // Fetch saved candidates with profile data and asset type indicators
   const { data: savedCandidates } = await (adminClient.from('saved_candidates') as any)

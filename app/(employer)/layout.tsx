@@ -6,7 +6,7 @@ import RoleBoostLogo from '@/components/layout/RoleBoostLogo';
 import EmployerNav from '@/components/layout/EmployerNav';
 import SubscriptionBadge from '@/components/layout/SubscriptionBadge';
 import UserMenu from '@/components/layout/UserMenu';
-import AdminPreviewBanner from '@/components/layout/AdminPreviewBanner';
+import AdminCommandBar from '@/components/admin/AdminCommandBar';
 
 export default async function EmployerLayout({ children }: { children: React.ReactNode }) {
   let ctx;
@@ -22,6 +22,9 @@ export default async function EmployerLayout({ children }: { children: React.Rea
   }
 
   const previewRole = ctx.isAdmin ? await getAdminPreviewRole() : null;
+  const impersonating = ctx.impersonating
+    ? { email: ctx.impersonating.targetEmail, role: ctx.impersonating.targetRole }
+    : null;
 
   const sidebar = (
     <Sidebar>
@@ -48,7 +51,9 @@ export default async function EmployerLayout({ children }: { children: React.Rea
 
   return (
     <>
-      {previewRole === 'employer' && <AdminPreviewBanner previewRole="employer" />}
+      {ctx.isAdmin && (previewRole || impersonating) && (
+        <AdminCommandBar previewRole={previewRole} impersonating={impersonating} />
+      )}
       <SidebarLayout navbar={<RoleBoostLogo compact />} sidebar={sidebar}>
         {children}
       </SidebarLayout>

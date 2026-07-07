@@ -424,6 +424,8 @@ PADDLE_API_KEY=   PADDLE_WEBHOOK_SECRET=   NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=
 PADDLE_EMPLOYER_STARTER_PRICE_ID=   PADDLE_EMPLOYER_GROWTH_PRICE_ID=   PADDLE_EMPLOYER_SCALE_PRICE_ID=
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Superadmin, comma-separated emails auto-promoted to is_admin on first sign-in (bootstrap)
+SUPERADMIN_EMAILS=
 ```
 
 ---
@@ -451,6 +453,12 @@ and the candidate Settings page. **Working branch:** one `claude/<task-slug>` br
 sequential draft PRs into `main`.
 
 ### Shipped & merged
+- **Superadmin tools (July 2026):** `SUPERADMIN_EMAILS` first-admin bootstrap (self-heal in
+  `getUserContext`); shared `getAdminContext()` guard; `admin_audit_log` table + `logAdminAction`;
+  read-only impersonation (`rb-admin-impersonate` cookie → service-role reads via a write-blocking
+  `createReadOnlyClient` Proxy, render-time bootstraps guarded); navy operator `AdminCommandBar`
+  (absorbs the old preview banner) + ⌘K `AdminCommandPalette` (search/impersonate/grant-revoke);
+  `/admin` users table wired with impersonate + grant/revoke (no self-revoke).
 - **A, Minimum viable brain:** `candidate_profiles` brain columns + `chat_sessions`/`chat_messages`;
   `lib/ai/build-system-prompt.ts`; `getCandidateBrainBySlug`; `/api/chat`; `ChatPanel`; AI Studio
   context form; anon-column REVOKE/GRANT security fix.

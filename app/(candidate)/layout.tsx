@@ -6,7 +6,7 @@ import RoleBoostLogo from '@/components/layout/RoleBoostLogo';
 import CandidateNav from '@/components/layout/CandidateNav';
 import SubscriptionBadge from '@/components/layout/SubscriptionBadge';
 import UserMenu from '@/components/layout/UserMenu';
-import AdminPreviewBanner from '@/components/layout/AdminPreviewBanner';
+import AdminCommandBar from '@/components/admin/AdminCommandBar';
 import HelpButton from '@/components/candidate/HelpButton';
 
 export default async function CandidateLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +23,9 @@ export default async function CandidateLayout({ children }: { children: React.Re
   }
 
   const previewRole = ctx.isAdmin ? await getAdminPreviewRole() : null;
+  const impersonating = ctx.impersonating
+    ? { email: ctx.impersonating.targetEmail, role: ctx.impersonating.targetRole }
+    : null;
 
   // New meeting-request count for the sidebar notification badge. RLS scopes both
   // reads to the candidate's own rows.
@@ -67,7 +70,9 @@ export default async function CandidateLayout({ children }: { children: React.Re
 
   return (
     <>
-      {previewRole === 'candidate' && <AdminPreviewBanner previewRole="candidate" />}
+      {ctx.isAdmin && (previewRole || impersonating) && (
+        <AdminCommandBar previewRole={previewRole} impersonating={impersonating} />
+      )}
       <SidebarLayout navbar={<RoleBoostLogo compact />} sidebar={sidebar}>
         {children}
       </SidebarLayout>
