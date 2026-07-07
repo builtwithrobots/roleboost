@@ -25,6 +25,11 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: react-dom
         update-types: [version-update:semver-major]
+      # eslint 10 breaks eslint-config-next's bundled eslint-plugin-react
+      # (removed the legacy context.getFilename API). Stay on eslint 9 until
+      # the Next lint stack supports 10.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
 
   # Keep the Actions in this repo's own workflows current too.
   - package-ecosystem: github-actions
