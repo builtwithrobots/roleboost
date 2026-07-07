@@ -29,11 +29,13 @@ export default async function CandidateProfilePage() {
 
   let profile = rawProfile as CandidateProfile | null;
 
-  if (!profile) {
+  if (!profile && !ctx.impersonating) {
     // First visit after onboarding, bootstrap the profile row and use the
     // returned row directly. Re-querying here would be deduplicated by Next.js
     // fetch memoization against the read above and return the stale empty
     // result, so we rely on the row ensureCandidateProfile() returns.
+    // Skipped during impersonation: ensureCandidateProfile() keys off the admin's
+    // own Clerk id, so bootstrapping here would create a stray row for the admin.
     profile = await ensureCandidateProfile();
   }
 

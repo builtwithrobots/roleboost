@@ -56,10 +56,12 @@ export default async function AIStudioPage({
 
   let profile = rawProfile as CandidateProfile | null;
 
-  if (!profile) {
+  if (!profile && !ctx.impersonating) {
     // First visit before the profile tab was opened, bootstrap the row and
     // fill the brain fields with their defaults (the row was just created with
     // these exact DB defaults). Re-querying here would hit fetch memoization.
+    // Skipped during impersonation: ensureCandidateProfile() keys off the admin's
+    // own Clerk id, so bootstrapping here would create a stray row for the admin.
     const base = await ensureCandidateProfile();
     profile = {
       ...base,
