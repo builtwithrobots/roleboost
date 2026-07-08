@@ -35,13 +35,26 @@ export default async function CandidateAssetsPage() {
     file_size_bytes: number | null;
     created_at: string;
     signed_url?: string;
+    processing_status?: 'processing' | 'ready' | 'failed';
   };
-  const { data: mediaRows } = await supabase
-    .from('candidate_assets')
-    .select('id, file_name, file_size_bytes, storage_bucket, storage_path, created_at, asset_type')
-    .eq('clerk_user_id', userId)
-    .in('asset_type', ['audio', 'infographic'])
-    .eq('is_active', true);
+  // processing_status is added by a later migration; read it defensively so an
+  // un-migrated DB still renders the page (falls back to a query without it).
+  const baseMediaCols = 'id, file_name, file_size_bytes, storage_bucket, storage_path, created_at, asset_type';
+  const mediaQuery = (cols: string) =>
+    supabase
+      .from('candidate_assets')
+      .select(cols)
+      .eq('clerk_user_id', userId)
+      .in('asset_type', ['audio', 'infographic'])
+      .eq('is_active', true);
+  let mediaRows: unknown[] | null;
+  const withStatus = await mediaQuery(`${baseMediaCols}, processing_status`);
+  if (withStatus.error) {
+    const fallback = await mediaQuery(baseMediaCols);
+    mediaRows = fallback.data;
+  } else {
+    mediaRows = withStatus.data;
+  }
 
   const mediaByType: Record<MediaType, MediaAsset | null> = { audio: null, infographic: null };
   for (const row of (mediaRows ?? []) as Array<{
@@ -52,12 +65,18 @@ export default async function CandidateAssetsPage() {
     storage_path: string;
     created_at: string;
     asset_type: MediaType;
+    processing_status?: 'processing' | 'ready' | 'failed';
   }>) {
+    const isProcessing = row.processing_status === 'processing';
     let signed_url: string | undefined;
-    try {
-      signed_url = await getSignedAssetUrl(row.storage_bucket, row.storage_path);
-    } catch {
-      // bucket may not exist yet, show the card without a preview link
+    // While converting, the stored file is the original that is about to be
+    // replaced, so skip signing it; the card shows a processing state instead.
+    if (!isProcessing) {
+      try {
+        signed_url = await getSignedAssetUrl(row.storage_bucket, row.storage_path);
+      } catch {
+        // bucket may not exist yet, show the card without a preview link
+      }
     }
     mediaByType[row.asset_type] = {
       id: row.id,
@@ -65,6 +84,7 @@ export default async function CandidateAssetsPage() {
       file_size_bytes: row.file_size_bytes,
       created_at: row.created_at,
       signed_url,
+      processing_status: row.processing_status,
     };
   }
 

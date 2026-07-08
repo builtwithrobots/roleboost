@@ -1,6 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { adminClient } from '@/lib/supabase/admin';
+import { needsAudioConversion } from '@/lib/assets/audio-convert';
+import { processAudioAsset } from '@/lib/assets/process-audio';
+
+// Node runtime + a longer budget: the after() hook transcodes non-MP3 audio to
+// MP3 once the response is sent, and that ffmpeg pass runs in this invocation.
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
+// A not-yet-applied migration means processing_status does not exist. Detect
+// that so we can fall back to a plain insert instead of failing the upload.
+function isMissingColumnError(err: { code?: string; message?: string } | null): boolean {
+  if (!err) return false;
+  return err.code === '42703' || err.code === 'PGRST204' || /processing_status/i.test(err.message ?? '');
+}
 
 type AssetConfig = {
   bucket: string;
@@ -180,25 +194,74 @@ export async function POST(req: NextRequest) {
     console.error('Asset deactivation failed', userId, assetType, deactivateError);
   }
 
-  // Insert new asset row
-  const { data: asset, error: insertError } = await (adminClient.from('candidate_assets') as any)
-    .insert({
-      candidate_profile_id: candidateProfileId,
-      clerk_user_id: userId,
-      asset_type: assetType,
-      storage_bucket: config.bucket,
-      storage_path: storagePath,
-      file_name: file.name,
-      file_size_bytes: file.size,
-      is_active: true,
-    })
-    .select('id')
-    .single();
+  // Insert new asset row. Audio that is not already MP3 (e.g. a NotebookLM DASH
+  // m4a) is flagged 'processing' and transcoded to MP3 after the response; MP3
+  // and every other asset type land 'ready' via the column default.
+  const baseRow = {
+    candidate_profile_id: candidateProfileId,
+    clerk_user_id: userId,
+    asset_type: assetType,
+    storage_bucket: config.bucket,
+    storage_path: storagePath,
+    file_name: file.name,
+    file_size_bytes: file.size,
+    is_active: true,
+  };
 
-  if (insertError) {
-    console.error('Asset row insert failed', userId, assetType, insertError);
-    return NextResponse.json({ error: { code: 'INTERNAL', message: insertError.message } }, { status: 500 });
+  const wantsConversion =
+    (assetType === 'audio' || assetType === 'debate_audio') && needsAudioConversion(file.name);
+
+  let assetId: string;
+  let willConvert = false;
+
+  if (wantsConversion) {
+    const flagged = await (adminClient.from('candidate_assets') as any)
+      .insert({ ...baseRow, processing_status: 'processing' })
+      .select('id')
+      .single();
+
+    if (flagged.error && isMissingColumnError(flagged.error)) {
+      // Migration not applied yet: store as-is so uploads keep working; the file
+      // simply is not converted until the column exists.
+      const fallback = await (adminClient.from('candidate_assets') as any)
+        .insert(baseRow)
+        .select('id')
+        .single();
+      if (fallback.error) {
+        console.error('Asset row insert failed', userId, assetType, fallback.error);
+        return NextResponse.json({ error: { code: 'INTERNAL', message: fallback.error.message } }, { status: 500 });
+      }
+      assetId = fallback.data.id;
+    } else if (flagged.error) {
+      console.error('Asset row insert failed', userId, assetType, flagged.error);
+      return NextResponse.json({ error: { code: 'INTERNAL', message: flagged.error.message } }, { status: 500 });
+    } else {
+      assetId = flagged.data.id;
+      willConvert = true;
+    }
+  } else {
+    const { data, error: insertError } = await (adminClient.from('candidate_assets') as any)
+      .insert(baseRow)
+      .select('id')
+      .single();
+    if (insertError) {
+      console.error('Asset row insert failed', userId, assetType, insertError);
+      return NextResponse.json({ error: { code: 'INTERNAL', message: insertError.message } }, { status: 500 });
+    }
+    assetId = data.id;
   }
 
-  return NextResponse.json({ ok: true, asset_id: asset.id });
+  if (willConvert) {
+    // Transcode after the response is sent so the upload feels instant. The
+    // /api/cron/process-audio sweep re-runs anything this misses.
+    after(async () => {
+      try {
+        await processAudioAsset(assetId);
+      } catch (e) {
+        console.error('Audio conversion failed', assetId, e);
+      }
+    });
+  }
+
+  return NextResponse.json({ ok: true, asset_id: assetId, processing: willConvert });
 }
