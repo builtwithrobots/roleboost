@@ -73,8 +73,10 @@ export default function BoostExampleIntro() {
               >
                 Jordan Mills
               </h2>
+              <p className="font-inter text-sm text-gray-600">Customer Service Representative</p>
               <p className="font-inter text-sm text-gray-600">
-                Customer Service Representative, aiming for Customer Service Team Lead
+                <span className="font-semibold text-[#1E3A5F]">Target Role:</span> Customer Service
+                Team Lead
               </p>
               <p className="font-inter text-sm text-gray-600">Phoenix, AZ</p>
             </div>
