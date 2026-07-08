@@ -16,12 +16,11 @@ export const metadata: Metadata = {
 
 // Real Jordan Mills assets live in /public/boosts. Set a path here to swap a
 // placeholder for the live asset; leave it null to keep the placeholder.
-// Audio Boosts are still pending, drop the files in and fill these in:
-//   short:   '/boosts/jordan-mills-short-boost-audio.mp3'
+// The Podcast Style Boost is still pending, drop the file in and fill it in:
 //   podcast: '/boosts/jordan-mills-podcast-boost.mp3'
 const ASSET_SRC = {
   visual: '/boosts/jordan-mills-visual-boost.png',
-  short: null,
+  short: '/boosts/jordan-mills-short-boost.m4a',
   podcast: null,
 } satisfies Record<string, string | null>
 
