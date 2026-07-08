@@ -62,6 +62,9 @@ export default function BoostExampleIntro() {
               JM
             </span>
             <div>
+              <span className="mb-2 flex w-fit items-center rounded-full bg-[#FEF3C7] px-3 py-1 font-jakarta text-xs font-semibold text-[#92400E]">
+                Retail Banking | Early Career
+              </span>
               <h2
                 id="boosts-example-heading"
                 className="font-jakarta text-xl font-bold text-[#1E3A5F] leading-snug"
@@ -69,11 +72,9 @@ export default function BoostExampleIntro() {
                 Jordan Mills
               </h2>
               <p className="font-inter text-sm text-gray-600">
-                Customer Service Representative, aiming for Customer Service Team Lead, Phoenix, AZ
+                Customer Service Representative, aiming for Customer Service Team Lead
               </p>
-              <span className="mt-2 inline-flex items-center rounded-full bg-[#FEF3C7] px-3 py-1 font-jakarta text-xs font-semibold text-[#92400E]">
-                Retail Banking | Early Career
-              </span>
+              <p className="font-inter text-sm text-gray-600">Phoenix, AZ</p>
             </div>
           </div>
 
