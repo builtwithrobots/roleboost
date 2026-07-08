@@ -22,7 +22,7 @@ export default function BoostExampleIntro() {
           className="bg-[#FFFBF5] rounded-2xl border border-[#E8E0D0] shadow-sm p-6 sm:p-8"
         >
           {/* Top row: section label + ATS Resume trigger */}
-          <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center justify-between gap-3 mb-3">
             <p className="font-jakarta text-xs font-semibold uppercase tracking-[0.12em] text-[#D97706]">
               The example
             </p>
@@ -53,6 +53,11 @@ export default function BoostExampleIntro() {
             </button>
           </div>
 
+          {/* Category tag, directly under the section label */}
+          <span className="mb-4 flex w-fit items-center rounded-full bg-[#FEF3C7] px-3 py-1 font-jakarta text-xs font-semibold text-[#92400E]">
+            Retail Banking | Early Career
+          </span>
+
           <div className="flex items-center gap-4 mb-5">
             {/* Avatar: Jordan Mills initials, teal per candidate brand */}
             <span
@@ -62,9 +67,6 @@ export default function BoostExampleIntro() {
               JM
             </span>
             <div>
-              <span className="mb-2 flex w-fit items-center rounded-full bg-[#FEF3C7] px-3 py-1 font-jakarta text-xs font-semibold text-[#92400E]">
-                Retail Banking | Early Career
-              </span>
               <h2
                 id="boosts-example-heading"
                 className="font-jakarta text-xl font-bold text-[#1E3A5F] leading-snug"

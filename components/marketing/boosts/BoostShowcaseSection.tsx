@@ -24,6 +24,8 @@ export interface BoostShowcaseSectionProps {
   assetAlt?: string
   /** Accessible label for the audio Boost's player. */
   audioLabel?: string
+  /** Candidate name shown on the audio player header (audio Boosts). */
+  candidateName?: string
 }
 
 function ImageAsset({ src, alt, title }: { src: string | null; alt: string; title: string }) {
@@ -109,10 +111,65 @@ function ImageAsset({ src, alt, title }: { src: string | null; alt: string; titl
   )
 }
 
-function AudioAsset({ src, label }: { src: string | null; label: string }) {
+function DisabledSaveButton() {
+  // Example-only affordance: previews the recruiter "save candidate" action that
+  // exists in the real product. Disabled here since /boosts is a public demo.
+  return (
+    <button
+      type="button"
+      disabled
+      title="Saving candidates is available inside RoleBoost"
+      className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[#E8E0D0] bg-[#F5F0E8] px-3 py-2 font-jakarta text-sm font-semibold text-[#8FA3B8] cursor-not-allowed min-h-[44px]"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+      Save
+    </button>
+  )
+}
+
+function AudioAsset({
+  src,
+  label,
+  formatName,
+  candidateName,
+}: {
+  src: string | null
+  label: string
+  formatName: string
+  candidateName: string
+}) {
   if (src) {
     return (
       <div className="w-full rounded-2xl border border-[#E8E0D0] bg-[#FFFBF5] shadow-sm p-6">
+        {/* Candidate header */}
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0F6E56] text-white font-jakarta text-sm font-bold shrink-0"
+              aria-hidden="true"
+            >
+              JM
+            </span>
+            <div className="min-w-0">
+              <p className="font-jakarta text-base font-bold text-[#1E3A5F] truncate">{candidateName}</p>
+              <p className="font-inter text-xs text-gray-500 truncate">{formatName}</p>
+            </div>
+          </div>
+          <DisabledSaveButton />
+        </div>
         <audio controls preload="none" src={src} aria-label={label} className="w-full">
           Your browser does not support the audio element.
         </audio>
@@ -165,6 +222,7 @@ export default function BoostShowcaseSection({
   assetSrc,
   assetAlt,
   audioLabel,
+  candidateName = 'Jordan Mills',
 }: BoostShowcaseSectionProps) {
   const prefersReduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
@@ -216,7 +274,12 @@ export default function BoostShowcaseSection({
             {kind === 'image' ? (
               <ImageAsset src={assetSrc} alt={assetAlt ?? `${name} for Jordan Mills`} title={name} />
             ) : (
-              <AudioAsset src={assetSrc} label={audioLabel ?? `${name} for Jordan Mills`} />
+              <AudioAsset
+                src={assetSrc}
+                label={audioLabel ?? `${name} for ${candidateName}`}
+                formatName={name}
+                candidateName={candidateName}
+              />
             )}
           </motion.div>
         </div>
