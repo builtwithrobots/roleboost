@@ -5,6 +5,7 @@ import AIStudio from '@/components/candidate/AIStudio';
 import DashboardPage from '@/components/layout/DashboardPage';
 import { MAX_ACTIVE_SOURCES } from '@/lib/career-sources/queries';
 import type {
+  AssetPackage,
   CandidateProfile,
   TranscriptGap,
   BrainHardeningSession,
@@ -21,9 +22,9 @@ const HARDENING_COLUMNS =
 const SOURCE_COLUMNS = 'id, source_type, label, ingest_method, char_count, file_name, created_at';
 
 const AI_COLUMNS =
-  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, context_package_md, context_package_updated_at, career_context_drafts, created_at, updated_at';
+  'id, clerk_user_id, slug, full_name, headline, target_role, location, linkedin_url, summary_bullets, additional_context, is_published, ai_enabled, intake_completed, brain_readiness_score, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, custom_qa_pairs, redirect_topics, context_package_md, context_package_updated_at, created_at, updated_at';
 
-const STUDIO_TABS = ['build', 'context', 'test', 'harden'] as const;
+const STUDIO_TABS = ['context', 'asset-package', 'build', 'test', 'harden'] as const;
 type StudioTab = (typeof STUDIO_TABS)[number];
 
 export default async function AIStudioPage({
@@ -31,7 +32,7 @@ export default async function AIStudioPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  // Deep link: /dashboard/ai?tab=context opens that tab (used by the Getting
+  // Deep link: /dashboard/ai?tab=asset-package opens that tab (used by the Getting
   // Started checklist and any in-app link). Invalid values fall back to "build".
   const { tab } = await searchParams;
   const initialTab: StudioTab = STUDIO_TABS.includes(tab as StudioTab)
@@ -78,7 +79,7 @@ export default async function AIStudioPage({
       redirect_topics: [],
       context_package_md: null,
       context_package_updated_at: null,
-      career_context_drafts: null,
+      asset_package: null,
     };
   }
 
@@ -124,6 +125,27 @@ export default async function AIStudioPage({
     .limit(MAX_ACTIVE_SOURCES);
   const sources = (sourcesData ?? []) as unknown as CareerSourceSummary[];
 
+  // Asset package, read separately and resiliently: the column may not exist yet
+  // on a DB that hasn't received the 20260714 migration, so a failure here degrades
+  // to null (empty state) instead of breaking the whole studio page.
+  const { data: pkgRow } = await supabase
+    .from('candidate_profiles')
+    .select('asset_package')
+    .eq('id', profile.id)
+    .maybeSingle();
+  profile.asset_package = (pkgRow as { asset_package?: AssetPackage | null } | null)?.asset_package ?? null;
+
+  // Whether a résumé has been uploaded (gates the Context Document + Asset Package
+  // tabs, which need a résumé to generate from).
+  const { data: resumeRow } = await supabase
+    .from('resume_documents')
+    .select('canonical_markdown')
+    .eq('candidate_profile_id', profile.id)
+    .maybeSingle();
+  const hasResume =
+    typeof (resumeRow as { canonical_markdown?: string } | null)?.canonical_markdown === 'string' &&
+    ((resumeRow as { canonical_markdown: string }).canonical_markdown.trim().length > 0);
+
   return (
     <DashboardPage>
       <AIStudio
@@ -133,6 +155,8 @@ export default async function AIStudioPage({
         hardeningSessions={hardeningSessions}
         sources={sources}
         maxSources={MAX_ACTIVE_SOURCES}
+        hasResume={hasResume}
+        hasSources={sources.length > 0}
       />
     </DashboardPage>
   );

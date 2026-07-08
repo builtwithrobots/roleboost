@@ -48,18 +48,20 @@ const ASSET_META: Record<AssetType, {
   hint: string;
   maxSize: string;
 }> = {
+  // Boost names and copy mirror the public /boosts page, the reference for the
+  // three Boost formats.
   audio: {
     icon: Headphones,
-    label: 'Audio Brief',
-    description: 'Your 2–5 minute career story. Produced via NotebookLM.',
+    label: 'Short Boost Audio',
+    description: 'A single-host audio overview, under two minutes, like a trusted colleague briefing the hiring manager. Produced via NotebookLM.',
     accept: 'audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/ogg,.mp3,.m4a,.wav,.ogg',
     hint: 'MP3, M4A, WAV up to 50MB',
     maxSize: '50MB',
   },
   debate_audio: {
     icon: MessageSquare,
-    label: 'Debate Audio',
-    description: 'Two-voice AI debate format highlighting your strengths.',
+    label: 'Podcast Style Boost',
+    description: 'A two-host conversation, in the familiar podcast format, about you and what you would bring to a hiring team. Produced via NotebookLM.',
     accept: 'audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/ogg,.mp3,.m4a,.wav,.ogg',
     hint: 'MP3, M4A, WAV up to 50MB',
     maxSize: '50MB',
@@ -82,8 +84,8 @@ const ASSET_META: Record<AssetType, {
   },
   infographic: {
     icon: ImageIcon,
-    label: 'Career Infographic',
-    description: 'Visual one-pager of your career timeline and highlights.',
+    label: 'Visual Boost',
+    description: 'A single career infographic that shows the whole story in one look: the numbers, the trajectory, and the case for the next role.',
     accept: 'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp',
     hint: 'PNG, JPG, WebP up to 10MB',
     maxSize: '10MB',

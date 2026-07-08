@@ -112,6 +112,7 @@ export async function resetAiLearning() {
         context_package_md: null,
         context_package_updated_at: null,
         career_context_drafts: null,
+        asset_package: null,
         updated_at: new Date().toISOString(),
       })
       .eq('clerk_user_id', userId);

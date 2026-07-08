@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { assertCandidateAiAccess, EntitlementError } from '@/lib/auth/entitlements';
-import type { CareerContextDrafts, CustomQAPair } from '@/lib/types';
+import type { AssetPackage, AssetPackagePerspectiveKey, CustomQAPair } from '@/lib/types';
 
 const BrainInput = z.object({
   leadership_philosophy: z.string().max(5000).optional(),
@@ -66,40 +66,39 @@ export async function updateCandidateBrain(input: unknown) {
   }
 }
 
-const SelectAngleInput = z.object({ angle: z.enum(['A', 'B']) });
+const ChoosePerspectiveInput = z.object({ perspective: z.enum(['A', 'B']) });
 
-// Promotes one generated narrative angle to the candidate's active career-context
-// document. Records the selection on career_context_drafts and copies the chosen
-// angle's markdown into context_package_md -- the single slot the brain reads and
-// the assets page downloads. Switching angles later is just another call here; no
-// regeneration needed.
-export async function selectCareerContextAngle(input: unknown) {
+// Promotes one generated asset-package perspective to the candidate's active career
+// context. Records the choice on asset_package.chosen and copies that perspective's
+// Section 1 markdown into context_package_md -- the single slot the brain reads and
+// the Context Document tab shows. This is the only seam that re-gears the live brain;
+// generating a new package leaves the brain untouched until the candidate chooses.
+export async function chooseAssetPackagePerspective(input: unknown) {
   try {
     const { supabase, userId, user } = await getUserContext('candidate');
     assertCandidateAiAccess(user);
-    const { angle } = SelectAngleInput.parse(input);
+    const { perspective } = ChoosePerspectiveInput.parse(input);
 
     const { data: profile } = await supabase
       .from('candidate_profiles')
-      .select('career_context_drafts')
+      .select('asset_package')
       .eq('clerk_user_id', userId)
       .single();
 
-    const drafts = (profile as { career_context_drafts: CareerContextDrafts | null } | null)
-      ?.career_context_drafts;
-    const chosen = drafts?.angles?.[angle];
-    if (!drafts || !chosen) {
-      return { ok: false as const, error: { code: 'NOT_FOUND', message: 'No generated angle to select' } };
+    const pkg = (profile as { asset_package: AssetPackage | null } | null)?.asset_package;
+    const chosen = pkg?.perspectives?.[perspective as AssetPackagePerspectiveKey];
+    if (!pkg || !chosen) {
+      return { ok: false as const, error: { code: 'NOT_FOUND', message: 'No generated perspective to choose' } };
     }
 
-    const updated: CareerContextDrafts = { ...drafts, selected: angle };
+    const updated: AssetPackage = { ...pkg, chosen: perspective };
     const now = new Date().toISOString();
 
     const { error } = await supabase
       .from('candidate_profiles')
       .update({
-        career_context_drafts: updated,
-        context_package_md: chosen.markdown,
+        asset_package: updated,
+        context_package_md: chosen.brain_context_md,
         context_package_updated_at: now,
         updated_at: now,
       })
