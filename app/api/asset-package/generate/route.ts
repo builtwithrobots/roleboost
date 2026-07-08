@@ -15,7 +15,10 @@ import type { AssetPackage } from '@/lib/types';
 // context_package_md and re-gears the brain. A fresh generation never touches the
 // live brain.
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// Staged generation is three Sonnet calls (strategy, then two prompt sets in
+// parallel), each producing thousands of tokens; 60s hits Vercel's
+// FUNCTION_INVOCATION_TIMEOUT in production. 300s is the Pro-plan ceiling.
+export const maxDuration = 300;
 
 const Body = z.object({
   target_role: z.string().trim().min(1).max(200),

@@ -332,7 +332,7 @@ function GenerateForm({
       {generating ? (
         <p className="text-xs text-[var(--rb-text-muted)]">
           Reading your career, applying the story framework, and writing both perspectives with their
-          scripts. This takes up to a minute.
+          scripts. This is the slow, thorough kind of work; give it a couple of minutes.
         </p>
       ) : (
         !hasSources && (
