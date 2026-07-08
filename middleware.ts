@@ -33,7 +33,11 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Skip Next internals and static files. The extension list MUST include media
+    // (audio/video) as well as images/fonts/docs, otherwise Clerk runs on those
+    // requests and auth-protects them: a signed-out fetch of /boosts/*.mp3 then
+    // gets an HTML 404 instead of the file, and the <audio> element fails to play.
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|avif|png|gif|svg|ico|ttf|woff2?|csv|docx?|xlsx?|pdf|zip|webmanifest|mp3|m4a|aac|wav|ogg|oga|opus|flac|mp4|m4v|mov|webm)).*)',
     '/(api|trpc)(.*)',
   ],
 };
