@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { uploadStateFade } from '@/lib/motion-dashboard';
 import {
@@ -21,12 +22,15 @@ import {
 
 type AssetType = 'audio' | 'debate_audio' | 'video' | 'deck' | 'infographic' | 'resume';
 
+type ProcessingStatus = 'processing' | 'ready' | 'failed';
+
 interface ExistingAsset {
   id: string;
   file_name: string;
   file_size_bytes: number | null;
   created_at: string;
   signed_url?: string;
+  processing_status?: ProcessingStatus;
 }
 
 interface Props {
@@ -108,11 +112,59 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
   const meta = ASSET_META[assetType];
   const Icon = meta.icon;
   const prefersReduced = useReducedMotion();
+  const router = useRouter();
+  const isAudio = assetType === 'audio' || assetType === 'debate_audio';
   const [isDragging, setIsDragging] = useState(false);
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [localAsset, setLocalAsset] = useState<ExistingAsset | null | undefined>(existingAsset);
+  // Conversion state for audio assets (NotebookLM files transcode to MP3 after
+  // upload). Null means "not applicable / already playable".
+  const [procStatus, setProcStatus] = useState<ProcessingStatus | null>(
+    existingAsset?.processing_status ?? null
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // While an audio asset is converting, poll for completion. On success we
+  // refresh the route so the server re-signs the freshly-converted MP3.
+  useEffect(() => {
+    if (procStatus !== 'processing' || !localAsset?.id) return;
+    let active = true;
+    const assetId = localAsset.id;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/assets/${assetId}/status`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!active) return;
+        if (json.status === 'ready') {
+          setProcStatus('ready');
+          clearInterval(interval);
+          router.refresh();
+        } else if (json.status === 'failed') {
+          setProcStatus('failed');
+          clearInterval(interval);
+        }
+      } catch {
+        // transient; keep polling
+      }
+    }, 3000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [procStatus, localAsset?.id, router]);
+
+  const retryConversion = useCallback(async () => {
+    if (!localAsset?.id) return;
+    setProcStatus('processing');
+    try {
+      await fetch(`/api/assets/${localAsset.id}/status`, { method: 'POST' });
+      // Success or failure is reflected by the poller picking up the new status.
+    } catch {
+      setProcStatus('failed');
+    }
+  }, [localAsset]);
 
   const upload = useCallback(
     async (file: File) => {
@@ -140,6 +192,8 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
           file_size_bytes: file.size,
           created_at: new Date().toISOString(),
         });
+        // Audio that is not already MP3 comes back flagged for conversion.
+        setProcStatus(isAudio ? (json.processing ? 'processing' : 'ready') : null);
         setUploadState('success');
         setTimeout(() => setUploadState('idle'), 3000);
         onUploadComplete?.();
@@ -148,7 +202,7 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
         setUploadState('error');
       }
     },
-    [assetType, candidateProfileId, onUploadComplete]
+    [assetType, candidateProfileId, isAudio, onUploadComplete]
   );
 
   const handleFiles = (files: FileList | null) => {
@@ -189,19 +243,41 @@ export default function AssetUploadCard({ assetType, candidateProfileId, existin
         {/* Existing asset */}
         {hasAsset && (
           <div className="flex items-center gap-3 rounded-[var(--radius-lg)] bg-[var(--rb-bg-surface-raised)] px-3 py-2.5">
-            <CheckCircle2 className="size-4 shrink-0 text-[var(--color-success)]" />
+            {procStatus === 'processing' ? (
+              <Loader2 className="size-4 shrink-0 text-[var(--rb-brand)] animate-spin" />
+            ) : procStatus === 'failed' ? (
+              <AlertCircle className="size-4 shrink-0 text-[var(--color-error)]" />
+            ) : (
+              <CheckCircle2 className="size-4 shrink-0 text-[var(--color-success)]" />
+            )}
             <div className="flex-1 min-w-0">
               <div className="text-xs font-medium text-[var(--rb-text)] truncate">{localAsset!.file_name}</div>
-              <div className="flex items-center gap-2 text-xs text-[var(--rb-text-muted)]">
-                {localAsset!.file_size_bytes && (
-                  <span className="font-data">{formatBytes(localAsset!.file_size_bytes)}</span>
-                )}
-                <span>·</span>
-                <span>{formatDate(localAsset!.created_at)}</span>
-              </div>
+              {procStatus === 'processing' ? (
+                <div className="text-xs text-[var(--rb-brand)]">Preparing your audio for playback…</div>
+              ) : procStatus === 'failed' ? (
+                <div className="text-xs text-[var(--color-error)]">Couldn&apos;t process this file. Try again or retry.</div>
+              ) : (
+                <div className="flex items-center gap-2 text-xs text-[var(--rb-text-muted)]">
+                  {localAsset!.file_size_bytes && (
+                    <span className="font-data">{formatBytes(localAsset!.file_size_bytes)}</span>
+                  )}
+                  <span>·</span>
+                  <span>{formatDate(localAsset!.created_at)}</span>
+                </div>
+              )}
             </div>
-            {/* Preview button for audio/video */}
-            {(assetType === 'audio' || assetType === 'debate_audio') && localAsset!.signed_url && (
+            {/* Retry when conversion failed */}
+            {isAudio && procStatus === 'failed' && (
+              <button
+                onClick={retryConversion}
+                className="shrink-0 flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--rb-brand)] hover:bg-[var(--rb-brand-subtle)] transition-colors"
+              >
+                <RefreshCw className="size-3" />
+                Retry
+              </button>
+            )}
+            {/* Preview button for audio once ready */}
+            {isAudio && procStatus !== 'processing' && procStatus !== 'failed' && localAsset!.signed_url && (
               <a
                 href={localAsset!.signed_url}
                 target="_blank"

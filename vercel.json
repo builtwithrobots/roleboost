@@ -5,6 +5,10 @@
       "schedule": "*/15 * * * *"
     },
     {
+      "path": "/api/cron/process-audio",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/prune-rate-limits",
       "schedule": "0 3 * * *"
     },
