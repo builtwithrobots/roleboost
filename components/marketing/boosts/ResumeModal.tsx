@@ -38,39 +38,66 @@ export default function ResumeModal({ open, onClose }: ResumeModalProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <DialogPanel
           transition
-          className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-[#FFFBF5] border border-[#E8E0D0] shadow-xl transition duration-200 data-closed:opacity-0 data-closed:scale-95"
+          className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl bg-[#FFFBF5] border border-[#E8E0D0] shadow-xl transition duration-200 data-closed:opacity-0 data-closed:scale-95"
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-4 p-5 sm:p-6 border-b border-[#E8E0D0]">
-            <div>
+            <div className="min-w-0">
               <DialogTitle className="font-jakarta text-lg font-bold text-[#1E3A5F]">
                 Jordan Mills, ATS Resume
               </DialogTitle>
-              <p className="font-inter text-sm text-gray-600 mt-1">
+              <p className="hidden sm:block font-inter text-sm text-gray-600 mt-1">
                 A clean, applicant-tracking-ready resume, one of Jordan&apos;s Boosts.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close resume preview"
-              className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg text-gray-600 hover:text-[#1E3A5F] hover:bg-[#F5F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5] transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="/boosts/jordan-mills-resume.jpg"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open resume at full size in a new tab"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D97706] px-3 py-2 min-w-[44px] font-jakarta text-sm font-semibold text-[#B45309] hover:bg-[#FEF3C7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5] transition-colors min-h-[44px]"
               >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                <span className="hidden sm:inline">Open full size</span>
+              </a>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close resume preview"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-lg text-gray-600 hover:text-[#1E3A5F] hover:bg-[#F5F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5] transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Body: resume image (scrollable) */}

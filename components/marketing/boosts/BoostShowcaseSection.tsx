@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion } from 'motion/react'
 import { fadeUp, scaleIn } from '@/lib/motion'
+import ImageLightbox from './ImageLightbox'
 
 export type BoostKind = 'image' | 'audio'
 
@@ -25,17 +26,59 @@ export interface BoostShowcaseSectionProps {
   audioLabel?: string
 }
 
-function ImageAsset({ src, alt }: { src: string | null; alt: string }) {
+function ImageAsset({ src, alt, title }: { src: string | null; alt: string; title: string }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+
   if (src) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        decoding="async"
-        className="w-full rounded-2xl border border-[#E8E0D0] shadow-sm"
-      />
+      <>
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          aria-haspopup="dialog"
+          aria-label={`View larger: ${alt}`}
+          className="group relative block w-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="w-full rounded-2xl border border-[#E8E0D0] shadow-sm transition-transform duration-200 group-hover:scale-[1.01]"
+          />
+          {/* Affordance cue: icon + text, not color alone */}
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-[#E8E0D0] bg-[#FFFBF5]/95 px-3 py-1.5 font-jakarta text-xs font-semibold text-[#1E3A5F] shadow-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+            Click to enlarge
+          </span>
+        </button>
+        <ImageLightbox
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          src={src}
+          alt={alt}
+          title={title}
+        />
+      </>
     )
   }
   return (
@@ -171,7 +214,7 @@ export default function BoostShowcaseSection({
             className={assetFirstOnDesktop ? 'lg:order-1' : 'lg:order-2'}
           >
             {kind === 'image' ? (
-              <ImageAsset src={assetSrc} alt={assetAlt ?? `${name} for Jordan Mills`} />
+              <ImageAsset src={assetSrc} alt={assetAlt ?? `${name} for Jordan Mills`} title={name} />
             ) : (
               <AudioAsset src={assetSrc} label={audioLabel ?? `${name} for Jordan Mills`} />
             )}
