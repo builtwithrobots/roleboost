@@ -32,6 +32,8 @@ function ImageAsset({ src, alt }: { src: string | null; alt: string }) {
       <img
         src={src}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         className="w-full rounded-2xl border border-[#E8E0D0] shadow-sm"
       />
     )
