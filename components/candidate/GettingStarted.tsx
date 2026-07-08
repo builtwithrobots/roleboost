@@ -49,10 +49,10 @@ const STEPS: Step[] = [
   },
   {
     key: 'contextReady',
-    title: 'Create your Asset Package',
-    blurb: 'Tell us the role you want. We write two versions of your story, with ready-to-run Boost scripts; pick the one that sounds most like you.',
-    cta: 'Go to Asset Package',
-    href: '/dashboard/ai?tab=asset-package',
+    title: 'Create your context document',
+    blurb: 'We write the story your AI leads with. Pick the version that sounds most like you.',
+    cta: 'Go to Context Document',
+    href: '/dashboard/ai?tab=context',
     Icon: Sparkles,
   },
   {

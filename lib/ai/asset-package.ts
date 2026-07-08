@@ -16,8 +16,9 @@ import {
 // Guide Block + Section 2 NotebookLM prompts), strategized toward a target role +
 // optional job description. Produces TWO narrative perspectives, each a
 // self-contained narrative plus its four ready-to-run NotebookLM prompts (Deep
-// Dive, Brief, Infographic, Short Video). The candidate chooses one downstream;
-// the chosen perspective's Section 1 becomes their active context_package_md.
+// Dive, Brief, Infographic, Short Video). This powers the SUPERADMIN production
+// tool (/admin/asset-packages): the founder generates and delivers the .md as a
+// paid service; the candidate drops it into their assets area themselves.
 //
 // Generation is STAGED for quality: Phase 1 produces the strategy + both
 // perspectives' Section 1; Phase 2 writes the four long prompt bodies per

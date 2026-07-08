@@ -18,7 +18,6 @@ import {
   Hammer,
   FileText,
   FlaskConical,
-  Package,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { updateCandidateBrain } from '@/app/(candidate)/dashboard/ai/actions';
@@ -28,7 +27,6 @@ import HardenPanel from './HardenPanel';
 import IntakeInterview from './IntakeInterview';
 import CareerSourcesCard from './CareerSourcesCard';
 import ContextDocumentPanel from './ContextDocumentPanel';
-import AssetPackagePanel from './AssetPackagePanel';
 import TabIntro from './TabIntro';
 import type {
   CandidateProfile,
@@ -50,10 +48,8 @@ interface Props {
   sources?: CareerSourceSummary[];
   /** Active-source ceiling, mirrored from the API. */
   maxSources?: number;
-  /** Whether a résumé is on file (gates Context Document + Asset Package). */
+  /** Whether a résumé is on file (the Context Document generator needs one). */
   hasResume?: boolean;
-  /** Whether any career sources are on file (a generation input alongside the résumé). */
-  hasSources?: boolean;
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
@@ -112,11 +108,10 @@ const TEXT_FIELDS = [
 
 type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
-type StudioTab = 'context' | 'asset-package' | 'build' | 'test' | 'harden';
+type StudioTab = 'context' | 'build' | 'test' | 'harden';
 
 const TABS: { key: StudioTab; label: string; Icon: typeof Hammer }[] = [
   { key: 'context', label: 'Context Document', Icon: FileText },
-  { key: 'asset-package', label: 'Asset Package', Icon: Package },
   { key: 'build', label: 'Build', Icon: Hammer },
   { key: 'test', label: 'Test', Icon: FlaskConical },
   { key: 'harden', label: 'Harden', Icon: ShieldCheck },
@@ -130,7 +125,6 @@ export default function AIStudio({
   sources,
   maxSources = 10,
   hasResume = false,
-  hasSources = false,
 }: Props) {
   const [fields, setFields] = useState<Record<TextFieldKey, string>>({
     key_wins: profile.key_wins ?? '',
@@ -484,27 +478,8 @@ export default function AIStudio({
         {tab === 'context' && (
           <div role="tabpanel" id="studio-panel-context" aria-labelledby="studio-tab-context">
             <ContextDocumentPanel
-              contextPackageMd={profile.context_package_md ?? null}
-              contextPackageUpdatedAt={profile.context_package_updated_at ?? null}
-              assetPackage={profile.asset_package ?? null}
-              slug={profile.slug}
+              initialDrafts={profile.career_context_drafts ?? null}
               hasResume={hasResume}
-              onCreatePackage={() => setTab('asset-package')}
-            />
-          </div>
-        )}
-
-        {/* ── Asset Package ─────────────────────────────────────────────────── */}
-        {tab === 'asset-package' && (
-          <div role="tabpanel" id="studio-panel-asset-package" aria-labelledby="studio-tab-asset-package">
-            <AssetPackagePanel
-              initialPackage={profile.asset_package ?? null}
-              slug={profile.slug}
-              fullName={profile.full_name}
-              defaultTargetRole={profile.target_role ?? ''}
-              hasResume={hasResume}
-              hasSources={hasSources}
-              onRefresh={() => router.refresh()}
             />
           </div>
         )}

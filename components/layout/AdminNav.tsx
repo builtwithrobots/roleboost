@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users } from 'lucide-react'
+import { LayoutDashboard, Users, Package } from 'lucide-react'
 import {
   SidebarHeading,
   SidebarItem,
@@ -12,6 +12,7 @@ import {
 const controlItems = [
   { href: '/admin', label: 'Overview', Icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', Icon: Users },
+  { href: '/admin/asset-packages', label: 'Asset Packages', Icon: Package },
 ]
 
 export default function AdminNav() {

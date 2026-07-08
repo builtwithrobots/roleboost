@@ -1,13 +1,13 @@
 import 'server-only';
 import { adminClient } from '@/lib/supabase/admin';
-import type { AssetPackage, CandidateBrain, CustomQAPair } from '@/lib/types';
+import type { CandidateBrain, CareerContextDrafts, CustomQAPair } from '@/lib/types';
 
 // The columns that make up the brain, plus the gating flags and owner id.
 // Sensitive fields here are intentionally barred from the anon role (see the
 // 20260626 migration); this read uses the service-role client so the chatbot can
 // assemble the full prompt server-side without depending on anon column access.
 const BRAIN_COLUMNS =
-  'id, clerk_user_id, full_name, target_role, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, additional_context, custom_qa_pairs, redirect_topics, ai_enabled, is_published, context_package_md';
+  'id, clerk_user_id, full_name, target_role, leadership_philosophy, key_wins, departure_reasons, biggest_challenge, ideal_environment, manager_needs, honest_weaknesses, wish_questions, additional_context, custom_qa_pairs, redirect_topics, ai_enabled, is_published, context_package_md, career_context_drafts';
 
 interface BrainRow {
   id: string;
@@ -28,6 +28,7 @@ interface BrainRow {
   ai_enabled: boolean;
   is_published: boolean;
   context_package_md: string | null;
+  career_context_drafts: unknown;
 }
 
 export interface CandidateBrainResult {
@@ -76,20 +77,12 @@ export async function getCandidateBrainBySlug(
     ? (secondaryRow.secondary_target_roles as string[])
     : [];
 
-  // Asset package, read separately and resiliently so a not-yet-migrated DB
-  // (column absent) degrades to null instead of breaking the public chat.
-  const { data: pkgRow } = await (adminClient.from('candidate_profiles') as any)
-    .select('asset_package')
-    .eq('id', row.id)
-    .maybeSingle();
-  const assetPackage = (pkgRow?.asset_package ?? null) as AssetPackage | null;
-
-  // The chosen perspective's hard-question answer is the single most important
-  // worked exemplar. Promote it into custom_qa_pairs (highest priority + few-shot)
-  // ahead of the candidate's own pairs, unless they already pinned an answer to
-  // the same question.
+  // The selected generated angle's hard-question answer is the single most
+  // important worked exemplar. Promote it into custom_qa_pairs (highest priority
+  // + few-shot) ahead of the candidate's own pairs, unless they already pinned an
+  // answer to the same question.
   const baseQA = normalizeCustomQA(row.custom_qa_pairs);
-  const customQA = withChosenHardQuestion(baseQA, assetPackage);
+  const customQA = withSelectedHardQuestion(baseQA, row.career_context_drafts);
 
   const candidate: CandidateBrain = {
     full_name: row.full_name,
@@ -130,14 +123,14 @@ export async function getCandidateBrainBySlug(
 }
 
 /**
- * Prepends the chosen asset-package perspective's hard-question Q/A to the custom
- * QA pairs so it inherits highest-priority + few-shot treatment. No-op when there
- * is no chosen perspective, or when the candidate already has a pair for that
- * question.
+ * Prepends the selected career-context angle's hard-question Q/A to the custom QA
+ * pairs so it inherits highest-priority + few-shot treatment. No-op when there is
+ * no selected angle, or when the candidate already has a pair for that question.
  */
-function withChosenHardQuestion(pairs: CustomQAPair[], pkg: AssetPackage | null): CustomQAPair[] {
-  const chosen = pkg?.chosen ? pkg.perspectives?.[pkg.chosen] : null;
-  const hq = chosen?.hard_question;
+function withSelectedHardQuestion(pairs: CustomQAPair[], rawDrafts: unknown): CustomQAPair[] {
+  const drafts = rawDrafts as CareerContextDrafts | null;
+  const selected = drafts?.selected ? drafts.angles?.[drafts.selected] : null;
+  const hq = selected?.hard_question;
   if (!hq || !hq.question?.trim() || !hq.answer?.trim()) return pairs;
 
   const exists = pairs.some(

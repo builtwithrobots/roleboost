@@ -13,7 +13,8 @@ export type AdminAction =
   | 'admin.revoke'
   | 'user.suspend'
   | 'user.unsuspend'
-  | 'user.delete';
+  | 'user.delete'
+  | 'asset_package.generate';
 
 export async function logAdminAction(params: {
   actorUserId: string;
