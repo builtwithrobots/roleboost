@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     'See the three Boosts RoleBoost makes: the Visual Boost, the Short Boost Audio, and the Podcast Style Boost, shown through one real candidate.',
 }
 
-// Real Jordan Mills assets are supplied later. Drop the files in /public/boosts
-// and set the matching path below to swap each placeholder for the live asset:
-//   visual:  '/boosts/jordan-mills-visual-boost.png'
+// Real Jordan Mills assets live in /public/boosts. Set a path here to swap a
+// placeholder for the live asset; leave it null to keep the placeholder.
+// Audio Boosts are still pending, drop the files in and fill these in:
 //   short:   '/boosts/jordan-mills-short-boost-audio.mp3'
 //   podcast: '/boosts/jordan-mills-podcast-boost.mp3'
 const ASSET_SRC = {
-  visual: null,
+  visual: '/boosts/jordan-mills-visual-boost.png',
   short: null,
   podcast: null,
 } satisfies Record<string, string | null>
