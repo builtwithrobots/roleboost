@@ -516,7 +516,7 @@ export default function SettingsPanel({ account, settings }: Props) {
           'Intake interview answers and readiness score',
           'Sandbox self-tests and coaching',
           'Recruiter chat history and surfaced gaps',
-          'Your generated career context document',
+          'Your generated career story',
         ]}
         keeps={[
           'Your account and public link',

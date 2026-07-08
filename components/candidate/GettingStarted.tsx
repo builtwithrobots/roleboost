@@ -49,9 +49,9 @@ const STEPS: Step[] = [
   },
   {
     key: 'contextReady',
-    title: 'Create your context document',
+    title: 'Create your career story',
     blurb: 'We write the story your AI leads with. Pick the version that sounds most like you.',
-    cta: 'Go to Context Document',
+    cta: 'Go to Career Story',
     href: '/dashboard/ai?tab=context',
     Icon: Sparkles,
   },

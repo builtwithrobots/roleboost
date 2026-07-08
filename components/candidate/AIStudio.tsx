@@ -48,7 +48,7 @@ interface Props {
   sources?: CareerSourceSummary[];
   /** Active-source ceiling, mirrored from the API. */
   maxSources?: number;
-  /** Whether a résumé is on file (the Context Document generator needs one). */
+  /** Whether a résumé is on file (the Career Story generator needs one). */
   hasResume?: boolean;
 }
 
@@ -110,11 +110,13 @@ type TextFieldKey = (typeof TEXT_FIELDS)[number]['key'];
 
 type StudioTab = 'context' | 'build' | 'test' | 'harden';
 
+// Key 'context' is kept for the tab so existing ?tab=context deep links work;
+// only the label changed to the candidate-facing name.
 const TABS: { key: StudioTab; label: string; Icon: typeof Hammer }[] = [
-  { key: 'context', label: 'Context Document', Icon: FileText },
+  { key: 'context', label: 'Career Story', Icon: FileText },
   { key: 'build', label: 'Build', Icon: Hammer },
-  { key: 'test', label: 'Test', Icon: FlaskConical },
   { key: 'harden', label: 'Harden', Icon: ShieldCheck },
+  { key: 'test', label: 'Test', Icon: FlaskConical },
 ];
 
 export default function AIStudio({
@@ -474,7 +476,7 @@ export default function AIStudio({
         </div>
         )}
 
-        {/* ── Context Document ──────────────────────────────────────────────── */}
+        {/* ── Career Story (tab key 'context' for deep-link stability) ─────── */}
         {tab === 'context' && (
           <div role="tabpanel" id="studio-panel-context" aria-labelledby="studio-tab-context">
             <ContextDocumentPanel
