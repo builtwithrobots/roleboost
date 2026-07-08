@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 //   podcast: '/boosts/jordan-mills-podcast-boost.mp3'
 const ASSET_SRC = {
   visual: '/boosts/jordan-mills-visual-boost.png',
-  short: '/boosts/jordan-mills-short-boost.m4a',
+  short: '/boosts/jordan-mills-short-boost.mp3',
   podcast: null,
 } satisfies Record<string, string | null>
 
