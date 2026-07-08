@@ -82,7 +82,7 @@ export default function ContextDocumentPanel({ initialDrafts, hasResume = false 
           | { error?: { code?: string; message?: string } }
           | null;
         if (res.status === 402) {
-          setError('Generating a context document needs an active subscription or trial.');
+          setError('Generating your career story needs an active subscription or trial.');
         } else if (body?.error?.message) {
           setError(body.error.message);
         } else {
@@ -123,11 +123,11 @@ export default function ContextDocumentPanel({ initialDrafts, hasResume = false 
       <header>
         <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
           <Sparkles className="size-4 text-[var(--rb-brand)]" />
-          Career context document
+          Your career story
         </h2>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-          A professionally synthesized narrative built from your résumé and career sources. Generate
-          two angles, pick the one that tells your story best, your AI leads from it when recruiters
+          A professionally written story built from your résumé and career sources. Generate two
+          versions, pick the one that sounds most like you, your AI leads from it when recruiters
           ask about your background.
         </p>
       </header>
@@ -205,8 +205,8 @@ function ResumeFallback() {
       <div className="max-w-md">
         <h3 className="text-sm font-semibold text-[var(--rb-text)]">Upload your résumé first</h3>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-          Your context document is written from your résumé and career sources. Add your résumé in
-          the Assets section, then come back here to generate it.
+          Your career story is written from your résumé and career sources. Add your résumé in the
+          Assets section, then come back here to generate it.
         </p>
       </div>
       <Link
@@ -228,11 +228,11 @@ function EmptyState({ onGenerate, generating }: { onGenerate: () => void; genera
       </span>
       <div className="max-w-md">
         <h3 className="text-sm font-semibold text-[var(--rb-text)]">
-          Generate your context document
+          Generate your career story
         </h3>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-          We read your résumé and any career sources, then write two distinct narrative angles for
-          your career story. Pick the one that fits, it becomes the foundation your AI reasons from.
+          We read your résumé and any career sources, then write two distinct versions of your
+          career story. Pick the one that fits, it becomes the foundation your AI reasons from.
         </p>
       </div>
       <button
@@ -241,7 +241,7 @@ function EmptyState({ onGenerate, generating }: { onGenerate: () => void; genera
         className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
       >
         {generating ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-        {generating ? 'Writing your angles…' : 'Generate document'}
+        {generating ? 'Writing your story…' : 'Generate my story'}
       </button>
       {generating && (
         <p className="text-xs text-[var(--rb-text-muted)]">

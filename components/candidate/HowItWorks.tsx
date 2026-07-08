@@ -46,10 +46,10 @@ const STEPS = [
   },
   {
     n: 3,
-    title: 'Create your context document',
+    title: 'Create your career story',
     body: 'We write the story your AI leads with. Pick the version that sounds like you.',
     href: '/dashboard/ai?tab=context',
-    cta: 'Context Document',
+    cta: 'Career Story',
     Icon: Sparkles,
   },
   {
