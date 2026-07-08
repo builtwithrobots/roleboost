@@ -46,10 +46,10 @@ const STEPS = [
   },
   {
     n: 3,
-    title: 'Create your context document',
-    body: 'We write the story your AI leads with. Pick the version that sounds like you.',
-    href: '/dashboard/ai?tab=context',
-    cta: 'Context Document',
+    title: 'Create your Asset Package',
+    body: 'Tell us your target role. We write two versions of your story, with Boost scripts ready to run; pick the one that sounds like you.',
+    href: '/dashboard/ai?tab=asset-package',
+    cta: 'Asset Package',
     Icon: Sparkles,
   },
   {

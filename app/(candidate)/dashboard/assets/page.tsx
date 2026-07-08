@@ -2,7 +2,6 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
 import AssetUploadCard from '@/components/candidate/AssetUploadCard';
-import AssetPackageCard from '@/components/candidate/AssetPackageCard';
 import DashboardPage from '@/components/layout/DashboardPage';
 import PageHeader from '@/components/ui/page-header';
 import ResumeBuilderCard, { type ResumeDoc } from '@/components/candidate/ResumeBuilderCard';
@@ -25,10 +24,11 @@ export default async function CandidateAssetsPage() {
     .single();
 
   if (!profile) redirect('/dashboard/profile');
-  const { id: profileId, slug } = profile as { id: string; slug: string };
+  const { id: profileId } = profile as { id: string; slug: string };
 
-  // Media assets we keep: Audio Brief + Infographic. Sign each for playback/preview.
-  type MediaType = 'audio' | 'infographic';
+  // The three Boosts: Short Boost Audio, Visual Boost (infographic), and the
+  // Podcast Style Boost (debate_audio). Sign each for playback/preview.
+  type MediaType = 'audio' | 'infographic' | 'debate_audio';
   type MediaAsset = {
     id: string;
     file_name: string;
@@ -45,7 +45,7 @@ export default async function CandidateAssetsPage() {
       .from('candidate_assets')
       .select(cols)
       .eq('clerk_user_id', userId)
-      .in('asset_type', ['audio', 'infographic'])
+      .in('asset_type', ['audio', 'infographic', 'debate_audio'])
       .eq('is_active', true);
   let mediaRows: unknown[] | null;
   const withStatus = await mediaQuery(`${baseMediaCols}, processing_status`);
@@ -56,7 +56,11 @@ export default async function CandidateAssetsPage() {
     mediaRows = withStatus.data;
   }
 
-  const mediaByType: Record<MediaType, MediaAsset | null> = { audio: null, infographic: null };
+  const mediaByType: Record<MediaType, MediaAsset | null> = {
+    audio: null,
+    infographic: null,
+    debate_audio: null,
+  };
   for (const row of (mediaRows ?? []) as Array<{
     id: string;
     file_name: string;
@@ -86,22 +90,6 @@ export default async function CandidateAssetsPage() {
       signed_url,
       processing_status: row.processing_status,
     };
-  }
-
-  // Asset Package, best-effort: the columns may not exist yet on a project that
-  // hasn't received the context_package migration, so this query may come back
-  // empty without breaking the page.
-  let packageMd: string | null = null;
-  let packageUpdatedAt: string | null = null;
-  const { data: pkg } = await supabase
-    .from('candidate_profiles')
-    .select('context_package_md, context_package_updated_at')
-    .eq('clerk_user_id', userId)
-    .maybeSingle();
-  if (pkg) {
-    const p = pkg as { context_package_md?: string | null; context_package_updated_at?: string | null };
-    packageMd = p.context_package_md ?? null;
-    packageUpdatedAt = p.context_package_updated_at ?? null;
   }
 
   // Résumé document (ATS builder) with fresh signed download URLs.
@@ -147,13 +135,13 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        description="Your résumé, audio brief, infographic, and shareable context package, the materials that power your RoleBoost profile."
+        description="Your résumé and your three Boosts, the Short Boost Audio, Visual Boost, and Podcast Style Boost that power your RoleBoost profile."
       />
 
       {/* ATS résumé builder */}
       <ResumeBuilderCard resume={resumeDoc} />
 
-      {/* Audio Brief + Infographic + Asset Package */}
+      {/* The three Boosts */}
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-8 sm:grid-cols-2 lg:grid-cols-3">
         <AssetUploadCard
           assetType="audio"
@@ -165,7 +153,11 @@ export default async function CandidateAssetsPage() {
           candidateProfileId={profileId}
           existingAsset={mediaByType.infographic ?? undefined}
         />
-        <AssetPackageCard initialMarkdown={packageMd} updatedAt={packageUpdatedAt} slug={slug} />
+        <AssetUploadCard
+          assetType="debate_audio"
+          candidateProfileId={profileId}
+          existingAsset={mediaByType.debate_audio ?? undefined}
+        />
       </div>
 
       {/* Tip */}
@@ -173,8 +165,8 @@ export default async function CandidateAssetsPage() {
         <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
           <p className="text-sm text-[var(--rb-text-secondary)]">
             <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}
-            Your Audio Brief is produced by Google NotebookLM from your career documents, upload it here
-            after generating. The Asset Package is a single context file you can reuse anywhere.
+            Your Boosts are produced in Google NotebookLM using the scripts from your Asset Package
+            (AI Studio), upload each one here after generating.
           </p>
         </div>
       </div>

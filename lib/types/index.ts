@@ -69,7 +69,11 @@ export interface CandidateProfile extends CandidateBrain {
   context_package_md?: string | null;
   context_package_updated_at?: string | null;
   // Staging for self-serve generation: both narrative angles + which is selected.
+  // Retired in favor of asset_package; kept optional for back-compat reads.
   career_context_drafts?: CareerContextDrafts | null;
+  // The full self-serve asset package (both perspectives + which is chosen). The
+  // chosen perspective's Section 1 is what populates context_package_md.
+  asset_package?: AssetPackage | null;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +132,120 @@ export interface CareerContextDrafts {
   recommended: CareerContextAngleKey;
   /** The angle the candidate selected, or null until they choose. */
   selected: CareerContextAngleKey | null;
+  generated_at: string;
+}
+
+// ── Asset Package (self-serve, in-app) ──────────────────────────────────────
+// The full RoleBoost Candidate Asset Production Skill run in AI Studio: résumé +
+// career sources, strategized toward a target role + optional job description,
+// producing TWO narrative perspectives, each a self-contained narrative (Section
+// 1) plus its four ready-to-run NotebookLM prompts (Section 2). The candidate
+// chooses one perspective; that perspective's rendered Section 1 becomes the
+// active context_package_md and drives the AI brain. Both perspectives' prompts
+// stay available to copy/download. This is the narrative hub; it replaces the
+// retired career-context two-angle generator.
+
+/** The 10 story types from the Candidate Asset Production Skill (v1.7). */
+export type AssetPackageStoryType =
+  | 'career_arc'
+  | 'builder'
+  | 'problem_solver'
+  | 'leadership'
+  | 'skeptic_champion'
+  | 'specialist'
+  | 'promoter'
+  | 'reinventor'
+  | 'culture_builder'
+  | 'steady_hand';
+
+export const ASSET_PACKAGE_STORY_TYPE_LABELS: Record<AssetPackageStoryType, string> = {
+  career_arc: 'The Career Arc',
+  builder: 'The Builder',
+  problem_solver: 'The Problem Solver',
+  leadership: 'The Leadership Story',
+  skeptic_champion: 'The Skeptic and the Champion',
+  specialist: 'The Specialist',
+  promoter: 'The Promoter',
+  reinventor: 'The Reinventor',
+  culture_builder: 'The Culture Builder',
+  steady_hand: 'The Steady Hand',
+};
+
+export type AssetPackagePerspectiveKey = 'A' | 'B';
+
+/** Identity Snapshot (Section 1.1) -- shared across both perspectives. */
+export interface AssetPackageIdentity {
+  name: string;
+  slug: string;
+  location: string;
+  target_role: string;
+  headline: string;
+  /** Avatar color chosen from the RoleBoost palette, with a one-line rationale. */
+  avatar_color: { name: string; hex: string; rationale: string };
+  initials: string;
+}
+
+/** One fully-written NotebookLM prompt (Section 2). */
+export interface AssetPackagePrompt {
+  /** The prompt's short name, e.g. "The First Non-Lead". */
+  title: string;
+  /** The full, copy-paste-ready prompt body. */
+  body: string;
+}
+
+/** One row of the NotebookLM Prompt Mapping table (Section 1.6). */
+export interface AssetPackagePromptMappingRow {
+  format: 'Deep Dive' | 'Brief' | 'Infographic' | 'Short Video';
+  prompt_name: string;
+  rationale: string;
+  tone_note: string;
+}
+
+/**
+ * One narrative perspective: a self-contained Section 1 narrative plus its four
+ * NotebookLM prompts. Choosing a perspective drives the brain, so each carries its
+ * own narrative/hook/hard-question/key-numbers (not a shared block).
+ */
+export interface AssetPackagePerspective {
+  /** Perspective name, e.g. "The Trust Signal". */
+  name: string;
+  /** One or two sentences on what this framing leads with and why. */
+  summary: string;
+  /** Section 1.2 -- 2-3 sentence evidence-grounded story (third person). */
+  narrative: string;
+  /** Section 1.3 -- one line, the single most credible specific fact. */
+  hook: string;
+  /** Section 1.4 -- the one hard question, with a first-person answer. */
+  hard_question: { question: string; answer: string };
+  /** Section 1.5 -- 5-8 specific metrics/facts that must appear in every asset. */
+  key_numbers: string[];
+  /** Section 1.6 -- NotebookLM prompt mapping (4 rows). */
+  prompt_mapping: AssetPackagePromptMappingRow[];
+  /** Section 2 -- the four fully-written NotebookLM prompts. */
+  prompts: {
+    deep_dive: AssetPackagePrompt;
+    brief: AssetPackagePrompt;
+    infographic: AssetPackagePrompt;
+    short_video: AssetPackagePrompt;
+  };
+  /** This perspective's Section 1 rendered to markdown; promotes to context_package_md. */
+  brain_context_md: string;
+}
+
+export interface AssetPackage {
+  /** The target role the package was strategized for. */
+  target_role: string;
+  /** The job description used to strategize, or null. */
+  job_description: string | null;
+  story_type: AssetPackageStoryType;
+  /** The perspective the generator recommends. */
+  recommended: AssetPackagePerspectiveKey;
+  /** The perspective the candidate chose (drives the brain), or null until chosen. */
+  chosen: AssetPackagePerspectiveKey | null;
+  identity: AssetPackageIdentity;
+  perspectives: Record<AssetPackagePerspectiveKey, AssetPackagePerspective>;
+  /** The full deliverable rendered to markdown, for download/copy ([slug]-asset-package.md). */
+  full_markdown: string;
   generated_at: string;
 }
 
