@@ -112,7 +112,8 @@ export async function resetAiLearning() {
         context_package_md: null,
         context_package_updated_at: null,
         career_context_drafts: null,
-        asset_package: null,
+        // asset_package is deliberately NOT cleared: it is the founder-produced
+        // deliverable record (superadmin tool), not candidate learning.
         updated_at: new Date().toISOString(),
       })
       .eq('clerk_user_id', userId);

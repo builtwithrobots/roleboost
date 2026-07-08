@@ -1,258 +1,189 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import {
-  FileText,
   Sparkles,
   Loader2,
-  Download,
-  Upload,
-  Trash2,
   RefreshCw,
+  RotateCcw,
   CheckCircle2,
-  Package,
-  ChevronDown,
+  Star,
+  Quote,
+  MessageSquareQuote,
+  Hash,
+  Compass,
+  Upload,
 } from 'lucide-react';
-import {
-  saveContextPackage,
-  clearContextPackage,
-} from '@/app/(candidate)/dashboard/assets/package-actions';
-import { ResumeFallback } from './AssetPackagePanel';
-import { ASSET_PACKAGE_STORY_TYPE_LABELS, type AssetPackage } from '@/lib/types';
-
-// The Context Document tab is the home of the candidate's ACTIVE career-context
-// document: the single markdown file the AI brain leads from (context_package_md).
-// It is populated by choosing a perspective in the Asset Package tab, or by
-// uploading an externally produced document. This panel views and manages it; the
-// generator lives in the Asset Package tab.
+import Link from 'next/link';
+import { selectCareerContextAngle } from '@/app/(candidate)/dashboard/ai/actions';
+import type {
+  CareerContextAngle,
+  CareerContextAngleKey,
+  CareerContextDrafts,
+  CareerContextStoryType,
+} from '@/lib/types';
 
 interface Props {
-  contextPackageMd: string | null;
-  contextPackageUpdatedAt: string | null;
-  /** The staged asset package, used to attribute where the active document came from. */
-  assetPackage: AssetPackage | null;
-  slug: string;
-  hasResume: boolean;
-  /** Switch the studio to the Asset Package tab (the generator). */
-  onCreatePackage: () => void;
+  initialDrafts: CareerContextDrafts | null;
+  /** Whether a résumé is on file; without one (and no drafts) we nudge to Assets. */
+  hasResume?: boolean;
 }
 
-const ACCEPT = '.md,.markdown,.txt';
-const MAX_CHARS = 100000;
-const MIN_CHARS = 30;
+const STORY_TYPE_LABELS: Record<CareerContextStoryType, string> = {
+  career_arc: 'The Career Arc',
+  builder: 'The Builder',
+  problem_solver: 'The Problem Solver',
+  leadership: 'The Leadership Story',
+  skeptic_champion: 'The Skeptic & the Champion',
+  specialist: 'The Specialist',
+};
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-export default function ContextDocumentPanel({
-  contextPackageMd,
-  contextPackageUpdatedAt,
-  assetPackage,
-  slug,
-  hasResume,
-  onCreatePackage,
-}: Props) {
-  const [markdown, setMarkdown] = useState<string | null>(contextPackageMd);
-  const [savedAt, setSavedAt] = useState<string | null>(contextPackageUpdatedAt);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
+export default function ContextDocumentPanel({ initialDrafts, hasResume = false }: Props) {
+  const [drafts, setDrafts] = useState<CareerContextDrafts | null>(initialDrafts);
+  const [generating, setGenerating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [pending, startTransition] = useTransition();
 
-  // Attribute the active document to the chosen asset-package perspective when it
-  // is the exact text that was promoted; otherwise treat it as uploaded/external.
-  const chosenPerspective =
-    assetPackage?.chosen && markdown
-      ? assetPackage.perspectives[assetPackage.chosen]
-      : null;
-  const fromPackage = !!chosenPerspective && chosenPerspective.brain_context_md === markdown;
-
-  async function onFile(file: File | undefined) {
-    if (!file) return;
+  async function update() {
     setError(null);
-    const ext = (file.name.split('.').pop() ?? '').toLowerCase();
-    if (!['md', 'markdown', 'txt'].includes(ext)) {
-      setError('Please upload a .md or .txt file.');
-      return;
-    }
-    setBusy(true);
+    setUpdating(true);
     try {
-      const text = (await file.text()).trim();
-      if (text.length < MIN_CHARS) {
-        setError('That file looks empty, upload your full context document.');
-        return;
-      }
-      if (text.length > MAX_CHARS) {
-        setError('That file is too large (over 100k characters).');
-        return;
-      }
-      const res = await saveContextPackage({ markdown: text });
+      const res = await fetch('/api/career-context/augment', { method: 'POST' });
       if (!res.ok) {
-        setError('Could not save the document. Please try again.');
+        const body = (await res.json().catch(() => null)) as
+          | { error?: { code?: string; message?: string } }
+          | null;
+        if (res.status === 402) {
+          setError('Updating your document needs an active subscription or trial.');
+        } else if (body?.error?.message) {
+          setError(body.error.message);
+        } else {
+          setError('Could not update your document just now. Please try again.');
+        }
         return;
       }
-      setMarkdown(text);
-      setSavedAt(new Date().toISOString());
+      const data = (await res.json()) as { drafts: CareerContextDrafts };
+      setDrafts(data.drafts);
     } catch {
-      setError('Could not read that file. Please try again.');
+      setError('Could not update your document just now. Please try again.');
     } finally {
-      setBusy(false);
-      if (inputRef.current) inputRef.current.value = '';
+      setUpdating(false);
     }
   }
 
-  function download() {
-    if (!markdown) return;
-    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `roleboost-context-${slug}.md`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  async function generate() {
+    setError(null);
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/career-context/generate', { method: 'POST' });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as
+          | { error?: { code?: string; message?: string } }
+          | null;
+        if (res.status === 402) {
+          setError('Generating a context document needs an active subscription or trial.');
+        } else if (body?.error?.message) {
+          setError(body.error.message);
+        } else {
+          setError('Could not generate your document just now. Please try again.');
+        }
+        return;
+      }
+      const data = (await res.json()) as { drafts: CareerContextDrafts };
+      setDrafts(data.drafts);
+    } catch {
+      setError('Could not generate your document just now. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
   }
 
-  function remove() {
+  function select(angle: CareerContextAngleKey) {
+    if (!drafts) return;
     setError(null);
     startTransition(async () => {
-      const res = await clearContextPackage();
+      const res = await selectCareerContextAngle({ angle });
       if (res.ok) {
-        setMarkdown(null);
-        setSavedAt(null);
-        setPreviewOpen(false);
+        setDrafts({ ...drafts, selected: angle });
       } else {
-        setError('Could not remove the document. Please try again.');
+        setError('Could not set that angle as active. Please try again.');
       }
     });
   }
 
-  // No résumé and nothing on file: point the candidate to the assets section first.
-  if (!hasResume && !markdown) {
-    return <ResumeFallback context="context document" />;
+  // Nothing to generate from and nothing generated yet: point the candidate to
+  // the Assets section to upload their résumé first.
+  if (!hasResume && !drafts) {
+    return <ResumeFallback />;
   }
 
   return (
     <section className="flex flex-col gap-6">
       <header>
         <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--rb-text)]">
-          <FileText className="size-4 text-[var(--rb-brand)]" />
+          <Sparkles className="size-4 text-[var(--rb-brand)]" />
           Career context document
         </h2>
         <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-          The single narrative document your AI leads from when recruiters ask about your background.
-          Create it by choosing a perspective in the Asset Package tab, or upload one produced
-          elsewhere.
+          A professionally synthesized narrative built from your résumé and career sources. Generate
+          two angles, pick the one that tells your story best, your AI leads from it when recruiters
+          ask about your background.
         </p>
       </header>
 
-      {markdown ? (
-        <div className="rb-card flex flex-col gap-4 p-5">
-          {/* Active document summary */}
-          <div className="flex items-center gap-3 rounded-[var(--radius-lg)] bg-[var(--rb-bg-surface-raised)] px-3 py-2.5">
-            <CheckCircle2 className="size-4 shrink-0 text-[var(--color-success)]" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-xs font-medium text-[var(--rb-text)]">
-                {fromPackage
-                  ? `From your Asset Package: ${chosenPerspective!.name} (${ASSET_PACKAGE_STORY_TYPE_LABELS[assetPackage!.story_type]})`
-                  : 'Context document on file'}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-[var(--rb-text-muted)]">
-                <span className="font-data">{markdown.length.toLocaleString()} chars</span>
-                {savedAt && (
-                  <>
-                    <span>·</span>
-                    <span>Updated {formatDate(savedAt)}</span>
-                  </>
-                )}
-                <span>·</span>
-                <span>Active in your AI</span>
-              </div>
-            </div>
-            <button
-              onClick={download}
-              className="flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-[var(--rb-brand)] transition-colors hover:bg-[var(--rb-brand-subtle)]"
-            >
-              <Download className="size-3" />
-              Download
-            </button>
-          </div>
-
-          {/* Preview */}
-          <div>
-            <button
-              onClick={() => setPreviewOpen((o) => !o)}
-              className="inline-flex items-center gap-1 text-xs text-[var(--rb-text-muted)] transition-colors hover:text-[var(--rb-brand)]"
-              aria-expanded={previewOpen}
-            >
-              <ChevronDown className={`size-3 transition-transform ${previewOpen ? 'rotate-180' : ''}`} />
-              {previewOpen ? 'Hide document' : 'Preview document'}
-            </button>
-            {previewOpen && (
-              <pre className="mt-2 max-h-96 overflow-y-auto whitespace-pre-wrap break-words rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-raised)] p-4 font-sans text-xs leading-relaxed text-[var(--rb-text-secondary)]">
-                {markdown}
-              </pre>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-4 border-t border-[var(--rb-border)] pt-3">
-            <button
-              onClick={onCreatePackage}
-              className="flex items-center gap-1.5 text-xs text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)]"
-            >
-              <Package className="size-3" />
-              Update via Asset Package
-            </button>
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)]"
-            >
-              <RefreshCw className="size-3" />
-              Replace with upload
-            </button>
-            <button
-              onClick={remove}
-              className="flex items-center gap-1.5 text-xs text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--color-error)]"
-            >
-              <Trash2 className="size-3" />
-              Remove
-            </button>
-          </div>
-        </div>
+      {!drafts ? (
+        <EmptyState onGenerate={generate} generating={generating} />
       ) : (
-        <div className="rb-card flex flex-col items-center gap-4 px-6 py-10 text-center">
-          <span className="flex size-12 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--rb-brand-subtle)] ring-1 ring-[var(--rb-border-brand)]/40">
-            <Sparkles className="size-5 text-[var(--rb-brand)]" />
-          </span>
-          <div className="max-w-md">
-            <h3 className="text-sm font-semibold text-[var(--rb-text)]">No active context document yet</h3>
-            <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
-              Create your Asset Package and choose the narrative that tells your story best; it becomes
-              the document your AI leads from. Or upload a document produced elsewhere.
+        <div className="flex flex-col gap-5">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {(['A', 'B'] as CareerContextAngleKey[]).map((key) => (
+              <AngleCard
+                key={key}
+                angle={drafts.angles[key]}
+                isRecommended={drafts.recommended === key}
+                isSelected={drafts.selected === key}
+                onSelect={() => select(key)}
+                busy={pending}
+              />
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-md text-xs text-[var(--rb-text-muted)]">
+              {drafts.selected
+                ? 'Your AI is using the selected angle. Added new wins, answers, or sources since? Update folds them in, your document stays sharp instead of just longer.'
+                : 'Pick an angle above to make it active in your AI.'}
             </p>
+            <div className="flex shrink-0 items-center gap-2">
+              {drafts.selected && (
+                <button
+                  onClick={update}
+                  disabled={updating || generating}
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {updating ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  {updating ? 'Updating…' : 'Update document'}
+                </button>
+              )}
+              <button
+                onClick={generate}
+                disabled={generating || updating}
+                className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--rb-border)] px-3 py-1.5 text-xs font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)] disabled:opacity-60"
+              >
+                {generating ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="size-3.5" />
+                )}
+                Start over
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <button
-              onClick={onCreatePackage}
-              className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              <Package className="size-4" />
-              Create your Asset Package
-            </button>
-            <button
-              onClick={() => inputRef.current?.click()}
-              disabled={busy}
-              className="inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--rb-border)] px-4 py-2 text-sm font-medium text-[var(--rb-text-secondary)] transition-colors hover:text-[var(--rb-brand)] disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-              {busy ? 'Saving…' : 'Upload your own'}
-            </button>
-          </div>
-          <span className="text-xs text-[var(--rb-text-muted)]">.md or .txt up to 100k characters</span>
         </div>
       )}
 
@@ -261,14 +192,173 @@ export default function ContextDocumentPanel({
           {error}
         </p>
       )}
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept={ACCEPT}
-        className="sr-only"
-        onChange={(e) => onFile(e.target.files?.[0])}
-      />
     </section>
+  );
+}
+
+function ResumeFallback() {
+  return (
+    <div className="rb-card flex flex-col items-center gap-4 px-6 py-10 text-center">
+      <span className="flex size-12 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--rb-brand-subtle)] ring-1 ring-[var(--rb-border-brand)]/40">
+        <Upload className="size-5 text-[var(--rb-brand)]" />
+      </span>
+      <div className="max-w-md">
+        <h3 className="text-sm font-semibold text-[var(--rb-text)]">Upload your résumé first</h3>
+        <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
+          Your context document is written from your résumé and career sources. Add your résumé in
+          the Assets section, then come back here to generate it.
+        </p>
+      </div>
+      <Link
+        href="/dashboard/assets"
+        className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+      >
+        <Upload className="size-4" />
+        Go to Assets
+      </Link>
+    </div>
+  );
+}
+
+function EmptyState({ onGenerate, generating }: { onGenerate: () => void; generating: boolean }) {
+  return (
+    <div className="rb-card flex flex-col items-center gap-4 px-6 py-10 text-center">
+      <span className="flex size-12 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--rb-brand-subtle)] ring-1 ring-[var(--rb-border-brand)]/40">
+        <Sparkles className="size-5 text-[var(--rb-brand)]" />
+      </span>
+      <div className="max-w-md">
+        <h3 className="text-sm font-semibold text-[var(--rb-text)]">
+          Generate your context document
+        </h3>
+        <p className="mt-1 text-xs text-[var(--rb-text-muted)]">
+          We read your résumé and any career sources, then write two distinct narrative angles for
+          your career story. Pick the one that fits, it becomes the foundation your AI reasons from.
+        </p>
+      </div>
+      <button
+        onClick={onGenerate}
+        disabled={generating}
+        className="inline-flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+      >
+        {generating ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+        {generating ? 'Writing your angles…' : 'Generate document'}
+      </button>
+      {generating && (
+        <p className="text-xs text-[var(--rb-text-muted)]">
+          This takes a moment, we&apos;re synthesizing your whole career.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function AngleCard({
+  angle,
+  isRecommended,
+  isSelected,
+  onSelect,
+  busy,
+}: {
+  angle: CareerContextAngle;
+  isRecommended: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  busy: boolean;
+}) {
+  return (
+    <div
+      className={`rb-card flex flex-col gap-4 p-5 transition-shadow ${
+        isSelected ? 'ring-2 ring-[var(--rb-brand)]' : ''
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--rb-text)]">{angle.name}</span>
+            {isRecommended && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--rb-brand-subtle)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--rb-brand)]">
+                <Star className="size-2.5" />
+                Recommended
+              </span>
+            )}
+          </div>
+          <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-[var(--rb-text-muted)]">
+            <Compass className="size-3" />
+            {STORY_TYPE_LABELS[angle.story_type] ?? angle.story_type}
+          </span>
+        </div>
+      </div>
+
+      {angle.narrative && (
+        <p className="text-sm leading-relaxed text-[var(--rb-text-secondary)]">{angle.narrative}</p>
+      )}
+
+      {angle.hook && (
+        <div className="rounded-[var(--radius-md)] bg-[var(--rb-bg-surface-raised)] px-3 py-2">
+          <p className="flex items-start gap-1.5 text-xs font-medium text-[var(--rb-text)]">
+            <Quote className="mt-0.5 size-3 shrink-0 text-[var(--rb-brand)]" />
+            {angle.hook}
+          </p>
+        </div>
+      )}
+
+      {angle.hard_question?.question && (
+        <div>
+          <p className="text-xs font-semibold text-[var(--rb-text-secondary)]">
+            {angle.hard_question.question}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--rb-text-muted)]">
+            {angle.hard_question.answer}
+          </p>
+        </div>
+      )}
+
+      {angle.key_numbers.length > 0 && (
+        <ul className="flex flex-col gap-1">
+          {angle.key_numbers.map((num, i) => (
+            <li key={i} className="flex items-start gap-1.5 text-xs text-[var(--rb-text-secondary)]">
+              <Hash className="mt-0.5 size-3 shrink-0 text-[var(--rb-brand)]" />
+              {num}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {(angle.evidence_snippets?.length ?? 0) > 0 && (
+        <div className="flex flex-col gap-2 border-t border-[var(--rb-border)] pt-3">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--rb-text-muted)]">
+            <MessageSquareQuote className="size-3 text-[var(--rb-brand)]" />
+            What others say
+          </span>
+          {angle.evidence_snippets.map((e, i) => (
+            <blockquote
+              key={i}
+              className="border-l-2 border-[var(--rb-border-brand)] pl-2.5 text-xs italic leading-relaxed text-[var(--rb-text-secondary)]"
+            >
+              “{e.quote}”
+              {e.source && <span className="mt-0.5 block not-italic text-[var(--rb-text-muted)]">{e.source}</span>}
+            </blockquote>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-auto pt-1">
+        {isSelected ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-success)]">
+            <CheckCircle2 className="size-4" />
+            Active in your AI
+          </span>
+        ) : (
+          <button
+            onClick={onSelect}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--rb-brand)] px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+            Use this angle
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

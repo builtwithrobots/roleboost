@@ -2,6 +2,7 @@ import { getUserContext, AuthError } from '@/lib/auth/user-context';
 import { redirect } from 'next/navigation';
 import { getSignedAssetUrl } from '@/lib/storage/signed-urls';
 import AssetUploadCard from '@/components/candidate/AssetUploadCard';
+import AssetPackageCard from '@/components/candidate/AssetPackageCard';
 import DashboardPage from '@/components/layout/DashboardPage';
 import PageHeader from '@/components/ui/page-header';
 import ResumeBuilderCard, { type ResumeDoc } from '@/components/candidate/ResumeBuilderCard';
@@ -24,7 +25,7 @@ export default async function CandidateAssetsPage() {
     .single();
 
   if (!profile) redirect('/dashboard/profile');
-  const { id: profileId } = profile as { id: string; slug: string };
+  const { id: profileId, slug } = profile as { id: string; slug: string };
 
   // The three Boosts: Short Boost Audio, Visual Boost (infographic), and the
   // Podcast Style Boost (debate_audio). Sign each for playback/preview.
@@ -92,6 +93,21 @@ export default async function CandidateAssetsPage() {
     };
   }
 
+  // Asset Package: the active context-package document (uploaded here or generated
+  // and selected in AI Studio). Best-effort read; both columns predate this page.
+  let packageMd: string | null = null;
+  let packageUpdatedAt: string | null = null;
+  const { data: pkg } = await supabase
+    .from('candidate_profiles')
+    .select('context_package_md, context_package_updated_at')
+    .eq('clerk_user_id', userId)
+    .maybeSingle();
+  if (pkg) {
+    const p = pkg as { context_package_md?: string | null; context_package_updated_at?: string | null };
+    packageMd = p.context_package_md ?? null;
+    packageUpdatedAt = p.context_package_updated_at ?? null;
+  }
+
   // Résumé document (ATS builder) with fresh signed download URLs.
   const { data: rawResume } = await supabase
     .from('resume_documents')
@@ -135,13 +151,13 @@ export default async function CandidateAssetsPage() {
     <DashboardPage className="min-h-full">
       <PageHeader
         title="Career Assets"
-        description="Your résumé and your three Boosts, the Short Boost Audio, Visual Boost, and Podcast Style Boost that power your RoleBoost profile."
+        description="Your résumé, your three Boosts (Short Boost Audio, Visual Boost, Podcast Style Boost), and your Asset Package, the materials that power your RoleBoost profile."
       />
 
       {/* ATS résumé builder */}
       <ResumeBuilderCard resume={resumeDoc} />
 
-      {/* The three Boosts */}
+      {/* The three Boosts + Asset Package */}
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-8 sm:grid-cols-2 lg:grid-cols-3">
         <AssetUploadCard
           assetType="audio"
@@ -158,6 +174,7 @@ export default async function CandidateAssetsPage() {
           candidateProfileId={profileId}
           existingAsset={mediaByType.debate_audio ?? undefined}
         />
+        <AssetPackageCard initialMarkdown={packageMd} updatedAt={packageUpdatedAt} slug={slug} />
       </div>
 
       {/* Tip */}
@@ -165,8 +182,9 @@ export default async function CandidateAssetsPage() {
         <div className="rounded-[var(--radius-xl)] border border-[var(--rb-border-brand)]/30 bg-[var(--rb-brand-subtle)] px-5 py-4">
           <p className="text-sm text-[var(--rb-text-secondary)]">
             <span className="font-semibold text-[var(--rb-text-brand)]">Tip:</span>{' '}
-            Your Boosts are produced in Google NotebookLM using the scripts from your Asset Package
-            (AI Studio), upload each one here after generating.
+            Your Boosts are produced in Google NotebookLM from your career documents, upload each one
+            here after generating. The Asset Package is your done-for-you package from RoleBoost,
+            drop it in when you receive it.
           </p>
         </div>
       </div>
