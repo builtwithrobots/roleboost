@@ -231,6 +231,29 @@ modal load. The modal client receives pre-signed URLs and never calls Supabase S
 
 Path pattern: `{clerk_user_id}/{timestamp}-{sanitized-filename}`.
 
+### Boosts Marketing Page (public `/boosts`)
+
+Standalone public marketing page (`app/boosts/page.tsx`) showcasing the three Boost formats (Visual
+Boost infographic, Short Boost Audio, Podcast Style Boost) through one live example candidate. Distinct
+from the homepage `AssetSuite`. Linked in the header nav; listed as a public route in `middleware.ts`.
+
+Example assets live in **`public/boosts/`** (served statically, NOT the Supabase buckets above; the
+`docs/sample-users/` copies are reference only). The page reads them via the `ASSET_SRC` map in
+`app/boosts/page.tsx`; each slot falls back to an on-brand placeholder when its path is null.
+
+Two hard rules for audio Boosts, both learned from real breakage:
+
+1. **Audio must be a plain progressive file.** NotebookLM exports are **DASH / fragmented MP4** (ftyp
+   major brand `dash`), which a native `<audio>` element cannot play by progressive download (play
+   greys out and stalls) even when served correctly. Re-encode before wiring:
+   `ffmpeg -i in.m4a -c:a libmp3lame -q:a 2 out.mp3`. A plain non-fragmented m4a would play, but
+   NotebookLM does not produce those, so always convert NotebookLM audio.
+2. **Static media must stay excluded from the Clerk middleware `matcher`.** The negative-lookahead in
+   `middleware.ts` lists the extensions that bypass auth; audio/video (`mp3|m4a|wav|ogg|...`) must be in
+   it alongside images/fonts. If an extension is missing, a signed-out request for `/boosts/*.<ext>` is
+   auth-protected and returns an HTML 404, so the asset never loads (this is why the PNG worked but the
+   audio 404'd until audio extensions were added).
+
 ### Candidate Calling Card (public `/c/[slug]`)
 
 The core employer-facing experience, chat-first (`CallingCard` + `ChatOverlay` + `AssetGallery`),
