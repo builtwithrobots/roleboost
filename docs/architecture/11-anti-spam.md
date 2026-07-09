@@ -76,7 +76,7 @@ low-friction ceiling that real recruiters actually hit first. It reframes "stop
 spending tokens" as "book a meeting," which is what RoleBoost wants anyway.
 
 - **Trigger:** `/api/chat` counts completed exchanges from the server-rebuilt
-  history. Once past `NUDGE_AFTER_EXCHANGES` (5), it passes
+  history. Once past `NUDGE_AFTER_EXCHANGES` (3), it passes
   `meetingInvitation: 'gentle'` into `buildCandidateSystemPrompt`, which appends a
   `<meeting_invitation>` block. Owner previews (`isOwner`) are never nudged.
 - **Behavior (gentle & ambient):** the assistant keeps answering every question

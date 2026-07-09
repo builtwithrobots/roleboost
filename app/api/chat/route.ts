@@ -37,7 +37,9 @@ const MAX_MESSAGES_PER_IP = 100; // per hour, per source IP
 
 // After this many completed exchanges, the assistant begins gently inviting the
 // recruiter to continue live with the candidate (conversion loop + soft throttle).
-const NUDGE_AFTER_EXCHANGES = 5;
+// Set to fire once the AI has proven its value (a few good answers) but before the
+// recruiter feels done: earlier reads as pushy, later risks them leaving unbooked.
+const NUDGE_AFTER_EXCHANGES = 3;
 
 const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
