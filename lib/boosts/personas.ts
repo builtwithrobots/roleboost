@@ -177,7 +177,7 @@ export const PERSONAS: Persona[] = [
       visual: '/boosts/claire-hutchins-visual-boost.png',
       short: '/boosts/claire-hutchins-short-boost.mp3',
       podcast: '/boosts/claire-hutchins-podcast-boost.mp3',
-      resume: null,
+      resume: '/boosts/claire-hutchins-resume.jpg',
     },
   },
   {
