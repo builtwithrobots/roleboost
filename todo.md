@@ -32,6 +32,24 @@ per-candidate "Discoverable in search" opt-in in Settings. Remaining manual step
 
 ---
 
+## Legal pages / launch ops (manual, founder)
+
+Plain-English **Privacy Policy** (`/privacy`) and **Terms of Service** (`/terms`) are
+shipped and linked from the footer. They are accurate to how the product works, but
+they are drafts, not legal advice. Before relying on them publicly:
+
+- [ ] Have a lawyer review both `/privacy` and `/terms` (confirm GDPR / CCPA-CPRA
+      coverage for your user base).
+- [ ] Confirm the contact addresses forward to a real inbox: `privacy@roleboost.app`
+      and `legal@roleboost.app`.
+- [ ] Fill in specifics in Terms: your governing-law **state** (currently "the state in
+      which RoleBoost is established") and your formal **legal entity** name.
+- [ ] Confirm the defaults suit you: liability cap (greater of 12-month fees or $100)
+      and the no-refund-by-default clause.
+- [ ] Keep both pages' "Last updated" date current whenever the policy/terms change.
+
+---
+
 ## P1: Recruiter identity capture (the material gap)
 
 Today anonymous recruiters never receive a transcript, and the candidate's copy
