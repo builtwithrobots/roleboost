@@ -26,6 +26,10 @@ export interface BoostShowcaseSectionProps {
   audioLabel?: string
   /** Candidate name shown on the audio player header (audio Boosts). */
   candidateName?: string
+  /** Monogram for the audio player avatar. Defaults to the candidate's initials. */
+  avatarInitials?: string
+  /** Avatar background color. Defaults to the RoleBoost candidate teal. */
+  avatarColor?: string
 }
 
 function ImageAsset({ src, alt, title }: { src: string | null; alt: string; title: string }) {
@@ -145,11 +149,15 @@ function AudioAsset({
   label,
   formatName,
   candidateName,
+  initials,
+  avatarColor,
 }: {
   src: string | null
   label: string
   formatName: string
   candidateName: string
+  initials: string
+  avatarColor: string
 }) {
   if (src) {
     return (
@@ -158,10 +166,11 @@ function AudioAsset({
         <div className="flex items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-3 min-w-0">
             <span
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0F6E56] text-white font-jakarta text-sm font-bold shrink-0"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-white font-jakarta text-sm font-bold shrink-0"
+              style={{ backgroundColor: avatarColor }}
               aria-hidden="true"
             >
-              JM
+              {initials}
             </span>
             <div className="min-w-0">
               <p className="font-jakarta text-base font-bold text-[#1E3A5F] truncate">{candidateName}</p>
@@ -223,7 +232,18 @@ export default function BoostShowcaseSection({
   assetAlt,
   audioLabel,
   candidateName = 'Jordan Mills',
+  avatarInitials,
+  avatarColor = '#0F6E56',
 }: BoostShowcaseSectionProps) {
+  // Derive a monogram from the candidate name when one is not supplied.
+  const initials =
+    avatarInitials ??
+    candidateName
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase()
   const prefersReduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
@@ -272,13 +292,15 @@ export default function BoostShowcaseSection({
             className={assetFirstOnDesktop ? 'lg:order-1' : 'lg:order-2'}
           >
             {kind === 'image' ? (
-              <ImageAsset src={assetSrc} alt={assetAlt ?? `${name} for Jordan Mills`} title={name} />
+              <ImageAsset src={assetSrc} alt={assetAlt ?? `${name} for ${candidateName}`} title={name} />
             ) : (
               <AudioAsset
                 src={assetSrc}
                 label={audioLabel ?? `${name} for ${candidateName}`}
                 formatName={name}
                 candidateName={candidateName}
+                initials={initials}
+                avatarColor={avatarColor}
               />
             )}
           </motion.div>

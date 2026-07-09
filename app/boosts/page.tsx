@@ -3,62 +3,21 @@ import Nav from '@/components/marketing/Nav'
 import Footer from '@/components/marketing/Footer'
 import BoostsHero from '@/components/marketing/boosts/BoostsHero'
 import BoostExampleIntro from '@/components/marketing/boosts/BoostExampleIntro'
-import BoostShowcaseSection, {
-  type BoostShowcaseSectionProps,
-} from '@/components/marketing/boosts/BoostShowcaseSection'
+import BoostShowcaseSection from '@/components/marketing/boosts/BoostShowcaseSection'
+import BoostsExamplesBanner from '@/components/marketing/boosts/BoostsExamplesBanner'
 import BoostsFinalCTA from '@/components/marketing/boosts/BoostsFinalCTA'
+import { DEFAULT_PERSONA, buildBoostSections } from '@/lib/boosts/personas'
 
 export const metadata: Metadata = {
   title: 'Boosts | RoleBoost',
   description:
-    'See the three Boosts RoleBoost makes: the Visual Boost, the Short Boost Audio, and the Podcast Style Boost, shown through one real candidate.',
+    'See the three Boosts RoleBoost makes: the Visual Boost, the Short Boost Audio, and the Podcast Style Boost, shown through real candidates across every kind of career.',
 }
 
-// Real Jordan Mills assets live in /public/boosts. Set a path here to swap a
-// placeholder for the live asset; leave it null to keep the placeholder.
-// Audio is served as progressive mp3 (converted from the NotebookLM DASH m4a
-// per CLAUDE.md); a fragmented/DASH file would not play by progressive download.
-const ASSET_SRC = {
-  visual: '/boosts/jordan-mills-visual-boost.png',
-  short: '/boosts/jordan-mills-short-boost.mp3',
-  podcast: '/boosts/jordan-mills-podcast-boost.mp3',
-} satisfies Record<string, string | null>
-
-const boosts: BoostShowcaseSectionProps[] = [
-  {
-    index: 0,
-    kind: 'image',
-    name: 'Visual Boost',
-    kicker: 'The career at a glance',
-    description:
-      'A single career infographic that shows the whole story in one look: the numbers, the trajectory, and the case for the next role.',
-    why: 'For the hiring manager who skims first. In a few seconds they see where a candidate is heading and the proof behind it, before they read a single line of a resume.',
-    assetSrc: ASSET_SRC.visual,
-    assetAlt: 'Visual Boost career infographic for Jordan Mills',
-  },
-  {
-    index: 1,
-    kind: 'audio',
-    name: 'Short Boost Audio',
-    kicker: 'A colleague briefs the hiring manager',
-    description:
-      'A single-host audio overview, under two minutes, that sounds like a trusted colleague explaining why this candidate is worth a conversation.',
-    why: 'For the recruiter between meetings. They press play, and by the time the coffee is poured they know who the candidate is and what they are ready for.',
-    assetSrc: ASSET_SRC.short,
-    audioLabel: 'Short Boost Audio for Jordan Mills',
-  },
-  {
-    index: 2,
-    kind: 'audio',
-    name: 'Podcast Style Boost',
-    kicker: 'Two voices talk you through the candidate',
-    description:
-      'A two-host conversation, in the familiar podcast format, where two people discuss the candidate and what they would bring to a hiring team.',
-    why: 'For the team that decides together. The back and forth surfaces the questions a panel would ask, and answers them, so the candidate walks in already understood.',
-    assetSrc: ASSET_SRC.podcast,
-    audioLabel: 'Podcast Style Boost for Jordan Mills',
-  },
-]
+// Jordan Mills is the featured example; his Boost sections are built from the
+// shared persona/format model. Other example candidates live in the examples
+// banner below and on their own pages at /boosts/[slug].
+const jordanSections = buildBoostSections(DEFAULT_PERSONA)
 
 export default function BoostsPage() {
   return (
@@ -73,9 +32,10 @@ export default function BoostsPage() {
       <main id="main-content">
         <BoostsHero />
         <BoostExampleIntro />
-        {boosts.map((boost) => (
-          <BoostShowcaseSection key={boost.name} {...boost} />
+        {jordanSections.map((section) => (
+          <BoostShowcaseSection key={section.name} {...section} />
         ))}
+        <BoostsExamplesBanner />
         <BoostsFinalCTA />
       </main>
       <Footer />
