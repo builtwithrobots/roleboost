@@ -72,7 +72,7 @@ export default function UserMenu({ role }: { role: 'candidate' | 'employer' | 'a
 
         <DropdownDivider />
 
-        <DropdownItem onClick={() => signOut(() => router.push('/sign-in'))}>
+        <DropdownItem onClick={() => signOut(() => router.push('/'))}>
           <LogOut data-slot="icon" strokeWidth={1.5} />
           Sign out
         </DropdownItem>
