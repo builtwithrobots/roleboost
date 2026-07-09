@@ -8,6 +8,7 @@ import { getCandidateBrainBySlug } from '@/lib/ai/get-candidate-brain';
 import { ensureChatSession, logChatExchange } from '@/lib/ai/log-chat';
 import { resolveEmployerViewer } from '@/lib/employer/resolve-viewer';
 import { adminClient } from '@/lib/supabase/admin';
+import { checkAppRateLimit } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@vercel/firewall';
 import { checkBotId } from 'botid/server';
 import type { CandidateBrain } from '@/lib/types';
@@ -19,6 +20,20 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const MAX_HISTORY = 20;
+
+// ── App-level interaction caps ─────────────────────────────────────────────────
+// Durable, DB-backed ceilings that bound token burn regardless of the Vercel WAF
+// (which is per-region and no-ops until its dashboard rule is published). Two
+// dimensions, both generous enough that a real recruiter never trips them, both
+// fail-open (an infra blip never blocks a live conversation), owner previews
+// exempt. Backed by check_rate_limit() (lib/security/rate-limit.ts).
+//   - Per chat: caps one conversation. A fresh chat resets it (the client offers
+//     a one-tap restart), so a genuine long conversation is never dead-ended.
+//   - Per IP: caps one source across all conversations, so a single-machine flood
+//     is bounded even with no WAF rule configured. Set high enough to clear a
+//     shared office IP (corporate NAT) while still stopping a script.
+const MAX_MESSAGES_PER_CHAT = 40; // per hour, per session
+const MAX_MESSAGES_PER_IP = 100; // per hour, per source IP
 
 const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
@@ -173,6 +188,43 @@ export async function POST(req: NextRequest) {
       .filter((m, i, arr) => (i === 0 ? m.role === 'user' : m.role !== arr[i - 1].role));
   }
 
+  // ── Interaction caps ───────────────────────────────────────────────────────
+  // Bound token burn on the two dimensions the WAF can't durably express: a
+  // single conversation and a single source IP. Both fail-open and both skip the
+  // owner's own preview. A tripped cap returns a graceful, in-thread assistant
+  // message (never an HTTP error), so the recruiter always has a next step: the
+  // per-chat cap offers a restart; the per-IP cap offers a follow-up.
+  const firstName = brain.candidate.full_name.split(' ')[0] || brain.candidate.full_name;
+  if (!isOwner) {
+    // Per-conversation cap first: a fresh chat resets it, so a heavy but genuine
+    // single conversation gets the restart path rather than the harder IP wall.
+    if (sessionId) {
+      const withinChat = await checkAppRateLimit(`chat-session:${sessionId}`, MAX_MESSAGES_PER_CHAT, 3600);
+      if (!withinChat) {
+        return NextResponse.json({
+          answer: `We've covered a lot of ground in this conversation. You can start a fresh chat to keep exploring, or leave your email and ${firstName} will follow up with you directly.`,
+          sessionId,
+          offerSchedule: true,
+          degraded: 'session_limit',
+        });
+      }
+    }
+
+    // Per-source cap: bounds a single-machine flood even with no WAF rule live.
+    const ip = getClientIp(req);
+    if (ip) {
+      const withinIp = await checkAppRateLimit(`chat-ip:${ip}`, MAX_MESSAGES_PER_IP, 3600);
+      if (!withinIp) {
+        return NextResponse.json({
+          answer: `You've sent a lot of messages in a short time, so ${firstName}'s assistant is taking a brief pause. Please try again in a little while, or leave your email and ${firstName} will follow up with you directly.`,
+          sessionId: sessionId ?? null,
+          offerSchedule: true,
+          degraded: 'rate_limited',
+        });
+      }
+    }
+  }
+
   // If the recruiter introduced themselves, the assistant addresses them by
   // name. Prefer the intro carried on this (first) message; otherwise the one
   // recorded on the verified session; otherwise fall back to a signed-in
@@ -322,6 +374,17 @@ Rules, all strict:
     console.error('chat: redirect generation failed', e);
     return buildRedirectMessage(firstName);
   }
+}
+
+/**
+ * Best-effort client IP for the per-source interaction cap. On Vercel the real
+ * client is the first entry in x-forwarded-for; x-real-ip is the fallback. A
+ * missing IP simply skips the per-IP cap (fail-open) rather than blocking.
+ */
+function getClientIp(req: NextRequest): string | null {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim() || null;
+  return req.headers.get('x-real-ip');
 }
 
 /** Trims a max_tokens-truncated answer back to its last completed sentence. */
