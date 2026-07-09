@@ -4,8 +4,9 @@ import { useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion } from 'motion/react'
 import { fadeUp } from '@/lib/motion'
 import ResumeModal from './ResumeModal'
+import { DEFAULT_PERSONA, type Persona } from '@/lib/boosts/personas'
 
-export default function BoostExampleIntro() {
+export default function BoostExampleIntro({ persona = DEFAULT_PERSONA }: { persona?: Persona }) {
   const prefersReduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
@@ -55,42 +56,43 @@ export default function BoostExampleIntro() {
 
           {/* Category tag, directly under the section label */}
           <span className="mb-4 flex w-fit items-center rounded-full bg-[#FEF3C7] px-3 py-1 font-jakarta text-xs font-semibold text-[#92400E]">
-            Retail Banking | Early Career
+            {persona.categoryTag}
           </span>
 
           <div className="flex items-center gap-4 mb-5">
-            {/* Avatar: Jordan Mills initials, teal per candidate brand */}
+            {/* Avatar: candidate initials, on their brand color */}
             <span
-              className="flex items-center justify-center w-14 h-14 rounded-full bg-[#0F6E56] text-white font-jakarta text-lg font-bold shrink-0"
+              className="flex items-center justify-center w-14 h-14 rounded-full text-white font-jakarta text-lg font-bold shrink-0"
+              style={{ backgroundColor: persona.avatarColor }}
               aria-hidden="true"
             >
-              JM
+              {persona.initials}
             </span>
             <div>
               <h2
                 id="boosts-example-heading"
                 className="font-jakarta text-xl font-bold text-[#1E3A5F] leading-snug"
               >
-                Jordan Mills
+                {persona.name}
               </h2>
-              <p className="font-inter text-sm text-gray-600">Customer Service Representative</p>
+              <p className="font-inter text-sm text-gray-600">{persona.role}</p>
               <p className="font-inter text-sm text-gray-600">
-                <span className="font-semibold text-[#1E3A5F]">Target Role:</span> Customer Service
-                Team Lead
+                <span className="font-semibold text-[#1E3A5F]">Target Role:</span> {persona.targetRole}
               </p>
-              <p className="font-inter text-sm text-gray-600">Phoenix, AZ</p>
+              <p className="font-inter text-sm text-gray-600">{persona.location}</p>
             </div>
           </div>
 
-          <p className="font-inter text-base text-gray-700 leading-relaxed">
-            Entry-level retail banking, two years in, strong performance numbers, no degree. Jordan is
-            exactly the kind of candidate a resume flattens. Here is what Jordan looks and sounds like
-            through three Boosts.
-          </p>
+          <p className="font-inter text-base text-gray-700 leading-relaxed">{persona.blurb}</p>
         </motion.div>
       </div>
 
-      <ResumeModal open={resumeOpen} onClose={() => setResumeOpen(false)} />
+      <ResumeModal
+        open={resumeOpen}
+        onClose={() => setResumeOpen(false)}
+        name={persona.name}
+        resumeSrc={persona.assets.resume}
+      />
     </section>
   )
 }

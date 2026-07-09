@@ -11,22 +11,32 @@ import {
 interface ResumeModalProps {
   open: boolean
   onClose: () => void
+  /** Candidate name shown in the title/labels. Defaults to Jordan Mills. */
+  name?: string
+  /** ATS resume image path. When null, the on-brand placeholder is shown. */
+  resumeSrc?: string | null
 }
 
 /**
- * Site-styled modal that previews Jordan Mills' ATS resume.
+ * Site-styled modal that previews a candidate's ATS resume.
  *
- * The image is served from /public/boosts. Drop the real file at
- * public/boosts/jordan-mills-resume.jpg and it appears here automatically;
- * until then an on-brand placeholder is shown via the onError fallback.
+ * The image is served from /public/boosts. When `resumeSrc` is null (or the
+ * file is missing) an on-brand placeholder is shown instead, so a persona
+ * without a resume asset yet still renders cleanly.
  *
  * Headless UI's Dialog provides the accessibility spine: focus is trapped
  * while open, ESC closes and focus returns to the trigger, and body scroll
  * is locked. Motion is CSS-based, so globals.css disables it under
  * prefers-reduced-motion.
  */
-export default function ResumeModal({ open, onClose }: ResumeModalProps) {
+export default function ResumeModal({
+  open,
+  onClose,
+  name = 'Jordan Mills',
+  resumeSrc = '/boosts/jordan-mills-resume.jpg',
+}: ResumeModalProps) {
   const [imgError, setImgError] = useState(false)
+  const showImage = !!resumeSrc && !imgError
 
   return (
     <Dialog open={open} onClose={onClose} className="relative z-50">
@@ -44,15 +54,16 @@ export default function ResumeModal({ open, onClose }: ResumeModalProps) {
           <div className="flex items-start justify-between gap-4 p-5 sm:p-6 border-b border-[#E8E0D0]">
             <div className="min-w-0">
               <DialogTitle className="font-jakarta text-lg font-bold text-[#1E3A5F]">
-                Jordan Mills, ATS Resume
+                {name}, ATS Resume
               </DialogTitle>
               <p className="hidden sm:block font-inter text-sm text-gray-600 mt-1">
-                A clean, applicant-tracking-ready resume, one of Jordan&apos;s Boosts.
+                A clean, applicant-tracking-ready resume, one of {name.split(' ')[0]}&apos;s Boosts.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {showImage && (
               <a
-                href="/boosts/jordan-mills-resume.jpg"
+                href={resumeSrc as string}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open resume at full size in a new tab"
@@ -76,6 +87,7 @@ export default function ResumeModal({ open, onClose }: ResumeModalProps) {
                 </svg>
                 <span className="hidden sm:inline">Open full size</span>
               </a>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -102,11 +114,11 @@ export default function ResumeModal({ open, onClose }: ResumeModalProps) {
 
           {/* Body: resume image (scrollable) */}
           <div className="overflow-y-auto p-5 sm:p-6">
-            {imgError ? (
+            {!showImage ? (
               <div
                 className="flex flex-col items-center justify-center gap-3 aspect-[8.5/11] w-full rounded-xl border-2 border-dashed border-[#D4C8B8] bg-white p-8 text-center"
                 role="img"
-                aria-label="Placeholder for Jordan Mills' ATS resume. The resume image will appear here once uploaded."
+                aria-label={`Placeholder for ${name}'s ATS resume. The resume image will appear here once uploaded.`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -131,8 +143,8 @@ export default function ResumeModal({ open, onClose }: ResumeModalProps) {
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src="/boosts/jordan-mills-resume.jpg"
-                alt="Jordan Mills ATS resume"
+                src={resumeSrc as string}
+                alt={`${name} ATS resume`}
                 onError={() => setImgError(true)}
                 className="w-full h-auto rounded-xl border border-[#E8E0D0] shadow-sm"
               />
