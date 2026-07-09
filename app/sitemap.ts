@@ -35,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: 'weekly', priority: 1 },
     { url: `${BASE_URL}/boosts`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   const personaRoutes: MetadataRoute.Sitemap = FEATURED_PERSONAS.map((persona) => ({
