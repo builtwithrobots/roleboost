@@ -1,5 +1,6 @@
 import {
   Headset,
+  HandCoins,
   Megaphone,
   HardHat,
   Store,
@@ -15,6 +16,7 @@ import type { PersonaIconKey } from '@/lib/boosts/personas'
 // the person's field, so an example card reads as a career at a glance.
 const ICONS: Record<PersonaIconKey, LucideIcon> = {
   headset: Headset, // customer service / support
+  handcoins: HandCoins, // retail banking / financial services
   megaphone: Megaphone, // marketing / executive
   hardhat: HardHat, // skilled trades
   store: Store, // retail management
