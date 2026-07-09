@@ -6,6 +6,7 @@ import { motion, useInView, useReducedMotion } from 'motion/react'
 import Link from 'next/link'
 import { fadeUp } from '@/lib/motion'
 import { FEATURED_PERSONAS, type Persona } from '@/lib/boosts/personas'
+import PersonaIcon from './PersonaIcon'
 
 // Section background; the edge-fade masks blend the moving strip into it.
 const SECTION_BG = '#F5F0E8'
@@ -21,11 +22,11 @@ function PersonaCard({ persona, duplicate = false }: { persona: Persona; duplica
       >
         <div className="flex items-center gap-3 mb-4">
           <span
-            className="flex items-center justify-center w-12 h-12 rounded-full text-white font-jakarta text-base font-bold shrink-0"
+            className="flex items-center justify-center w-12 h-12 rounded-full text-white shrink-0"
             style={{ backgroundColor: persona.avatarColor }}
             aria-hidden="true"
           >
-            {persona.initials}
+            <PersonaIcon icon={persona.icon} className="size-6" />
           </span>
           <div className="min-w-0">
             <p className="font-jakarta text-base font-bold text-[#1E3A5F] leading-tight truncate">

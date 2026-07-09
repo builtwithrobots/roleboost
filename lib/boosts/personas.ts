@@ -22,12 +22,27 @@ export interface PersonaAssets {
   resume: string | null
 }
 
+// Industry-icon keys for the persona avatar. Mapped to lucide icons in
+// components/marketing/boosts/PersonaIcon.tsx. Defined here (not imported from
+// the component) so this module stays free of any client-icon import.
+export type PersonaIconKey =
+  | 'headset'
+  | 'megaphone'
+  | 'hardhat'
+  | 'store'
+  | 'chart'
+  | 'clipboard'
+  | 'boxes'
+  | 'stethoscope'
+
 export interface Persona {
   slug: string
   name: string
-  /** Monogram shown in the avatar tile. */
+  /** Monogram used as the avatar fallback. */
   initials: string
-  /** Avatar background; white text sits on it, so keep it dark enough for AA. */
+  /** Industry icon shown in the avatar tile, representing this person's field. */
+  icon: PersonaIconKey
+  /** Avatar background; the icon/monogram sits on it, so keep it dark enough for AA. */
   avatarColor: string
   /** Current role. */
   role: string
@@ -92,6 +107,7 @@ export const PERSONAS: Persona[] = [
     slug: 'jordan-mills',
     name: 'Jordan Mills',
     initials: 'JM',
+    icon: 'headset',
     avatarColor: '#0F6E56',
     role: 'Customer Service Representative',
     targetRole: 'Customer Service Team Lead',
@@ -114,6 +130,7 @@ export const PERSONAS: Persona[] = [
     slug: 'michelle-foster',
     name: 'Michelle Foster',
     initials: 'MF',
+    icon: 'megaphone',
     avatarColor: '#1E3A5F',
     role: 'Chief Marketing Officer',
     targetRole: 'CMO / Marketing Executive',
@@ -129,6 +146,7 @@ export const PERSONAS: Persona[] = [
     slug: 'ray-castillo',
     name: 'Ray Castillo',
     initials: 'RC',
+    icon: 'hardhat',
     avatarColor: '#B45309',
     role: 'Journeyman Electrician',
     targetRole: 'Foreman',
@@ -144,6 +162,7 @@ export const PERSONAS: Persona[] = [
     slug: 'claire-hutchins',
     name: 'Claire Hutchins',
     initials: 'CH',
+    icon: 'store',
     avatarColor: '#334155',
     role: 'Retail Store Manager',
     targetRole: 'Store Manager',
@@ -159,6 +178,7 @@ export const PERSONAS: Persona[] = [
     slug: 'ryan-kowalski',
     name: 'Ryan Kowalski',
     initials: 'RK',
+    icon: 'chart',
     avatarColor: '#0F6E56',
     role: 'Senior Data Analyst',
     targetRole: 'Senior / Lead Data Analyst',
@@ -174,6 +194,7 @@ export const PERSONAS: Persona[] = [
     slug: 'derek-kim',
     name: 'Derek Kim',
     initials: 'DK',
+    icon: 'clipboard',
     avatarColor: '#1E3A5F',
     role: 'Senior Program Manager',
     targetRole: 'PMO Director',
@@ -189,6 +210,7 @@ export const PERSONAS: Persona[] = [
     slug: 'marcus-webb',
     name: 'Marcus Webb',
     initials: 'MW',
+    icon: 'boxes',
     avatarColor: '#B45309',
     role: 'Fulfillment Operations Manager',
     targetRole: 'Director of Operations',
@@ -204,6 +226,7 @@ export const PERSONAS: Persona[] = [
     slug: 'tanya-patel',
     name: 'Tanya Patel',
     initials: 'TP',
+    icon: 'stethoscope',
     avatarColor: '#0F6E56',
     role: 'Critical Care Nurse (RN, CCRN)',
     targetRole: 'Nurse Manager',
@@ -245,6 +268,7 @@ export function buildBoostSections(persona: Persona): BoostShowcaseSectionProps[
     audioLabel: format.kind === 'audio' ? `${format.name} for ${persona.name}` : undefined,
     candidateName: persona.name,
     avatarInitials: persona.initials,
+    avatarIcon: persona.icon,
     avatarColor: persona.avatarColor,
   }))
 }
