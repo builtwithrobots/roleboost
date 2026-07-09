@@ -128,7 +128,7 @@ export default function BoostsExamplesBanner() {
             style={{ backgroundImage: `linear-gradient(to left, ${SECTION_BG}, transparent)` }}
           />
           <ul
-            className="rb-marquee flex w-max py-3 pl-4 hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
+            className="rb-marquee flex w-max py-3 pl-4"
             style={{ '--rb-marquee-duration': '60s' } as CSSProperties}
           >
             {FEATURED_PERSONAS.map((persona) => (

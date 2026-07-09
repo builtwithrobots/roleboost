@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import ScrollToTop from '@/components/ui/ScrollToTop';
 import './globals.css';
 
 const inter = Inter({
@@ -53,7 +54,10 @@ export default function RootLayout({
         lang="en"
         className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
       >
-        <body className="font-body antialiased">{children}</body>
+        <body className="font-body antialiased">
+          {children}
+          <ScrollToTop />
+        </body>
       </html>
     </ClerkProvider>
   );
