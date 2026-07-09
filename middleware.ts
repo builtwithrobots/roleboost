@@ -9,6 +9,14 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/onboarding(.*)',
   '/c/(.*)',
+  // SEO / crawler + metadata asset routes. Their .txt/.xml/no-extension paths are
+  // not covered by the matcher's static-file exclusion, so without this a
+  // signed-out crawler request would be redirected to sign-in and never see them.
+  '/robots.txt',
+  '/sitemap.xml',
+  '/opengraph-image',
+  '/twitter-image',
+  '/icons/(.*)',
   '/api/webhooks/(.*)',
   // Recruiters chat with a candidate's AI without signing in. The route reads
   // auth() itself to optionally identify a logged-in owner/employer.

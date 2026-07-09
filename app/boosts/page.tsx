@@ -9,9 +9,16 @@ import BoostsFinalCTA from '@/components/marketing/boosts/BoostsFinalCTA'
 import { DEFAULT_PERSONA, buildBoostSections } from '@/lib/boosts/personas'
 
 export const metadata: Metadata = {
-  title: 'Boosts | RoleBoost',
+  title: 'Boosts',
   description:
     'See the three Boosts RoleBoost makes: the Visual Boost, the Short Boost Audio, and the Podcast Style Boost, shown through real candidates across every kind of career.',
+  alternates: { canonical: '/boosts' },
+  openGraph: {
+    url: '/boosts',
+    title: 'Boosts | RoleBoost',
+    description:
+      'See the three Boosts RoleBoost makes, shown through real candidates across every kind of career.',
+  },
 }
 
 // Jordan Mills is the featured example; his Boost sections are built from the
