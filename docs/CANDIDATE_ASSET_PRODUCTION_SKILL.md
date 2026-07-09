@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.7 | July 2026 | Rob Ramos, Founder**
+**Version 1.8 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -17,6 +17,7 @@
 | 1.5 | July 2026 | Three updates: (1) "Narrative angle" renamed to "narrative perspective" throughout -- terminology change only, no structural changes. (2) Short Video prompt format added as a fourth prompt type per perspective, using NotebookLM's Video Overview Custom Topic field. Each perspective now produces four prompts: Deep Dive, Brief, Infographic, Short Video. (3) NotebookLM Prompt Mapping table updated to include a Short Video row. |
 | 1.6 | July 2026 | Three updates based on live production session (Jordan Mills): (1) Audio and Short Video closing pitch instruction updated -- action sentence now directs hiring managers to "Learn more about [candidate first name] at roleboost.app" rather than a direct profile slug URL. (2) Infographic prompt format updated to explicitly permit Google-style icons as the visual anchor, with usage guidance (one icon per stat maximum, functional not decorative). Icon prohibition removed from Do NOT list. (3) Infographic accent color limit expanded from two to three. |
 | 1.7 | July 2026 | Four updates to the Deep Dive audio prompt format: (1) Line 1 updated from single-host to two-host framing -- "The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions." (2) Line 2 updated to block "Brief" as a spoken word and block any reference to this as a brief; removed "Do not say 'we' at any point" restriction since two hosts are confirmed. (3) Deep Dive time limit reduced from 8 minutes to 4 minutes. (4) "Do NOT say 'we' or any language that implies more than one speaker" removed from the shared Do NOT list. Brief format is unchanged. |
+| 1.8 | July 2026 | Line 1 split from shared to format-specific: Deep Dive uses two-host framing ("The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions.") and Brief uses single-host framing ("You are a single host speaking directly to a hiring manager."). Shared Line 1 replaced with a note directing Claude to the format-specific instructions in each section's specific notes. |
 
 ---
 
@@ -239,8 +240,8 @@ Each prompt follows the format spec for its type. Audio prompts (Deep Dive and B
 
 ### Audio Prompt Format (v1.2 -- tested and confirmed)
 
-**Line 1 -- Role establishment:**
-"The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions."
+**Line 1 -- Role establishment (format-specific -- see Deep Dive and Brief specific notes below):**
+Line 1 differs by format. Deep Dive uses a two-host framing. Brief uses a single-host framing. Do not apply the same Line 1 to both formats. The correct Line 1 for each format is specified in the format-specific notes below.
 
 **Line 2 -- Opening line instruction:**
 "Your literal first words are: 'This is a Boost on [candidate full name].' Say that exact line out loud before anything else. Then go directly into the content with no additional intro phrase. Do not use the word 'Brief' or reference this as a brief at any point."
@@ -267,11 +268,13 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 - "Do NOT use the words 'passionate,' 'journey,' or 'innovative.'"
 
 **Deep Dive specific notes:**
+- Line 1: "The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions."
 - Length: do not exceed 4 minutes
 - The pitch comes after the narrative close, not instead of it. The narrative close lands the story. The pitch lands the call to action. Both are required.
 - Structure: open with the hook fact, build the case chronologically or thematically, address the likely hard question, narrative close, then pitch.
 
 **Brief specific notes:**
+- Line 1: "You are a single host speaking directly to a hiring manager."
 - Length: do not exceed 90 seconds
 - The pitch is the final beat, framed as an explicit instruction with a required sequence -- not a narrative suggestion. Use "End with a direct closing pitch, spoken in this exact sequence:" to open the pitch instruction.
 - Structure: hook stat, two proof points, pitch. Every word earns its place.
@@ -425,4 +428,4 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.7 -- roleboost.app -- Built by Rob Ramos*
+*RoleBoost Candidate Asset Production Skill v1.8 -- roleboost.app -- Built by Rob Ramos*
