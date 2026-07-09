@@ -170,6 +170,51 @@ export const PERSONAS: Persona[] = [
     featured: true,
     assets: { visual: null, short: null, podcast: null, resume: null },
   },
+  {
+    slug: 'derek-kim',
+    name: 'Derek Kim',
+    initials: 'DK',
+    avatarColor: '#1E3A5F',
+    role: 'Senior Program Manager',
+    targetRole: 'PMO Director',
+    location: 'Austin, TX',
+    categoryTag: 'SaaS Program Management | Advancing to Leadership',
+    careerStage: 'Advancing to leadership',
+    blurb:
+      'Ten years delivering complex software programs, a $40M+ portfolio, PMP certified, and already doing the PMO Director job informally: intake, prioritization, executive reporting. Derek is ready for the title to catch up to the work. Here is Derek through three Boosts.',
+    featured: true,
+    assets: { visual: null, short: null, podcast: null, resume: null },
+  },
+  {
+    slug: 'marcus-webb',
+    name: 'Marcus Webb',
+    initials: 'MW',
+    avatarColor: '#B45309',
+    role: 'Fulfillment Operations Manager',
+    targetRole: 'Director of Operations',
+    location: 'Columbus, OH',
+    categoryTag: 'E-commerce Operations | Frontline to Leadership',
+    careerStage: 'Frontline to leadership',
+    blurb:
+      'Fourteen years from pick/pack associate to running a 200-person, three-shift operation: 99.4% order accuracy, an 18% cut in labor cost per unit, no degree. Marcus is proof that results outrun a resume. Here is Marcus through three Boosts.',
+    featured: true,
+    assets: { visual: null, short: null, podcast: null, resume: null },
+  },
+  {
+    slug: 'tanya-patel',
+    name: 'Tanya Patel',
+    initials: 'TP',
+    avatarColor: '#0F6E56',
+    role: 'Critical Care Nurse (RN, CCRN)',
+    targetRole: 'Nurse Manager',
+    location: 'Chicago, IL',
+    categoryTag: 'Trauma Nursing | Clinical to Management',
+    careerStage: 'Clinical to management',
+    blurb:
+      'Seven years in a Level I trauma center, three of them leading in all but title: charge nurse, preceptor to eight new grads, a 23% cut in near-miss events. Tanya is moving from the bedside to nurse manager. Here is Tanya through three Boosts.',
+    featured: true,
+    assets: { visual: null, short: null, podcast: null, resume: null },
+  },
 ]
 
 /** The Jordan Mills entry, used as the default persona for the /boosts index. */
