@@ -51,6 +51,10 @@ export default function ChatPanel({
   // The last message that failed to send, so one tap retries it.
   const [retryText, setRetryText] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  // Set when the server caps the conversation. 'session_limit' is per-chat and a
+  // fresh conversation clears it (we offer a one-tap restart); 'rate_limited' is
+  // per-source and a restart won't help, so we point to the follow-up path.
+  const [degraded, setDegraded] = useState<'session_limit' | 'rate_limited' | null>(null);
 
   // Scheduling handoff, shown when the assistant cannot answer and offers to meet.
   const [scheduleState, setScheduleState] = useState<ScheduleState>('idle');
@@ -148,6 +152,25 @@ export default function ChatPanel({
     }
   }
 
+  // Start a fresh conversation. Delivers the current transcript first, then wipes
+  // local state so the next message opens a new session server-side, which clears
+  // the per-chat interaction cap. The recruiter's self-introduction is kept so
+  // they don't have to re-enter it.
+  function resetConversation() {
+    deliverBeacon();
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    deliveredRef.current = false;
+    setDelivered(false);
+    setSessionId(null);
+    sessionIdRef.current = null;
+    setMessages([]);
+    setInput('');
+    setRetryText(null);
+    setScheduleState('idle');
+    setDegraded(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
   // Optional recruiter self-introduction. Any subset of the fields is fine; the
   // email (if given) is also where the recruiter's transcript copy is sent.
   async function submitIdentify() {
@@ -238,6 +261,9 @@ export default function ChatPanel({
       const assistantAnswer = data.answer as string;
       setMessages((m) => [...m, { role: 'assistant', content: assistantAnswer }]);
       onExchange?.(trimmed, assistantAnswer);
+      // A capped conversation comes back as a normal assistant turn plus a flag;
+      // record it so the thread can offer the matching next step (restart / follow-up).
+      setDegraded((data.degraded as 'session_limit' | 'rate_limited' | undefined) ?? null);
       if (mode === 'live' && data.offerSchedule) setScheduleState('prompt');
       // Each message restarts the inactivity clock, so the transcript only
       // delivers after a real lull, not while the recruiter is still engaged.
@@ -470,6 +496,22 @@ export default function ChatPanel({
               className="rounded-[var(--radius-md)] border border-[var(--rb-border)] bg-[var(--rb-bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--rb-text-secondary)] transition-colors hover:border-[var(--rb-brand)] hover:text-[var(--rb-text)]"
             >
               Try again
+            </button>
+          </div>
+        )}
+
+        {/* Per-chat cap reached: one tap opens a fresh conversation (new session),
+            which clears the cap. Shown alongside the scheduling handoff below, so
+            the recruiter can keep going or hand off, whichever they prefer. */}
+        {degraded === 'session_limit' && !loading && (
+          <div className="flex justify-start">
+            <button
+              type="button"
+              onClick={resetConversation}
+              className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--rb-border-brand)] bg-[var(--rb-brand-subtle)]/50 px-3 py-1.5 text-xs font-semibold text-[var(--rb-brand)] transition-colors hover:bg-[var(--rb-brand-subtle)]"
+            >
+              <Sparkles className="size-3.5" />
+              Start a new conversation
             </button>
           </div>
         )}

@@ -12,6 +12,7 @@ missing config never blocks a legitimate conversation.
 |---|---|---|
 | **Vercel BotID** | `checkBotId()` in `/api/chat`, `/api/chat/schedule` | Invisible bot detection (Kasada). Blocks Playwright/Puppeteer, scrapers, credential-stuffers. |
 | **Vercel WAF rate limiting** | `@vercel/firewall` `checkRateLimit()` in `/api/chat`, `/api/chat/schedule`, `/api/transcripts/deliver` | Per-IP flood control at the edge, before the function runs (no compute cost on blocked requests). |
+| **App-level interaction caps** | `checkAppRateLimit()` in `/api/chat` | Durable, DB-backed ceilings on token burn: per conversation and per source IP. Enforced in-app, so they hold even when the WAF rule is unpublished, and they degrade gracefully in-thread rather than as an HTTP error. |
 | **Per-candidate email throttle** | `checkAppRateLimit()` in `lib/transcripts/deliver.ts` | Caps transcript emails per candidate per hour so session-flooding can't bury an inbox. The one dimension the WAF can't express. |
 
 ## BotID
@@ -43,6 +44,29 @@ Notes:
   longer than the counting window, add a **Persistent Action** to the rule.
 - WAF counters are per-region, so global traffic against one key can exceed the
   configured limit in aggregate. These are floors on abuse, not exact quotas.
+
+## App-level interaction caps
+
+The WAF is per-region and no-ops until its dashboard rule is published, so token
+burn on `/api/chat` also has two durable, DB-backed ceilings (constants at the top
+of `app/api/chat/route.ts`, backed by the `rate_limits` table + `check_rate_limit()`
+RPC). Both fail open, both skip the owner's own preview (`isOwner`), and neither
+returns an HTTP error: a tripped cap comes back as a normal in-thread assistant
+message plus a `degraded` flag, so the recruiter always has a next step.
+
+| Cap | Key | Default | Recruiter's next step |
+|---|---|---|---|
+| **Per conversation** | `chat-session:{sessionId}` | 40 / hour | `degraded: 'session_limit'` → the chat surfaces a one-tap **Start a new conversation** button; a fresh session clears the cap, so a genuine long conversation is never dead-ended. |
+| **Per source IP** | `chat-ip:{ip}` | 100 / hour | `degraded: 'rate_limited'` → a restart won't help the same IP, so the message points to the follow-up path (leave email / schedule). Set high enough to clear a shared office IP (corporate NAT) while still stopping a script. |
+
+The per-conversation cap is checked first, so a heavy but genuine single
+conversation gets the restart path rather than the harder IP wall. The first
+message of a session has no `sessionId` yet, so the per-chat cap engages from the
+second message; the per-IP cap applies from the first. These bound a single-source
+flood and one runaway conversation; a distributed attack rotating across many IPs
+against one popular profile is deliberately **not** covered here (BotID is the
+front line for automation, and a per-candidate daily budget can be added later if
+that pattern ever appears).
 
 ## Per-candidate email throttle
 
