@@ -14,6 +14,9 @@ import { deleteAllCandidateFiles } from '@/lib/storage/delete-candidate-files';
 const VisibilityInput = z.object({
   is_published: z.boolean().optional(),
   ai_enabled: z.boolean().optional(),
+  // Opt-in to being indexed by search engines (default off). Writing this fails
+  // gracefully until the 20260715 migration is applied (the caller reverts + warns).
+  search_discoverable: z.boolean().optional(),
 });
 
 export async function updateVisibilitySettings(input: unknown) {
@@ -24,6 +27,7 @@ export async function updateVisibilitySettings(input: unknown) {
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (parsed.is_published !== undefined) patch.is_published = parsed.is_published;
     if (parsed.ai_enabled !== undefined) patch.ai_enabled = parsed.ai_enabled;
+    if (parsed.search_discoverable !== undefined) patch.search_discoverable = parsed.search_discoverable;
 
     const { error } = await supabase
       .from('candidate_profiles')

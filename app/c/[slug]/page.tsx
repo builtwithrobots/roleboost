@@ -31,14 +31,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     data.headline ??
     (data.target_role ? `${data.target_role} on RoleBoost` : 'Career profile on RoleBoost');
 
+  // Calling cards are noindex by default so a candidate's career data does not
+  // surface in search. A candidate can opt in via Settings (search_discoverable),
+  // which flips this page to indexable. Read the preference defensively through the
+  // service-role client: the column is added by the 20260715 migration, so a
+  // not-yet-migrated DB simply degrades to the private-by-default noindex.
+  let discoverable = false;
+  try {
+    const { data: pref } = await (adminClient.from('candidate_profiles') as any)
+      .select('search_discoverable')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .maybeSingle();
+    discoverable = Boolean(pref?.search_discoverable);
+  } catch {
+    discoverable = false;
+  }
+
   return {
     // `absolute` avoids the "| RoleBoost" title template (the name already reads well).
     title: { absolute: title },
     description,
-    // Calling cards are shareable by link but kept OUT of search to protect the
-    // candidate's personal career data. The page stays crawlable (not disallowed
-    // in robots.ts) so this directive is actually seen.
-    robots: { index: false, follow: false },
+    // Indexable only when the candidate opted in. Otherwise the page stays fully
+    // shareable by link but is kept OUT of search. It remains crawlable (not
+    // disallowed in robots.ts) so whichever directive applies is actually seen.
+    robots: discoverable ? { index: true, follow: true } : { index: false, follow: false },
     openGraph: { title, description, type: 'profile' },
     twitter: { card: 'summary_large_image', title, description },
   };

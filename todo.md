@@ -16,6 +16,22 @@ Source files to know:
 
 ---
 
+## SEO / launch ops (manual, founder)
+
+The SEO foundation is shipped in code (site metadata + title template, `robots.txt`,
+`sitemap.xml`, generated OpenGraph/Twitter images, home `Organization`/`WebSite`
+JSON-LD, canonical URLs). Candidate calling cards are `noindex` by default, with a
+per-candidate "Discoverable in search" opt-in in Settings. Remaining manual steps:
+
+- [x] Set `NEXT_PUBLIC_APP_URL=https://roleboost.app` in the Vercel production env.
+- [ ] Submit `https://roleboost.app/sitemap.xml` in **Google Search Console** (and
+      **Bing Webmaster Tools**). Then use Search Console's URL Inspection to request
+      indexing of `/` and `/boosts` so they are picked up quickly.
+- [ ] After a candidate opts into discovery, their `/c/<slug>` becomes indexable and
+      is added to the sitemap automatically; no manual step needed per candidate.
+
+---
+
 ## P1: Recruiter identity capture (the material gap)
 
 Today anonymous recruiters never receive a transcript, and the candidate's copy
