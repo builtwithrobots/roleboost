@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 
 const isPublicRoute = createRouteMatcher([
   '/',
-  '/boosts',
+  // The Boosts marketing page and every persona example page (/boosts/[slug]).
+  '/boosts(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/onboarding(.*)',
