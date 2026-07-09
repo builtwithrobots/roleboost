@@ -63,7 +63,7 @@ export default function Footer() {
               Privacy Policy
             </Link>
             <Link
-              href="#"
+              href="/terms"
               className="font-inter text-sm text-gray-500 hover:text-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 rounded"
             >
               Terms of Service
