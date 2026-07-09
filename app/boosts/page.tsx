@@ -16,12 +16,12 @@ export const metadata: Metadata = {
 
 // Real Jordan Mills assets live in /public/boosts. Set a path here to swap a
 // placeholder for the live asset; leave it null to keep the placeholder.
-// The Podcast Style Boost is still pending, drop the file in and fill it in:
-//   podcast: '/boosts/jordan-mills-podcast-boost.mp3'
+// Audio is served as progressive mp3 (converted from the NotebookLM DASH m4a
+// per CLAUDE.md); a fragmented/DASH file would not play by progressive download.
 const ASSET_SRC = {
   visual: '/boosts/jordan-mills-visual-boost.png',
   short: '/boosts/jordan-mills-short-boost.mp3',
-  podcast: null,
+  podcast: '/boosts/jordan-mills-podcast-boost.mp3',
 } satisfies Record<string, string | null>
 
 const boosts: BoostShowcaseSectionProps[] = [
