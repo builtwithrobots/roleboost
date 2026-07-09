@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.8 | July 2026 | Rob Ramos, Founder**
+**Version 1.9 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -9,15 +9,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.0 | June 2026 | Initial release |
-| 1.1 | June 2026 | Added v1.1 audio prompt format with single-host instruction and Do NOT tone guardrails |
-| 1.2 | July 2026 | Four updates based on live production session (Robert Ramos): (1) Audio opening line guardrail -- explicit prohibition on format labels; only permitted opening is "This is a Boost on [candidate full name]." (2) Audio Brief close -- pitch must be an explicit instruction with required sequence, not a narrative suggestion. (3) Audio Deep Dive close -- closing pitch instruction added as a required step after the narrative close. (4) Infographic prompts -- added narrative intent statement, breathing room and whitespace as explicit requirements, and expanded Do NOT list covering accent color limits, decorative elements, crowding, and font restraint. |
-| 1.3 | July 2026 | AI Mirror restructured into two tiers -- Tier 1 (Document Read) and Tier 2 (Market Read) -- with an expanded recruiter-level evaluation framework. Added the hype man mandate and no-speculation guardrail: the Mirror informs the narrative privately; all assets are positive, evidence-based, and built to sell the candidate. Gaps surface as coaching notes for the superadmin, never as weaknesses in any asset. |
-| 1.4 | July 2026 | Two major additions: (1) Avatar color palette expanded from 10 to 16 colors with a two-axis pairing guide (industry x candidate tone) replacing the previous industry-only map. Color rationale sentence now required in every Identity Snapshot output. (2) Story type table expanded from 6 to 10 types with the addition of The Promoter, The Reinventor, The Culture Builder, and The Steady Hand. All types now include a Do Not Use When column to help Claude make cleaner selections on ambiguous profiles. |
-| 1.5 | July 2026 | Three updates: (1) "Narrative angle" renamed to "narrative perspective" throughout -- terminology change only, no structural changes. (2) Short Video prompt format added as a fourth prompt type per perspective, using NotebookLM's Video Overview Custom Topic field. Each perspective now produces four prompts: Deep Dive, Brief, Infographic, Short Video. (3) NotebookLM Prompt Mapping table updated to include a Short Video row. |
-| 1.6 | July 2026 | Three updates based on live production session (Jordan Mills): (1) Audio and Short Video closing pitch instruction updated -- action sentence now directs hiring managers to "Learn more about [candidate first name] at roleboost.app" rather than a direct profile slug URL. (2) Infographic prompt format updated to explicitly permit Google-style icons as the visual anchor, with usage guidance (one icon per stat maximum, functional not decorative). Icon prohibition removed from Do NOT list. (3) Infographic accent color limit expanded from two to three. |
-| 1.7 | July 2026 | Four updates to the Deep Dive audio prompt format: (1) Line 1 updated from single-host to two-host framing -- "The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions." (2) Line 2 updated to block "Brief" as a spoken word and block any reference to this as a brief; removed "Do not say 'we' at any point" restriction since two hosts are confirmed. (3) Deep Dive time limit reduced from 8 minutes to 4 minutes. (4) "Do NOT say 'we' or any language that implies more than one speaker" removed from the shared Do NOT list. Brief format is unchanged. |
-| 1.8 | July 2026 | Line 1 split from shared to format-specific: Deep Dive uses two-host framing ("The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions.") and Brief uses single-host framing ("You are a single host speaking directly to a hiring manager."). Shared Line 1 replaced with a note directing Claude to the format-specific instructions in each section's specific notes. |
+| 1.9 | July 2026 | Four updates: (1) Hallucination guardrail added to Quality Standards -- named, firm, specific to NotebookLM prompts. (2) Hard no-hallucination reminder added to the top of each prompt format spec (Audio, Infographic, Short Video). (3) Related Files section replaced with a single CLAUDE.md reference line. (4) Revision history trimmed to current version only -- full history in GitHub commit log. Footer updated to RoleBoost(tm) copyright format. |
 
 ---
 
@@ -240,6 +232,9 @@ Each prompt follows the format spec for its type. Audio prompts (Deep Dive and B
 
 ### Audio Prompt Format (v1.2 -- tested and confirmed)
 
+**HALLUCINATION GUARDRAIL -- READ BEFORE WRITING ANY PROMPT:**
+Every fact, metric, result, title, date, and claim written into these prompts must exist verbatim in the candidate's uploaded resume or supporting documents. Do not invent details, approximate numbers, assume context, or fill gaps with plausible-sounding information. If a fact is not in the uploaded material, it does not exist. Do not use it. A hallucinated fact in a NotebookLM prompt becomes a hallucinated fact in a candidate's audio asset -- and that asset will be heard by recruiters. There are no exceptions to this guardrail.
+
 **Line 1 -- Role establishment (format-specific -- see Deep Dive and Brief specific notes below):**
 Line 1 differs by format. Deep Dive uses a two-host framing. Brief uses a single-host framing. Do not apply the same Line 1 to both formats. The correct Line 1 for each format is specified in the format-specific notes below.
 
@@ -283,6 +278,9 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 
 ### Infographic Prompt Format (v1.3)
 
+**HALLUCINATION GUARDRAIL -- READ BEFORE WRITING ANY PROMPT:**
+Every fact, metric, result, title, date, and claim written into these prompts must exist verbatim in the candidate's uploaded resume or supporting documents. Do not invent details, approximate numbers, assume context, or fill gaps with plausible-sounding information. If a fact is not in the uploaded material, it does not exist. Do not use it. A hallucinated fact in a NotebookLM prompt becomes a hallucinated fact in a candidate's infographic -- and that asset will be seen by recruiters. There are no exceptions to this guardrail.
+
 **Opening framing line:**
 One sentence that names the candidate, their core story perspective, and the one fact that anchors the entire infographic. This line tells NotebookLM what the design is arguing before it specifies any layout.
 
@@ -312,6 +310,9 @@ Use clean, minimal icons to anchor each stat visually. Google-style icons are ac
 ---
 
 ### Short Video Prompt Format (v1.0)
+
+**HALLUCINATION GUARDRAIL -- READ BEFORE WRITING ANY PROMPT:**
+Every fact, metric, result, title, date, and claim written into these prompts must exist verbatim in the candidate's uploaded resume or supporting documents. Do not invent details, approximate numbers, assume context, or fill gaps with plausible-sounding information. If a fact is not in the uploaded material, it does not exist. Do not use it. A hallucinated fact in a NotebookLM prompt becomes a hallucinated fact in a candidate's video asset -- and that asset will be seen by recruiters. There are no exceptions to this guardrail.
 
 The Short Video prompt is entered into the **Custom Topic** field in NotebookLM's Video Overview interface. Select **Short** as the format. Do not select a suggested topic -- use the Custom Topic field and paste the full prompt.
 
@@ -381,11 +382,20 @@ Package tier: [leave blank -- superadmin fills in based on Fiverr order]
 
 Then Section 1 (Narrative Guide Block) followed by Section 2 (Personalized NotebookLM Prompts).
 
+The file closes with this exact footer line:
+
+```
+*RoleBoost(tm) Candidate Asset Production Skill v1.9 -- roleboost.app -- Copyright 2026 RoleBoost(tm)*
+```
+
 ---
 
 ## Quality Standards
 
 Claude must meet these standards before delivering the output:
+
+**HALLUCINATION IS A DISQUALIFYING FAILURE.**
+Every fact, metric, result, title, date, and claim in every NotebookLM prompt must be traceable to the candidate's uploaded resume or supporting documents. If it is not in the file, it does not go in the prompt. Not as a paraphrase. Not as a reasonable assumption. Not as context-filling. NotebookLM will treat whatever is in these prompts as true and build audio, infographic, and video assets from it. Those assets will be heard and seen by real recruiters evaluating a real candidate. A single invented fact is a credibility failure for the candidate and for RoleBoost. There are no exceptions.
 
 - Every claim in the narrative and hard question answer is supported by something in the uploaded material. No invented details, no assumed metrics, no plausible-sounding additions.
 - The AI Mirror read is stated plainly in two tiers -- document read and market read -- one paragraph each. It is for the superadmin only and does not appear in the candidate asset package.
@@ -416,16 +426,10 @@ Until the dashboard is built, all steps above are handled manually in Claude cha
 
 ---
 
-## Related Files
+## Reference
 
-| File | Purpose |
-|---|---|
-| `PERSONA_NARRATIVE_GUIDE.md` | Master reference for all 8 example personas -- same format as Section 1 output |
-| `RoleBoost_NotebookLM_Prompt_Library.md` | Full prompt library v1.1 -- source for all prompts in Section 2 output |
-| `EXAMPLE_PROFILES_CONTENT.md` | Original 5 persona content specs |
-| `EXAMPLE_PROFILES_CONTENT_v2_additions.md` | Personas 6-8 content specs |
-| `CLAUDE.md` | Project-wide Claude Code instructions |
+See `CLAUDE.md` for project-wide Claude Code instructions.
 
 ---
 
-*RoleBoost Candidate Asset Production Skill v1.8 -- roleboost.app -- Built by Rob Ramos*
+*RoleBoost(tm) Candidate Asset Production Skill v1.9 -- roleboost.app -- Copyright 2026 RoleBoost(tm)*
