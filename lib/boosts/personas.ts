@@ -27,6 +27,7 @@ export interface PersonaAssets {
 // the component) so this module stays free of any client-icon import.
 export type PersonaIconKey =
   | 'headset'
+  | 'handcoins'
   | 'megaphone'
   | 'hardhat'
   | 'store'
@@ -107,7 +108,7 @@ export const PERSONAS: Persona[] = [
     slug: 'jordan-mills',
     name: 'Jordan Mills',
     initials: 'JM',
-    icon: 'headset',
+    icon: 'handcoins',
     avatarColor: '#0F6E56',
     role: 'Customer Service Representative',
     targetRole: 'Customer Service Team Lead',

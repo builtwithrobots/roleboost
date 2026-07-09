@@ -64,7 +64,13 @@ export default function Nav() {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex">
+          <div className="hidden md:flex items-center gap-2">
+            <Link
+              href="/sign-in"
+              className="inline-flex items-center justify-center px-4 py-3 rounded-lg font-jakarta text-[15px] font-semibold text-[#1E3A5F] hover:text-[#D97706] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-colors min-h-[44px]"
+            >
+              Sign in
+            </Link>
             <Link
               href="/sign-up"
               className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#D97706] text-white font-jakarta text-[15px] font-semibold hover:bg-[#B45309] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 focus-visible:ring-offset-white transition-colors min-h-[44px]"
@@ -137,7 +143,14 @@ export default function Nav() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-3 pb-1">
+          <div className="space-y-2 pt-3 pb-1">
+            <Link
+              href="/sign-in"
+              className="flex w-full items-center justify-center px-6 py-3 rounded-lg border border-[#E8E0D0] font-jakarta text-[15px] font-semibold text-[#1E3A5F] hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+              onClick={() => setIsOpen(false)}
+            >
+              Sign in
+            </Link>
             <Link
               href="/sign-up"
               className="flex w-full items-center justify-center px-6 py-3 rounded-lg bg-[#D97706] text-white font-jakarta text-[15px] font-semibold hover:bg-[#B45309] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706] focus-visible:ring-offset-2 transition-colors min-h-[44px]"
