@@ -5,6 +5,7 @@ import { motion, useInView, useReducedMotion } from 'motion/react'
 import { fadeUp } from '@/lib/motion'
 import ResumeModal from './ResumeModal'
 import { DEFAULT_PERSONA, type Persona } from '@/lib/boosts/personas'
+import PersonaIcon from './PersonaIcon'
 
 export default function BoostExampleIntro({ persona = DEFAULT_PERSONA }: { persona?: Persona }) {
   const prefersReduced = useReducedMotion()
@@ -62,11 +63,11 @@ export default function BoostExampleIntro({ persona = DEFAULT_PERSONA }: { perso
           <div className="flex items-center gap-4 mb-5">
             {/* Avatar: candidate initials, on their brand color */}
             <span
-              className="flex items-center justify-center w-14 h-14 rounded-full text-white font-jakarta text-lg font-bold shrink-0"
+              className="flex items-center justify-center w-14 h-14 rounded-full text-white shrink-0"
               style={{ backgroundColor: persona.avatarColor }}
               aria-hidden="true"
             >
-              {persona.initials}
+              <PersonaIcon icon={persona.icon} className="size-7" />
             </span>
             <div>
               <h2

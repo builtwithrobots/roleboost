@@ -3,7 +3,9 @@
 import { useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion } from 'motion/react'
 import { fadeUp, scaleIn } from '@/lib/motion'
+import type { PersonaIconKey } from '@/lib/boosts/personas'
 import ImageLightbox from './ImageLightbox'
+import PersonaIcon from './PersonaIcon'
 
 export type BoostKind = 'image' | 'audio'
 
@@ -28,6 +30,8 @@ export interface BoostShowcaseSectionProps {
   candidateName?: string
   /** Monogram for the audio player avatar. Defaults to the candidate's initials. */
   avatarInitials?: string
+  /** Industry icon for the audio player avatar; falls back to initials when absent. */
+  avatarIcon?: PersonaIconKey
   /** Avatar background color. Defaults to the RoleBoost candidate teal. */
   avatarColor?: string
 }
@@ -150,6 +154,7 @@ function AudioAsset({
   formatName,
   candidateName,
   initials,
+  icon,
   avatarColor,
 }: {
   src: string | null
@@ -157,6 +162,7 @@ function AudioAsset({
   formatName: string
   candidateName: string
   initials: string
+  icon?: PersonaIconKey
   avatarColor: string
 }) {
   if (src) {
@@ -170,7 +176,7 @@ function AudioAsset({
               style={{ backgroundColor: avatarColor }}
               aria-hidden="true"
             >
-              {initials}
+              {icon ? <PersonaIcon icon={icon} className="size-5" /> : initials}
             </span>
             <div className="min-w-0">
               <p className="font-jakarta text-base font-bold text-[#1E3A5F] truncate">{candidateName}</p>
@@ -233,6 +239,7 @@ export default function BoostShowcaseSection({
   audioLabel,
   candidateName = 'Jordan Mills',
   avatarInitials,
+  avatarIcon,
   avatarColor = '#0F6E56',
 }: BoostShowcaseSectionProps) {
   // Derive a monogram from the candidate name when one is not supplied.
@@ -300,6 +307,7 @@ export default function BoostShowcaseSection({
                 formatName={name}
                 candidateName={candidateName}
                 initials={initials}
+                icon={avatarIcon}
                 avatarColor={avatarColor}
               />
             )}
