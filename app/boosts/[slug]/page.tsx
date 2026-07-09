@@ -86,9 +86,8 @@ export default async function PersonaBoostsPage({ params }: Props) {
                 {first}&apos;s Boosts
               </h1>
               <p className="font-inter text-lg text-gray-700 leading-relaxed">
-                {persona.role} · {persona.location}. Three Boosts, built from a real career, that
-                give a hiring manager three fast ways in: see {first}, hear {first}, and hear {first}
-                {' '}discussed.
+                {persona.role} · {persona.location}. Get to know the real {first}, in three Boosts
+                you can see and hear.
               </p>
             </div>
           </div>
