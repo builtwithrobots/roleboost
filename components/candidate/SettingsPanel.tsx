@@ -5,6 +5,7 @@ import {
   UserRound,
   Eye,
   Bot,
+  Search,
   Download,
   FileJson,
   FileArchive,
@@ -39,6 +40,7 @@ interface Props {
   settings: {
     isPublished: boolean;
     aiEnabled: boolean;
+    searchDiscoverable: boolean;
   };
 }
 
@@ -250,6 +252,7 @@ function DangerDialog({
 export default function SettingsPanel({ account, settings }: Props) {
   const [isPublished, setIsPublished] = useState(settings.isPublished);
   const [aiEnabled, setAiEnabled] = useState(settings.aiEnabled);
+  const [searchDiscoverable, setSearchDiscoverable] = useState(settings.searchDiscoverable);
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
   const [, startSaving] = useTransition();
@@ -265,19 +268,24 @@ export default function SettingsPanel({ account, settings }: Props) {
   const publicUrl = `${APP_URL.replace(/\/$/, '')}/c/${account.slug}`;
   const publicHost = publicUrl.replace(/^https?:\/\//, '');
 
-  function saveToggle(key: 'is_published' | 'ai_enabled', next: boolean) {
-    const prevPublished = isPublished;
-    const prevAi = aiEnabled;
+  function saveToggle(key: 'is_published' | 'ai_enabled' | 'search_discoverable', next: boolean) {
+    const prev = {
+      is_published: isPublished,
+      ai_enabled: aiEnabled,
+      search_discoverable: searchDiscoverable,
+    };
     setToggleError(null);
     if (key === 'is_published') setIsPublished(next);
-    else setAiEnabled(next);
+    else if (key === 'ai_enabled') setAiEnabled(next);
+    else setSearchDiscoverable(next);
 
     startSaving(async () => {
       const res = await updateVisibilitySettings({ [key]: next });
       if (!res.ok) {
         // Revert on failure so the UI never lies about persisted state.
-        setIsPublished(prevPublished);
-        setAiEnabled(prevAi);
+        setIsPublished(prev.is_published);
+        setAiEnabled(prev.ai_enabled);
+        setSearchDiscoverable(prev.search_discoverable);
         setToggleError('Could not save that change. Please try again.');
         return;
       }
@@ -400,6 +408,27 @@ export default function SettingsPanel({ account, settings }: Props) {
               checked={aiEnabled}
               onChange={(v) => saveToggle('ai_enabled', v)}
               aria-label="AI assistant enabled"
+            />
+          </SwitchField>
+
+          <SwitchField>
+            <Label>
+              <span className="inline-flex items-center gap-1.5">
+                <Search className="size-4 text-[var(--rb-text-secondary)]" aria-hidden="true" />
+                Discoverable in search
+              </span>
+            </Label>
+            <Description>
+              When on, your page can appear in Google and other search engines, so recruiters can
+              find you without a link. Off by default: your page then works only for people you share
+              the link with. Your profile must be live for this to take effect.
+            </Description>
+            <Switch
+              color="amber"
+              checked={searchDiscoverable}
+              disabled={!isPublished}
+              onChange={(v) => saveToggle('search_discoverable', v)}
+              aria-label="Discoverable in search"
             />
           </SwitchField>
 

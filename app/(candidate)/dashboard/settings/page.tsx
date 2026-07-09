@@ -32,6 +32,22 @@ export default async function CandidateSettingsPage() {
     ai_enabled: boolean;
   };
 
+  // Read the search-discoverability preference separately and defensively: the
+  // column is added by the 20260715 migration, so selecting it in the query above
+  // on a not-yet-migrated DB would fail the whole lookup and bounce the settings
+  // page. A missing column simply degrades to "not discoverable" (the default).
+  let searchDiscoverable = false;
+  try {
+    const { data } = await supabase
+      .from('candidate_profiles')
+      .select('search_discoverable')
+      .eq('clerk_user_id', userId)
+      .maybeSingle();
+    searchDiscoverable = Boolean((data as { search_discoverable?: boolean } | null)?.search_discoverable);
+  } catch {
+    searchDiscoverable = false;
+  }
+
   const { data: userRow } = await supabase
     .from('users')
     .select('email, subscription_tier, subscription_status, created_at')
@@ -63,6 +79,7 @@ export default async function CandidateSettingsPage() {
           settings={{
             isPublished: profile.is_published,
             aiEnabled: profile.ai_enabled,
+            searchDiscoverable,
           }}
         />
       </div>
