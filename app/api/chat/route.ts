@@ -35,6 +35,10 @@ const MAX_HISTORY = 20;
 const MAX_MESSAGES_PER_CHAT = 40; // per hour, per session
 const MAX_MESSAGES_PER_IP = 100; // per hour, per source IP
 
+// After this many completed exchanges, the assistant begins gently inviting the
+// recruiter to continue live with the candidate (conversion loop + soft throttle).
+const NUDGE_AFTER_EXCHANGES = 5;
+
 const ChatInput = z.object({
   candidateSlug: z.string().min(1).max(200),
   message: z.string().min(1).max(2000),
@@ -238,11 +242,23 @@ export async function POST(req: NextRequest) {
     chatViewer = { name: null, company: employerViewer.employerCompanyName };
   }
 
+  // ── Meeting-invitation nudge ────────────────────────────────────────────────
+  // Once a conversation has run several exchanges deep, the assistant starts
+  // warmly (and occasionally) inviting the recruiter to continue live with the
+  // candidate. This is the conversion loop AND a soft, on-brand throttle: most
+  // recruiters convert or wind down well before the 40/hr abuse cap. The invite
+  // is woven into the model's own answer (relatable on any model), never scripted,
+  // and never replaces a real answer. Owner previews never get nudged.
+  const priorExchanges = conversationHistory.filter((m) => m.role === 'user').length;
+  const meetingInvitation: 'none' | 'gentle' =
+    !isOwner && priorExchanges >= NUDGE_AFTER_EXCHANGES ? 'gentle' : 'none';
+
   const systemPrompt = buildCandidateSystemPrompt(
     brain.candidate,
     brain.resumeMarkdown,
     brain.careerContextMarkdown,
     chatViewer,
+    meetingInvitation,
   );
 
   // ── Complexity router ──────────────────────────────────────────────────────
@@ -337,7 +353,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  return NextResponse.json({ answer, sessionId: resolvedSessionId ?? sessionId ?? null, offerSchedule });
+  return NextResponse.json({
+    answer,
+    sessionId: resolvedSessionId ?? sessionId ?? null,
+    offerSchedule,
+    // Signals the client to surface the persistent, low-key "Request time" chip.
+    inviteMeeting: meetingInvitation === 'gentle',
+  });
 }
 
 /** The scripted, honest handoff; the fallback when the model-written one fails. */

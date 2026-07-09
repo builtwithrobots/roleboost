@@ -25,6 +25,11 @@ export function buildCandidateSystemPrompt(
   resumeMarkdown: string | null,
   careerContextMarkdown: string | null = null,
   viewer: ChatViewer | null = null,
+  // 'gentle' once a conversation has run several exchanges deep: the assistant
+  // keeps answering fully but may, occasionally and warmly, invite the recruiter
+  // to continue live with the candidate. Model-generated so it stays relatable
+  // (and reads naturally on Haiku), never a scripted append. Default 'none'.
+  meetingInvitation: 'none' | 'gentle' = 'none',
 ): string {
   const name = candidate.full_name;
   const first = name.split(' ')[0] || name;
@@ -68,6 +73,18 @@ This is the authoritative answer to what ${first} is looking for, seeking next, 
 </target_role>
 `
     : '';
+
+  // Conversion nudge, woven into the assistant's own answer rather than scripted,
+  // so it sounds like the candidate's assistant and not a lead-gen bot. It must
+  // never replace a real answer; that guardrail is stated inside the block.
+  const meetingInvitationBlock =
+    meetingInvitation === 'gentle'
+      ? `
+<meeting_invitation>
+This conversation has run several exchanges deep, which usually signals real interest. Keep answering every question as fully and honestly as always; never hold back an answer to steer toward a meeting. When it fits naturally, and only after you have actually answered, you may add one short, warm line inviting the recruiter to continue with ${first} directly: for example, that this is exactly the kind of thing ${first} enjoys getting into in a live conversation, and offer to help find a time. Keep it light and occasional: at most once every couple of replies, never in every message, and never in place of a real answer. If the recruiter asks about next steps or seems ready to talk, lean in and offer to set up a time.
+</meeting_invitation>
+`
+      : '';
 
   const contextDocumentBlock = careerContextMarkdown
     ? `
@@ -153,7 +170,7 @@ Respond in this register: concise, warm, grounded, third person about ${first}. 
 
 Never use em dashes ("--" or the long dash). Use commas, semicolons, or periods instead.
 </voice>
-
+${meetingInvitationBlock}
 <reasoning_instruction>
 For questions that touch multiple parts of ${first}'s career at once, gaps plus pivots, short tenures plus commitment, specific metrics, locate the relevant facts across the information above before answering. Reason from the whole picture, not just the nearest matching field. If the picture is not actually supported by the information, reply with ${REDIRECT_SENTINEL}.
 </reasoning_instruction>
