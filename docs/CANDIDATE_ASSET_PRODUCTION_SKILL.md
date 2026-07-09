@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 1.9 | July 2026 | Rob Ramos, Founder**
+**Version 2.0 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -9,7 +9,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.9 | July 2026 | Four updates: (1) Hallucination guardrail added to Quality Standards -- named, firm, specific to NotebookLM prompts. (2) Hard no-hallucination reminder added to the top of each prompt format spec (Audio, Infographic, Short Video). (3) Related Files section replaced with a single CLAUDE.md reference line. (4) Revision history trimmed to current version only -- full history in GitHub commit log. Footer updated to RoleBoost(tm) copyright format. |
+| 2.0 | July 2026 | One update: New Do NOT line added to the audio prompt Do NOT block -- "Do NOT infer gender, relationship, or personal details beyond what is explicitly stated in the source material -- if the resume says 'parent,' say 'parent.'" Triggered by live QC finding: NotebookLM inferred "mother" from a resume that said "parent" only. Applies to Deep Dive and Brief formats. |
 
 ---
 
@@ -260,6 +260,7 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 **Do NOT lines -- required at the close of every audio prompt:**
 - "Do NOT begin with 'This is a Brief,' 'This is a Deep Dive,' or any other format label. The only permitted opening is 'This is a Boost on [candidate full name].'"
 - "Do NOT use casual or informal language, analogies, or editorial commentary -- the tone is confident and direct, like a trusted colleague briefing a hiring manager, not a podcast host."
+- "Do NOT infer gender, relationship, or personal details beyond what is explicitly stated in the source material -- if the resume says 'parent,' say 'parent.'"
 - "Do NOT use the words 'passionate,' 'journey,' or 'innovative.'"
 
 **Deep Dive specific notes:**
@@ -385,7 +386,7 @@ Then Section 1 (Narrative Guide Block) followed by Section 2 (Personalized Noteb
 The file closes with this exact footer line:
 
 ```
-*RoleBoost(tm) Candidate Asset Production Skill v1.9 -- roleboost.app -- Copyright 2026 RoleBoost(tm)*
+*RoleBoost™ Candidate Asset Production Skill v2.0 -- roleboost.app -- Copyright 2026 RoleBoost™*
 ```
 
 ---
@@ -432,4 +433,4 @@ See `CLAUDE.md` for project-wide Claude Code instructions.
 
 ---
 
-*RoleBoost(tm) Candidate Asset Production Skill v1.9 -- roleboost.app -- Copyright 2026 RoleBoost(tm)*
+*RoleBoost™ Candidate Asset Production Skill v2.0 -- roleboost.app -- Copyright 2026 RoleBoost™*
