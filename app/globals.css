@@ -529,6 +529,25 @@ a {
   border-radius: var(--radius-md);
 }
 
+/* ── Marquee ────────────────────────────────────────────────────────
+   Continuous, low-key horizontal scroll for a duplicated card track.
+   The track holds two identical halves; translating by -50% moves it by
+   exactly one half, so it loops seamlessly. Each card carries its own
+   trailing margin (not a flex gap) so the wrap point is gap-perfect.
+   Duration is set per-use via --rb-marquee-duration. Paused on hover /
+   focus-within by the consumer, and neutralized by the global
+   prefers-reduced-motion rule above.
+────────────────────────────────────────────────────────────────── */
+@keyframes rb-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.rb-marquee {
+  animation: rb-marquee var(--rb-marquee-duration, 60s) linear infinite;
+  will-change: transform;
+}
+
 /* ── Stat / Number Display ──────────────────────────────────────────
    Large KPI numbers on dashboards and marketing pages.
 ────────────────────────────────────────────────────────────────── */
