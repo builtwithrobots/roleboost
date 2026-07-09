@@ -22,13 +22,15 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const persona = getPersona(slug)
-  if (!persona) return { title: 'Boosts | RoleBoost' }
+  if (!persona) return { title: 'Boosts' }
   const first = persona.name.split(' ')[0]
   const description = `See ${persona.name}, ${persona.role} (${persona.careerStage}), through three Boosts: the Visual Boost, the Short Boost Audio, and the Podcast Style Boost.`
   return {
-    title: `${first}'s Boosts | RoleBoost`,
+    // The template appends " | RoleBoost", so this reads "Ryan's Boosts | RoleBoost".
+    title: `${first}'s Boosts`,
     description,
-    openGraph: { title: `${persona.name} on RoleBoost`, description },
+    alternates: { canonical: `/boosts/${persona.slug}` },
+    openGraph: { url: `/boosts/${persona.slug}`, title: `${persona.name} on RoleBoost`, description },
   }
 }
 

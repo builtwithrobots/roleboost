@@ -24,11 +24,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('is_published', true)
     .single();
 
-  if (!data) return { title: 'Profile not found' };
+  if (!data) return { title: 'Profile not found', robots: { index: false, follow: false } };
+
+  const title = `${data.full_name} on RoleBoost`;
+  const description =
+    data.headline ??
+    (data.target_role ? `${data.target_role} on RoleBoost` : 'Career profile on RoleBoost');
 
   return {
-    title: `${data.full_name}, RoleBoost`,
-    description: data.headline ?? (data.target_role ? `${data.target_role} on RoleBoost` : 'Career profile on RoleBoost'),
+    // `absolute` avoids the "| RoleBoost" title template (the name already reads well).
+    title: { absolute: title },
+    description,
+    // Calling cards are shareable by link but kept OUT of search to protect the
+    // candidate's personal career data. The page stays crawlable (not disallowed
+    // in robots.ts) so this directive is actually seen.
+    robots: { index: false, follow: false },
+    openGraph: { title, description, type: 'profile' },
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 

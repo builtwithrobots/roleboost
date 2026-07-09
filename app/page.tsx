@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
@@ -15,6 +16,43 @@ import PricingSection from '@/components/marketing/PricingSection';
 import DoneForYouSection from '@/components/marketing/DoneForYouSection';
 import FinalCTA from '@/components/marketing/FinalCTA';
 import Footer from '@/components/marketing/Footer';
+
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://roleboost.app').replace(/\/$/, '');
+
+export const metadata: Metadata = {
+  title: {
+    absolute: 'RoleBoost: AI candidate profiles recruiters can interrogate 24/7',
+  },
+  description:
+    'Upload your resume and career context; RoleBoost builds a personal career AI that represents you to recruiters 24/7, plus audio, video, infographic, and slide-deck Boosts. Share one link and be heard.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    url: '/',
+    title: 'RoleBoost: AI candidate profiles recruiters can interrogate 24/7',
+    description:
+      'A personal career AI that represents you to recruiters 24/7, plus audio, video, infographic, and slide-deck Boosts. Your career. Your AI. Finally heard.',
+  },
+};
+
+// Organization + WebSite structured data, so search engines understand the brand.
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'RoleBoost',
+      url: APP_URL,
+      logo: `${APP_URL}/icons/512`,
+      description:
+        'AI-powered candidate intelligence platform. A personal career AI, plus audio, video, infographic, and slide-deck Boosts, shared over one link.',
+    },
+    {
+      '@type': 'WebSite',
+      name: 'RoleBoost',
+      url: APP_URL,
+    },
+  ],
+};
 
 export default async function HomePage() {
   const { userId } = await auth();
@@ -66,6 +104,10 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#FFFBF5]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[#1E3A5F] focus:text-white focus:font-jakarta focus:font-semibold"
