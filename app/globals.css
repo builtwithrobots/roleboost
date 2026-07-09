@@ -548,6 +548,15 @@ a {
   will-change: transform;
 }
 
+/* Pause on hover / keyboard focus. This lives here (unlayered, alongside
+   .rb-marquee) on purpose: a Tailwind hover: utility sits in @layer utilities,
+   which the unlayered .rb-marquee animation shorthand would always outrank, so
+   the pause has to be declared in the same cascade context to take effect. */
+.rb-marquee:hover,
+.rb-marquee:focus-within {
+  animation-play-state: paused;
+}
+
 /* ── Stat / Number Display ──────────────────────────────────────────
    Large KPI numbers on dashboards and marketing pages.
 ────────────────────────────────────────────────────────────────── */
