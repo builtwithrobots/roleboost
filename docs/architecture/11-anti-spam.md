@@ -13,6 +13,7 @@ missing config never blocks a legitimate conversation.
 | **Vercel BotID** | `checkBotId()` in `/api/chat`, `/api/chat/schedule` | Invisible bot detection (Kasada). Blocks Playwright/Puppeteer, scrapers, credential-stuffers. |
 | **Vercel WAF rate limiting** | `@vercel/firewall` `checkRateLimit()` in `/api/chat`, `/api/chat/schedule`, `/api/transcripts/deliver` | Per-IP flood control at the edge, before the function runs (no compute cost on blocked requests). |
 | **App-level interaction caps** | `checkAppRateLimit()` in `/api/chat` | Durable, DB-backed ceilings on token burn: per conversation and per source IP. Enforced in-app, so they hold even when the WAF rule is unpublished, and they degrade gracefully in-thread rather than as an HTTP error. |
+| **Meeting-invitation nudge** | `buildCandidateSystemPrompt(..., meetingInvitation)` in `/api/chat` | Soft, conversion-first throttle: after a few exchanges the assistant warmly invites a live meeting, so real conversations resolve to a booking well before the hard cap. Doubles as the product's core recruiter-conversion loop. |
 | **Per-candidate email throttle** | `checkAppRateLimit()` in `lib/transcripts/deliver.ts` | Caps transcript emails per candidate per hour so session-flooding can't bury an inbox. The one dimension the WAF can't express. |
 
 ## BotID
@@ -67,6 +68,30 @@ flood and one runaway conversation; a distributed attack rotating across many IP
 against one popular profile is deliberately **not** covered here (BotID is the
 front line for automation, and a per-candidate daily budget can be added later if
 that pattern ever appears).
+
+## Meeting-invitation nudge (soft, conversion-first throttle)
+
+The hard interaction caps are the abuse backstop; the meeting nudge is the
+low-friction ceiling that real recruiters actually hit first. It reframes "stop
+spending tokens" as "book a meeting," which is what RoleBoost wants anyway.
+
+- **Trigger:** `/api/chat` counts completed exchanges from the server-rebuilt
+  history. Once past `NUDGE_AFTER_EXCHANGES` (5), it passes
+  `meetingInvitation: 'gentle'` into `buildCandidateSystemPrompt`, which appends a
+  `<meeting_invitation>` block. Owner previews (`isOwner`) are never nudged.
+- **Behavior (gentle & ambient):** the assistant keeps answering every question
+  fully; the block explicitly forbids withholding an answer to push a meeting.
+  When it fits, and only after answering, it adds one short, warm invite to
+  continue live with the candidate, at most once every couple of replies. Because
+  the invite is generated in the assistant's own `<voice>`, it stays relatable on
+  any model (including Haiku), never a scripted append.
+- **Client surface:** the response carries `inviteMeeting: true`, which latches a
+  persistent, low-key "Request time with {name}" chip by the input in
+  `ChatPanel`. One tap opens the existing schedule form, prefilled. Non-interruptive;
+  hidden while that form is already open, and reset by "Start a new conversation".
+- **Deliberately soft:** the assistant never hard-stops or refuses to answer to
+  force a booking; that would sacrifice the "interrogate it 24/7" differentiator.
+  The 40/hr per-chat cap remains the only hard stop, for genuine abuse.
 
 ## Per-candidate email throttle
 

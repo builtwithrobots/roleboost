@@ -55,6 +55,9 @@ export default function ChatPanel({
   // fresh conversation clears it (we offer a one-tap restart); 'rate_limited' is
   // per-source and a restart won't help, so we point to the follow-up path.
   const [degraded, setDegraded] = useState<'session_limit' | 'rate_limited' | null>(null);
+  // Latched once the conversation is deep enough that the server starts inviting a
+  // live meeting; surfaces a persistent, low-key "Request time" chip by the input.
+  const [inviteMeeting, setInviteMeeting] = useState(false);
 
   // Scheduling handoff, shown when the assistant cannot answer and offers to meet.
   const [scheduleState, setScheduleState] = useState<ScheduleState>('idle');
@@ -168,6 +171,7 @@ export default function ChatPanel({
     setRetryText(null);
     setScheduleState('idle');
     setDegraded(null);
+    setInviteMeeting(false);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
@@ -264,6 +268,8 @@ export default function ChatPanel({
       // A capped conversation comes back as a normal assistant turn plus a flag;
       // record it so the thread can offer the matching next step (restart / follow-up).
       setDegraded((data.degraded as 'session_limit' | 'rate_limited' | undefined) ?? null);
+      // Latch the meeting invite: once deep enough, keep the chip available.
+      if (data.inviteMeeting) setInviteMeeting(true);
       if (mode === 'live' && data.offerSchedule) setScheduleState('prompt');
       // Each message restarts the inactivity clock, so the transcript only
       // delivers after a real lull, not while the recruiter is still engaged.
@@ -684,6 +690,26 @@ export default function ChatPanel({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Persistent, low-key meeting invite. Appears once the conversation is
+          deep enough (server-signaled) and the assistant has begun inviting a
+          live talk in its own words. Never interruptive; hidden while the
+          schedule form is already open. One tap opens that form, prefilled. */}
+      {mode === 'live' && inviteMeeting && scheduleState === 'idle' && (
+        <div className="border-t border-[var(--rb-border)] px-3 py-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (!email.trim() && rEmail.trim()) setEmail(rEmail.trim());
+              setScheduleState('form');
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--rb-border-brand)] bg-[var(--rb-brand-subtle)]/50 px-3 py-1.5 text-xs font-semibold text-[var(--rb-brand)] transition-colors hover:bg-[var(--rb-brand-subtle)]"
+          >
+            <CalendarClock className="size-3.5" />
+            Request time with {firstName}
+          </button>
         </div>
       )}
 

@@ -79,13 +79,30 @@ exposed to anon.
 
 The public chatbot (`/c/[slug]` → `/api/chat`, `/api/chat/schedule`,
 `/api/transcripts/deliver`) is open to anonymous recruiters and is the primary
-abuse surface. It is protected by three layered controls, all fail-open:
+abuse surface. Each message can trigger up to three Anthropic calls, so **token
+burn** is the core risk. It is protected by layered controls, all fail-open:
 
 1. **Vercel BotID** invisible bot detection on `/api/chat` and
-   `/api/chat/schedule`.
-2. **Vercel WAF rate limiting** (`@vercel/firewall`) per IP at the edge.
-3. **Per-candidate transcript-email throttle** so session-flooding cannot bury
-   a candidate's inbox.
+   `/api/chat/schedule`. The front line against automation.
+2. **Vercel WAF rate limiting** (`@vercel/firewall`) per IP at the edge, before
+   the function runs. *Dashboard-gated: no-ops until its rule is published.*
+3. **App-level interaction caps** in `/api/chat`, backed by the `rate_limits`
+   table + `check_rate_limit()` RPC. Durable DB-backed ceilings that hold even
+   with no WAF rule live: **per conversation** (40/hr; a fresh chat resets it via
+   a one-tap restart) and **per source IP** (100/hr; clears a corporate NAT while
+   stopping a script). A tripped cap returns a graceful in-thread message with a
+   `degraded` flag, never an HTTP error, so the recruiter always has a next step.
+4. **Meeting-invitation nudge** in the system prompt: after a few exchanges the
+   assistant warmly invites a live meeting, so genuine conversations convert to a
+   booking well before any hard cap. A soft, on-brand throttle that is also the
+   product's recruiter-conversion loop.
+5. **Per-candidate transcript-email throttle** so session-flooding cannot bury a
+   candidate's inbox.
+
+Design stance: bots are caught at the edge (1–2); token burn from a single source
+or one runaway conversation is bounded durably (3); real recruiters are steered to
+convert, not walled (4). A distributed multi-IP flood against one popular profile
+is a **known gap** (see below), consciously deferred behind BotID.
 
 Full setup, recommended thresholds, and rationale: [11 · Anti-Spam &
 Abuse](./11-anti-spam.md).
@@ -134,7 +151,13 @@ Track outstanding hardening here so it is visible and prioritized.
 - [ ] Recording failures are logged but not alerted; wire `TRANSCRIPT_RECORDING`
       into an alerting channel.
 - [ ] Rate-limit counters are per-region (Vercel WAF), so global limits are
-      approximate. Acceptable for now; revisit if abuse patterns warrant.
+      approximate. The app-level interaction caps (per-chat, per-IP) are exact and
+      cover the common case, but a **distributed multi-IP flood** against one
+      popular profile is not yet bounded. Add a per-candidate daily answer budget
+      if that pattern appears.
+- [ ] BotID and the WAF rules are dashboard-gated and fail-open, so "shipped" is
+      not "protected": confirm the `chat`/`schedule` WAF rules and BotID are
+      actually enabled in production.
 - [ ] No automated dependency / secret scanning in CI yet.
 - [ ] `npm audit` reports moderate advisories; triage on a schedule.
 
@@ -143,3 +166,8 @@ Track outstanding hardening here so it is visible and prioritized.
 - **2026-07** · Initial security overview. Added layered anti-spam (BotID +
   Vercel WAF + per-candidate email throttle) and transcript-recording
   observability. See [11 · Anti-Spam & Abuse](./11-anti-spam.md).
+- **2026-07** · Chat token-burn hardening. Added durable app-level interaction
+  caps (per-conversation 40/hr + per-IP 100/hr) that hold regardless of WAF
+  config and degrade gracefully in-thread, plus a gentle meeting-invitation nudge
+  that converts long conversations to bookings before the hard cap. Flagged the
+  distributed multi-IP gap and the dashboard-gated-controls caveat above.
