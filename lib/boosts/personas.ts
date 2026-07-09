@@ -173,7 +173,12 @@ export const PERSONAS: Persona[] = [
     blurb:
       'Nine years in specialty retail, a $4.2M store, three assistant managers promoted under her, and an 18-month pause for family caregiving. Claire is ready to return, and a gap on a resume says nothing about that. Here is Claire through three Boosts.',
     featured: true,
-    assets: { visual: null, short: null, podcast: null, resume: null },
+    assets: {
+      visual: '/boosts/claire-hutchins-visual-boost.png',
+      short: '/boosts/claire-hutchins-short-boost.mp3',
+      podcast: '/boosts/claire-hutchins-podcast-boost.mp3',
+      resume: null,
+    },
   },
   {
     slug: 'ryan-kowalski',
