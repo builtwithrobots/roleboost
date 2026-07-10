@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 2.0 | July 2026 | Rob Ramos, Founder**
+**Version 2.1 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -9,6 +9,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.1 | July 2026 | Infographic prompt format updated: (1) Removed hardcoded dark background instruction and replaced with avatar-color-driven background selection using three-bucket mapping. (2) Added background selection rationale requirement to Identity Snapshot. (3) Removed "Do NOT use light or pastel colors" from infographic Do NOT lines. (4) Removed roleboost.app URL closing line from infographic layout spec and prompt templates. |
 | 2.0 | July 2026 | One update: New Do NOT line added to the audio prompt Do NOT block -- "Do NOT infer gender, relationship, or personal details beyond what is explicitly stated in the source material -- if the resume says 'parent,' say 'parent.'" Triggered by live QC finding: NotebookLM inferred "mother" from a resume that said "parent" only. Applies to Deep Dive and Brief formats. |
 
 ---
@@ -205,6 +206,16 @@ Claude selects the avatar color using two axes: the candidate's industry or func
 
 **Color rationale required:** Claude must include a one-sentence color rationale in the Identity Snapshot output. Example: "Forest Green -- operations background, tone reads warm and people-first based on safety culture and team development proof points." This lets the superadmin sanity-check the selection on every candidate run.
 
+**Background selection required:** Based on the candidate's avatar color, Claude selects the infographic background tier from the table below and states the selection in the Identity Snapshot alongside the color rationale.
+
+| Background tier | Avatar colors |
+|---|---|
+| Light (off-white or warm white, professional) | Deep Navy, Slate Blue, Charcoal, Steel Blue, Forest Green, Plum |
+| Dark (deep, professional) | Amber, Coral, Warm Rose, Crimson, Sienna, Warm Taupe |
+| Neutral (mid-gray or deep cool gray) | Teal, Blue, Purple, Sage |
+
+Example Identity Snapshot output: "Slate Blue -- Technology/SaaS lane, tone reads precise and data-driven. Infographic background: Light."
+
 **2. The Narrative**
 2-3 sentences. This is the human story, not a resume summary. It must answer: what does this person's career actually show, what can their resume not say about them, and what does RoleBoost specifically do for this person that no other tool could. Write from the AI Mirror read -- grounded in evidence, free of inflation.
 
@@ -295,13 +306,12 @@ Specify three distinct sections. State explicitly that sections must be separate
 Use clean, minimal icons to anchor each stat visually. Google-style icons are acceptable and preferred over decorative or thematic clip art. One icon per proof point maximum. Icons must be functional, not decorative -- their job is to give the eye a landing point, not to add personality or theme.
 
 **Visual direction:**
-- Dark professional background (do not specify exact hex -- let NotebookLM choose within that constraint)
+- Background: use the background tier assigned in the candidate's Identity Snapshot. Light tier: off-white or warm white, professional register. Dark tier: deep and professional. Neutral tier: mid-gray or deep cool gray. Do not specify exact hex -- let NotebookLM choose within that constraint. State the selected tier explicitly in the prompt so NotebookLM has no ambiguity.
 - Font pairing: left to NotebookLM, but must be clean, readable at a glance, and carry authority. No decorative or display fonts.
 - Typography hierarchy: specify roles only (hero stat size, section label size, body content size) -- do not specify exact sizes
 - Accent colors: no more than three. Name which element receives the primary accent to control visual hierarchy.
 
 **Do NOT lines -- required at the close of every infographic prompt:**
-- "Do NOT use light or pastel colors."
 - "Do NOT use more than three accent colors total."
 - "Do NOT use decorative dividers, background textures, or ornamental elements."
 - "Do NOT include a photo placeholder."
@@ -386,7 +396,7 @@ Then Section 1 (Narrative Guide Block) followed by Section 2 (Personalized Noteb
 The file closes with this exact footer line:
 
 ```
-*RoleBoost™ Candidate Asset Production Skill v2.0 -- roleboost.app -- Copyright 2026 RoleBoost™*
+*RoleBoost™ Candidate Asset Production Skill v2.1 -- roleboost.app -- Copyright 2026 RoleBoost™*
 ```
 
 ---
@@ -433,4 +443,4 @@ See `CLAUDE.md` for project-wide Claude Code instructions.
 
 ---
 
-*RoleBoost™ Candidate Asset Production Skill v2.0 -- roleboost.app -- Copyright 2026 RoleBoost™*
+*RoleBoost™ Candidate Asset Production Skill v2.1 -- roleboost.app -- Copyright 2026 RoleBoost™*
