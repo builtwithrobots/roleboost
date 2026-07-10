@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Mic, BarChart2, Bot, Calendar, Mail } from 'lucide-react'
+import { Mic, BarChart2, Bot, Calendar, Mail, MessageCircle, Play, Send } from 'lucide-react'
 
 /* Waveform bar heights in px, varying within the 8-28px band */
 const WAVE_BARS = [12, 22, 28, 18, 8]
@@ -45,6 +45,53 @@ const QA_PAIRS: QaPair[] = [
 
 type ChatPhase = 'question' | 'typing' | 'answer' | 'booking'
 
+/* Mock audio player: play control, pulsing waveform, progress bar, and a
+   countdown that winds from 1:30 to 0:00 and loops. Purely illustrative. */
+const AUDIO_DURATION_S = 90
+
+function AudioPlayerRow() {
+  const prefersReduced = useReducedMotion()
+  const [remaining, setRemaining] = useState(AUDIO_DURATION_S)
+
+  useEffect(() => {
+    if (prefersReduced) return
+    const id = setInterval(
+      () => setRemaining((r) => (r <= 1 ? AUDIO_DURATION_S : r - 1)),
+      1000
+    )
+    return () => clearInterval(id)
+  }, [prefersReduced])
+
+  const progress = ((AUDIO_DURATION_S - remaining) / AUDIO_DURATION_S) * 100
+  const timeLabel = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`
+
+  return (
+    <div className="mt-2.5 flex items-center gap-2.5" aria-hidden="true">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white">
+        <Play size={11} strokeWidth={2} fill="currentColor" className="ml-0.5" />
+      </span>
+      <span className="flex items-end gap-[3px] h-6 shrink-0">
+        {WAVE_BARS.map((height, i) => (
+          <span
+            key={i}
+            className="rb-wave-bar w-[3px] rounded-full bg-[#D97706]"
+            style={{ height: `${Math.round(height * 0.8)}px`, animationDelay: `${i * 0.14}s` }}
+          />
+        ))}
+      </span>
+      <span className="h-1 flex-1 overflow-hidden rounded-full bg-[#F5F0E8]">
+        <span
+          className="block h-full rounded-full bg-[#D97706] transition-[width] duration-1000 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
+      </span>
+      <span className="font-data shrink-0 text-[11px] font-medium text-[#1E3A5F]/70">
+        {timeLabel}
+      </span>
+    </div>
+  )
+}
+
 function LiveDot() {
   return (
     <span className="relative flex h-2 w-2" aria-hidden="true">
@@ -73,7 +120,7 @@ function RecruiterBubble({ text }: { text: string }) {
   return (
     <div className="max-w-[85%]">
       <p className="font-inter text-[10px] font-medium text-[#1E3A5F]/70 mb-1">Recruiter</p>
-      <div className="bg-white border border-[rgba(30,58,95,0.08)] text-[#1E3A5F] rounded-lg rounded-tl-none px-3 py-2 font-inter text-[12px] leading-relaxed">
+      <div className="bg-white border border-[rgba(30,58,95,0.08)] text-[#1E3A5F] rounded-lg rounded-tl-none px-3 py-2 font-inter text-[12px] leading-relaxed shadow-sm">
         &ldquo;{text}&rdquo;
       </div>
     </div>
@@ -84,7 +131,7 @@ function AiBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="max-w-[85%] ml-auto text-right">
       <p className="font-inter text-[10px] font-medium text-[#92400E] mb-1">Jordan&apos;s AI</p>
-      <div className="inline-block bg-[#1E3A5F] text-white rounded-lg rounded-tr-none px-3 py-2 font-inter text-[12px] leading-relaxed text-left">
+      <div className="inline-block bg-[#1E3A5F] text-white rounded-lg rounded-tr-none px-3 py-2 font-inter text-[12px] leading-relaxed text-left shadow-sm">
         {children}
       </div>
     </div>
@@ -110,6 +157,10 @@ function BookingPrompt({ animate }: { animate: boolean }) {
       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D97706] px-3 py-1.5 font-jakarta text-[11px] font-semibold text-white">
         <Calendar size={12} strokeWidth={2} />
         Book a meeting with Jordan
+      </span>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(30,58,95,0.2)] bg-white px-3 py-1.5 font-jakarta text-[11px] font-semibold text-[#1E3A5F]">
+        <MessageCircle size={12} strokeWidth={2} />
+        Continue discussion
       </span>
       <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(30,58,95,0.2)] bg-white px-3 py-1.5 font-jakarta text-[11px] font-semibold text-[#1E3A5F]">
         <Mail size={12} strokeWidth={2} />
@@ -172,13 +223,27 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
   const pair = pairs[pairIndex] ?? pairs[0]
 
   return (
-    <div className="mt-4 bg-[#F5F0E8] rounded-lg p-3 sm:p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5 text-[#1E3A5F]">
-          <Bot size={14} strokeWidth={2} aria-hidden="true" />
-          <span className="font-jakarta text-[12px] font-semibold">Jordan&apos;s Career AI</span>
+    <div className="mt-4 overflow-hidden rounded-xl border border-[rgba(30,58,95,0.08)] bg-white shadow-sm">
+      {/* Chat header, styled like a live messenger widget */}
+      <div className="flex items-center justify-between bg-[#1E3A5F] px-3.5 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white"
+            aria-hidden="true"
+          >
+            <Bot size={16} strokeWidth={2} />
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#059669] ring-2 ring-[#1E3A5F]" />
+          </span>
+          <div>
+            <p className="font-jakarta text-[12px] font-semibold leading-tight text-white">
+              Jordan&apos;s Career AI
+            </p>
+            <p className="mt-0.5 font-inter text-[10px] leading-tight text-white/70">
+              Typically replies in seconds
+            </p>
+          </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 font-jakarta text-[10px] font-semibold text-[#065F46]">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 font-jakarta text-[10px] font-semibold text-[#D1FAE5]">
           <LiveDot />
           Live
         </span>
@@ -187,7 +252,7 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
       {/* Every exchange is stacked invisibly in the same grid cell, so the box
           is permanently sized to the tallest one and never resizes while the
           visible conversation animates on top. */}
-      <div className="grid">
+      <div className="grid bg-[#F5F0E8] px-3 py-3 sm:px-4">
         {pairs.map((p, i) => (
           <div key={i} className="col-start-1 row-start-1 invisible" aria-hidden="true">
             <Exchange pair={p} />
@@ -245,6 +310,19 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
           )}
         </div>
       </div>
+
+      {/* Mock composer, illustrative only */}
+      <div
+        className="flex items-center gap-2 border-t border-[rgba(30,58,95,0.08)] bg-white px-3 py-2.5"
+        aria-hidden="true"
+      >
+        <span className="flex-1 truncate rounded-full bg-[#F5F0E8] px-3.5 py-2 font-inter text-[11px] text-[#1E3A5F]/60">
+          Ask anything about Jordan&apos;s career...
+        </span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white">
+          <Send size={13} strokeWidth={2} />
+        </span>
+      </div>
     </div>
   )
 }
@@ -263,40 +341,34 @@ export default function HeroDemoCard({ chatPairs = QA_PAIRS }: { chatPairs?: QaP
       className="bg-[#FFFBF5] border border-[rgba(30,58,95,0.1)] rounded-xl shadow-md p-4 sm:p-6"
       aria-label="Preview of a RoleBoost candidate profile: career Boost assets and an AI chat"
     >
-      {/* Boost asset stack, three tiles in a slight cascade */}
+      {/* Boost asset stack, full-width tiles matching the chat window */}
       <div className="space-y-3">
         <motion.div
           {...tileMotion(0)}
-          className="flex items-center gap-3 bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3 mr-6 sm:mr-10"
+          className="bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3"
         >
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[rgba(217,119,6,0.1)] text-[#D97706]"
-            aria-hidden="true"
-          >
-            <Mic size={18} strokeWidth={2} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-jakarta text-[13px] font-semibold text-[#1E3A5F] leading-tight">
-              Podcast Style Boost
-            </p>
-            <p className="font-inter text-[11px] text-[#1E3A5F]/70 leading-tight mt-0.5">
-              Jordan Mills &middot; 90 sec
-            </p>
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[rgba(217,119,6,0.1)] text-[#D97706]"
+              aria-hidden="true"
+            >
+              <Mic size={18} strokeWidth={2} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-jakarta text-[13px] font-semibold text-[#1E3A5F] leading-tight">
+                Podcast Style Boost
+              </p>
+              <p className="font-inter text-[11px] text-[#1E3A5F]/70 leading-tight mt-0.5">
+                Jordan Mills &middot; 90 sec
+              </p>
+            </div>
           </div>
-          <div className="flex items-end gap-[3px] h-7" aria-hidden="true">
-            {WAVE_BARS.map((height, i) => (
-              <span
-                key={i}
-                className="rb-wave-bar w-[3px] rounded-full bg-[#D97706]"
-                style={{ height: `${height}px`, animationDelay: `${i * 0.14}s` }}
-              />
-            ))}
-          </div>
+          <AudioPlayerRow />
         </motion.div>
 
         <motion.div
           {...tileMotion(1)}
-          className="flex items-center gap-3 bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3 ml-3 sm:ml-5 mr-3 sm:mr-5"
+          className="flex items-center gap-3 bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3"
         >
           <span
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F5F0E8] text-[#1E3A5F]"
@@ -309,7 +381,7 @@ export default function HeroDemoCard({ chatPairs = QA_PAIRS }: { chatPairs?: QaP
               Visual Boost
             </p>
             <p className="font-inter text-[11px] text-[#1E3A5F]/70 leading-tight mt-0.5">
-              Career Timeline &middot; 2023-2025
+              Career Infographic &middot; 2023-2025
             </p>
           </div>
           <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-1.5">
@@ -324,7 +396,7 @@ export default function HeroDemoCard({ chatPairs = QA_PAIRS }: { chatPairs?: QaP
 
         <motion.div
           {...tileMotion(2)}
-          className="flex items-center gap-3 bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3 ml-6 sm:ml-10"
+          className="flex items-center gap-3 bg-white border border-[rgba(30,58,95,0.08)] rounded-xl shadow-sm px-4 py-3"
         >
           <span
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[rgba(217,119,6,0.1)] text-[#D97706]"
