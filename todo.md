@@ -16,6 +16,134 @@ Source files to know:
 
 ---
 
+## Codebase review fixes (July 2026 audit)
+
+Findings from the full-codebase review (security, AI pipeline, data layer, frontend,
+config). Ordered by consequence. Each item is a small, well-scoped PR unless noted.
+
+### P0: Critical, fix before anything else
+
+- [ ] **Paddle webhook: verify the signature and implement the handlers**
+      (`app/api/webhooks/paddle/route.ts`). Today it only checks the header exists,
+      never validates against `PADDLE_WEBHOOK_SECRET`, the event `switch` is empty
+      (subscription status never written), and `JSON.parse` is unguarded. Anyone can
+      POST forged events; when `BILLING_ENFORCED` flips, paying users get locked out.
+      Mirror the Clerk webhook's structure (svix-style verify, guarded parse).
+- [ ] **Defensive writes for not-yet-applied migrations.** Two writes break the whole
+      save if the column is missing from the live DB:
+      - `app/(candidate)/dashboard/settings/actions.ts` writes `search_discoverable`
+        (20260715 migration) in the same `.update()` as `is_published`/`ai_enabled`.
+      - `app/(candidate)/dashboard/profile/actions.ts` writes `secondary_target_roles`
+        (20260711 migration) inside the main profile update, so every profile save fails.
+      Split each new column into its own error-tolerant `.update()` (the
+      `readSuspendedAt` pattern).
+- [ ] **`check_rate_limit()` is still callable with the public anon key.** The
+      20260709 migration revokes from `anon, authenticated` but not from `PUBLIC`,
+      and Postgres grants EXECUTE to PUBLIC by default. New migration:
+      `REVOKE ALL ON FUNCTION check_rate_limit(TEXT, INTEGER, INTEGER) FROM PUBLIC;`
+      (founder runs it manually against the live DB).
+- [ ] **Transcript emails can be lost forever.** `lib/transcripts/deliver.ts` flips
+      `transcript_sent = true` before sending; a Resend failure is only logged and the
+      cron sweep never retries. Reset the flag on send failure, or split into
+      `claimed_at` (race exclusion) and `sent_at` (set after confirmed send).
+- [ ] **Drop the anon INSERT policy on `chat_sessions`** (20260626 migration,
+      `WITH CHECK (TRUE)`). With the public anon key anyone can insert junk sessions
+      attributed to any candidate straight through PostgREST, bypassing every rate
+      limit. All real writes use the service-role client, which does not need it.
+      Review `profile_views` (same shape, analytics-only) at the same time.
+
+### P1: High
+
+- [ ] **Durable rate limits on the other public endpoints.** Only `/api/chat` uses
+      `check_rate_limit`; `/api/chat/schedule` (sends candidate an email per call),
+      `/api/chat/identify`, and `/api/transcripts/deliver` rely on WAF rules that
+      no-op until published. Add `checkAppRateLimit` buckets to all three.
+- [ ] **Error monitoring.** No `instrumentation.ts`, no Sentry/OTel anywhere; the
+      fail-open paths (rate limiter, grounding validator) degrade silently. Add
+      Sentry via `instrumentation.ts` + `onRequestError`, and log/alert when the
+      fail-open catches fire.
+- [ ] **First tests.** Zero test infra. Start with pure functions:
+      `detectHighRiskContent` / `detectComplexQuestion` (cost + safety routing),
+      the `lib/auth/entitlements.ts` truth table (pin before the billing flip),
+      rate-limit fail-open behavior, prompt-builder snapshot (section order,
+      custom QA above resume, no-em-dash rule present). Add a `test` script.
+- [ ] **Fix the high-risk and complexity detectors** (`app/api/chat/route.ts`).
+      `/\d{4}/` matches every employment year so most answers trigger an extra
+      Sonnet validation call; `lean` matches inside `clean`; `prove` matches
+      `improve` in the complexity router. Use word boundaries, drop or narrow the
+      bare four-digit rule. Big per-conversation cost win.
+- [ ] **Security headers.** `next.config.ts` has no `headers()` block: add CSP
+      (report-only to start), `frame-ancestors`/`X-Frame-Options`, HSTS,
+      `X-Content-Type-Options: nosniff`, and `poweredByHeader: false`. Public
+      calling cards are currently clickjackable.
+- [ ] **Recruiter-controlled text in the system prompt.** The identify flow's
+      name/company are interpolated into `<conversation_partner>` in the system
+      prompt unsanitized and persist all session. Strip newlines, cap to one line,
+      frame as literal labels never instructions (`app/api/chat/route.ts`,
+      `lib/ai/build-system-prompt.ts`).
+- [ ] **Calling-card accessibility batch** (WCAG 2.1 AA rule):
+      - `AudioPlayer` seek bar is click-only; make it a real slider with keyboard
+        support (`role="slider"`, arrow keys, `aria-valuetext`).
+      - `AudioPlayer`/`AssetGallery` have no error states; a failed signed URL leaves
+        an infinite shimmer or dead play button. Add `onError` with a retry message.
+      - Sub-44px touch targets: chat opener chips, chat header buttons, audio skip
+        buttons, identify/schedule buttons.
+      - `JobsTable` NewJobDialog: hand-rolled modal with no focus trap, no ESC, no
+        focus return, labels not associated. Rebuild on Headless UI `Dialog`.
+
+### P2: Medium
+
+- [ ] **Cron guard fails open.** `lib/cron/guard.ts` returns 200-skip when
+      `CRON_SECRET` is unset (routes publicly reachable AND the sweep silently never
+      runs). Fail closed in production; confirm `CRON_SECRET` is set in Vercel.
+- [ ] **Move authenticated callers off the service-role client.**
+      `app/(employer)/dashboard/jobs/actions.ts` runs entirely on `adminClient` with
+      no justifying comment (sibling `board/actions.ts` is the correct RLS template).
+      Candidate dashboard pages/actions and `resume/parse` too. Keep the manual
+      `.eq()` filters as defense in depth.
+- [ ] **Apply `assertCandidateAiAccess` uniformly.** It gates
+      `selectCareerContextAngle` and `adoptGapAnswer` but not `updateCandidateBrain`,
+      `teachAiFromTranscript`, `saveContextPackage`, or hardening actions. The
+      paywall will leak when billing flips. Decide the gated surface now.
+- [ ] **Prompt cache placement.** The cached system prompt embeds the viewer intro
+      and the meeting nudge that changes at exchange 3, invalidating the cache
+      mid-session; Haiku/Sonnet switching also splits the cache. Move volatile parts
+      after the breakpoint and log `usage.cache_read_input_tokens` to verify caching
+      works at all.
+- [ ] **Make destructive flows atomic.** `resetAiLearning` (five deletes + profile
+      reset) and `deleteEverythingAndRestart` (storage first, then two fallible
+      writes) can half-fail. Move each into one `SECURITY DEFINER` RPC.
+- [ ] **Generate Supabase DB types** (`supabase gen types`) and kill the pervasive
+      `(client.from('x') as any)` casts; restores column-name checking on writes
+      (same failure class as the defensive-write bugs).
+- [ ] **Migration hygiene:** add `DROP POLICY IF EXISTS` before `CREATE POLICY` in
+      migrations that lack it (initial schema, ai_brain, others); renumber one of the
+      two files sharing timestamp `20260707000000`.
+- [ ] **Env hygiene:** add `CLERK_WEBHOOK_SECRET` to `.env.example` + CLAUDE.md; add
+      a Zod-validated `lib/env.ts` loaded at startup so a missing
+      `NEXT_PUBLIC_APP_URL` fails fast instead of emailing broken links.
+
+### P3: Cleanup
+
+- [ ] Delete `templates/` (~7 MB of unreferenced UI-kit zips); remove unused
+      `@heroicons/react`; add a `typecheck` script to package.json.
+- [ ] `components/chat/ChatOverlay.tsx` is dead code (nothing imports it; the card
+      embeds `ChatPanel` inline). Delete it and update CLAUDE.md/docs, or wire it in.
+- [ ] `ChatPanel`: abort/unmount guards on async `setState`; stable keys for the
+      message list instead of index; catch `audio.play()` rejection.
+- [ ] `signCallingCardAssets`: sign URLs with `Promise.all` instead of sequentially;
+      extract a shared `SIGNED_URL_TTL_SECONDS` constant (literal `3600` in 5 places).
+- [ ] Deduplicate: `custom_qa_pairs` normalize/cap logic (3 implementations with
+      different behavior), employer-account resolution (3 variants), `getInitials`
+      and stage config in employer components.
+- [ ] Copy: en dashes in `ProfileEditor.tsx` and `AssetUploadCard.tsx`; literal
+      em-dash placeholder glyphs in `AnalyticsDashboard.tsx` and the admin users
+      table.
+- [ ] Translate or document the `SUSPENDED`/`NO_ROLE` error codes that leak through
+      Server Actions but are not in the documented envelope table.
+
+---
+
 ## SEO / launch ops (manual, founder)
 
 The SEO foundation is shipped in code (site metadata + title template, `robots.txt`,
