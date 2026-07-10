@@ -91,6 +91,16 @@ function AiBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
+/* One full exchange at its final size: question bubble + answered AI bubble */
+function Exchange({ pair }: { pair: QaPair }) {
+  return (
+    <div className="space-y-3">
+      <RecruiterBubble text={pair.question} />
+      <AiBubble>&ldquo;{pair.answer}&rdquo;</AiBubble>
+    </div>
+  )
+}
+
 function ChatPreview({ pairs }: { pairs: QaPair[] }) {
   const prefersReduced = useReducedMotion()
   const [started, setStarted] = useState(false)
@@ -135,44 +145,51 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
         </span>
       </div>
 
-      {/* Fixed floor so the card doesn't jump as exchanges rotate */}
-      <div className="min-h-[170px] sm:min-h-[150px]">
-        {prefersReduced ? (
-          <div className="space-y-3">
-            <RecruiterBubble text={pairs[0].question} />
-            <AiBubble>&ldquo;{pairs[0].answer}&rdquo;</AiBubble>
+      {/* Every exchange is stacked invisibly in the same grid cell, so the box
+          is permanently sized to the tallest one and never resizes while the
+          visible conversation animates on top. */}
+      <div className="grid">
+        {pairs.map((p, i) => (
+          <div key={i} className="col-start-1 row-start-1 invisible" aria-hidden="true">
+            <Exchange pair={p} />
           </div>
-        ) : (
-          started && (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={pairIndex}
-                className="space-y-3"
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+        ))}
+
+        <div className="col-start-1 row-start-1">
+          {prefersReduced ? (
+            <Exchange pair={pairs[0]} />
+          ) : (
+            started && (
+              <AnimatePresence mode="wait">
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
+                  key={pairIndex}
+                  className="space-y-3"
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <RecruiterBubble text={pair.question} />
-                </motion.div>
-                {phase !== 'question' && (
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35 }}
                   >
-                    <AiBubble>
-                      {phase === 'typing' ? <TypingDots /> : <>&ldquo;{pair.answer}&rdquo;</>}
-                    </AiBubble>
+                    <RecruiterBubble text={pair.question} />
                   </motion.div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          )
-        )}
+                  {phase !== 'question' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <AiBubble>
+                        {phase === 'typing' ? <TypingDots /> : <>&ldquo;{pair.answer}&rdquo;</>}
+                      </AiBubble>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            )
+          )}
+        </div>
       </div>
     </div>
   )
