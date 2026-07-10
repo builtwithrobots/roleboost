@@ -1,4 +1,5 @@
 import LandingNav from '@/components/marketing/LandingNav';
+import Footer from '@/components/marketing/Footer';
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       </a>
       <LandingNav />
       <main id="main-content">{children}</main>
+      <Footer />
     </div>
   );
 }
