@@ -1,5 +1,5 @@
 # RoleBoost -- Candidate Asset Production Skill
-**Version 2.1 | July 2026 | Rob Ramos, Founder**
+**Version 2.2 | July 2026 | Rob Ramos, Founder**
 **File:** `CANDIDATE_ASSET_PRODUCTION_SKILL.md`
 **Location:** RoleBoost project root alongside `CLAUDE.md`
 
@@ -9,8 +9,7 @@
 
 | Version | Date | Changes |
 |---|---|---|
-| 2.1 | July 2026 | Infographic prompt format updated: (1) Removed hardcoded dark background instruction and replaced with avatar-color-driven background selection using three-bucket mapping. (2) Added background selection rationale requirement to Identity Snapshot. (3) Removed "Do NOT use light or pastel colors" from infographic Do NOT lines. (4) Removed roleboost.app URL closing line from infographic layout spec and prompt templates. |
-| 2.0 | July 2026 | One update: New Do NOT line added to the audio prompt Do NOT block -- "Do NOT infer gender, relationship, or personal details beyond what is explicitly stated in the source material -- if the resume says 'parent,' say 'parent.'" Triggered by live QC finding: NotebookLM inferred "mother" from a resume that said "parent" only. Applies to Deep Dive and Brief formats. |
+| 2.2 | July 2026 | Two new lines added to the audio prompt Do NOT block, applying to both Deep Dive and Brief formats: (1) "Do NOT editorialize beyond what is stated in the source material -- do not invent descriptive framing, motivational language, or contextual color that is not explicitly documented in the file." (2) "Do NOT paraphrase or approximate company names, candidate names, or product names -- use the exact spelling from the source material every time they are spoken." Triggered by live QC finding: NotebookLM invented editorial framing and mangled company and candidate names in a live Deep Dive output. |
 
 ---
 
@@ -273,6 +272,8 @@ Every audio prompt must end with an explicit closing pitch instruction before th
 - "Do NOT use casual or informal language, analogies, or editorial commentary -- the tone is confident and direct, like a trusted colleague briefing a hiring manager, not a podcast host."
 - "Do NOT infer gender, relationship, or personal details beyond what is explicitly stated in the source material -- if the resume says 'parent,' say 'parent.'"
 - "Do NOT use the words 'passionate,' 'journey,' or 'innovative.'"
+- "Do NOT editorialize beyond what is stated in the source material -- do not invent descriptive framing, motivational language, or contextual color that is not explicitly documented in the file."
+- "Do NOT paraphrase or approximate company names, candidate names, or product names -- use the exact spelling from the source material every time they are spoken."
 
 **Deep Dive specific notes:**
 - Line 1: "The hosts are speaking directly to a hiring manager. Hosts are energetic, intelligent and engaging with a smooth cadence and transitions."
@@ -396,7 +397,7 @@ Then Section 1 (Narrative Guide Block) followed by Section 2 (Personalized Noteb
 The file closes with this exact footer line:
 
 ```
-*RoleBoost™ Candidate Asset Production Skill v2.1 -- roleboost.app -- Copyright 2026 RoleBoost™*
+*RoleBoost™ Candidate Asset Production Skill v2.2 -- roleboost.app -- Copyright 2026 RoleBoost™*
 ```
 
 ---
@@ -443,4 +444,4 @@ See `CLAUDE.md` for project-wide Claude Code instructions.
 
 ---
 
-*RoleBoost™ Candidate Asset Production Skill v2.1 -- roleboost.app -- Copyright 2026 RoleBoost™*
+*RoleBoost™ Candidate Asset Production Skill v2.2 -- roleboost.app -- Copyright 2026 RoleBoost™*
