@@ -557,6 +557,23 @@ a {
   animation-play-state: paused;
 }
 
+/* ── Hero Audio Waveform ────────────────────────────────────────────
+   Gentle pulsing bars for the landing hero's audio Boost tile. Bars
+   scale from their anchored bottom edge; per-bar stagger comes from an
+   inline animation-delay. Neutralized by the prefers-reduced-motion
+   rule above.
+────────────────────────────────────────────────────────────────── */
+@keyframes rb-wave {
+  0%, 100% { transform: scaleY(0.45); }
+  50%      { transform: scaleY(1); }
+}
+
+.rb-wave-bar {
+  transform-origin: bottom;
+  animation: rb-wave 1.3s ease-in-out infinite;
+  will-change: transform;
+}
+
 /* ── Stat / Number Display ──────────────────────────────────────────
    Large KPI numbers on dashboards and marketing pages.
 ────────────────────────────────────────────────────────────────── */

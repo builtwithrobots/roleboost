@@ -3,19 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
 import { ensureAdminBootstrap } from '@/lib/auth/superadmin';
-import Nav from '@/components/marketing/Nav';
-import HeroSection from '@/components/marketing/HeroSection';
-import SocialProofBar from '@/components/marketing/SocialProofBar';
-import ProblemSection from '@/components/marketing/ProblemSection';
-import AssetSuite from '@/components/marketing/AssetSuite';
-import HowItWorksCandidate from '@/components/marketing/HowItWorksCandidate';
-import HowItWorksEmployer from '@/components/marketing/HowItWorksEmployer';
-import AIChatbotSpotlight from '@/components/marketing/AIChatbotSpotlight';
-import TranscriptLoop from '@/components/marketing/TranscriptLoop';
-import PricingSection from '@/components/marketing/PricingSection';
-import DoneForYouSection from '@/components/marketing/DoneForYouSection';
-import FinalCTA from '@/components/marketing/FinalCTA';
-import Footer from '@/components/marketing/Footer';
+import LandingHero from '@/components/marketing/LandingHero';
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://roleboost.app').replace(/\/$/, '');
 
@@ -103,32 +91,12 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5]">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[#1E3A5F] focus:text-white focus:font-jakarta focus:font-semibold"
-      >
-        Skip to main content
-      </a>
-      <Nav />
-      <main id="main-content">
-        <HeroSection />
-        <SocialProofBar />
-        <ProblemSection />
-        <AssetSuite />
-        <HowItWorksCandidate />
-        <HowItWorksEmployer />
-        <AIChatbotSpotlight />
-        <TranscriptLoop />
-        <PricingSection />
-        <DoneForYouSection />
-        <FinalCTA />
-      </main>
-      <Footer />
-    </div>
+      <LandingHero />
+    </>
   );
 }
