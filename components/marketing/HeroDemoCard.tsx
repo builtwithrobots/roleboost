@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Mic, BarChart2, Bot } from 'lucide-react'
+import { Mic, BarChart2, Bot, Calendar, Mail } from 'lucide-react'
 
 /* Waveform bar heights in px, varying within the 8-28px band */
 const WAVE_BARS = [12, 22, 28, 18, 8]
@@ -39,11 +39,11 @@ const QA_PAIRS: QaPair[] = [
   {
     question: 'What is Jordan looking for in the next role?',
     answer:
-      'A team where ownership grows fast. Jordan was promoted ahead of timeline once already and wants a seat where the bar keeps rising. Want to set up a conversation?',
+      'A team where ownership grows fast. Jordan was promoted ahead of timeline once already and wants a seat where the bar keeps rising.',
   },
 ]
 
-type ChatPhase = 'question' | 'typing' | 'answer'
+type ChatPhase = 'question' | 'typing' | 'answer' | 'booking'
 
 function LiveDot() {
   return (
@@ -101,6 +101,41 @@ function Exchange({ pair }: { pair: QaPair }) {
   )
 }
 
+/* Terminal state after the exchanges: the AI offers a live conversation.
+   The chips are illustrative parts of the mock UI, not real controls, so
+   they are inert and hidden from assistive tech. */
+function BookingPrompt({ animate }: { animate: boolean }) {
+  const chipRow = (
+    <div className="mt-3 flex flex-wrap justify-end gap-2" aria-hidden="true">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D97706] px-3 py-1.5 font-jakarta text-[11px] font-semibold text-white">
+        <Calendar size={12} strokeWidth={2} />
+        Book a meeting with Jordan
+      </span>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(30,58,95,0.2)] bg-white px-3 py-1.5 font-jakarta text-[11px] font-semibold text-[#1E3A5F]">
+        <Mail size={12} strokeWidth={2} />
+        Email me the transcript
+      </span>
+    </div>
+  )
+
+  return (
+    <div>
+      <AiBubble>&ldquo;Want to keep going? Jordan is happy to talk live.&rdquo;</AiBubble>
+      {animate ? (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.4 }}
+        >
+          {chipRow}
+        </motion.div>
+      ) : (
+        chipRow
+      )}
+    </div>
+  )
+}
+
 function ChatPreview({ pairs }: { pairs: QaPair[] }) {
   const prefersReduced = useReducedMotion()
   const [started, setStarted] = useState(false)
@@ -120,15 +155,19 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
       t = setTimeout(() => setPhase('typing'), QUESTION_MS)
     } else if (phase === 'typing') {
       t = setTimeout(() => setPhase('answer'), TYPING_MS)
-    } else if (pairs.length > 1) {
-      // A single-exchange preview settles on its answer instead of looping
+    } else if (phase === 'answer') {
+      // Play every exchange once, then end on the booking prompt
       t = setTimeout(() => {
-        setPairIndex((i) => (i + 1) % pairs.length)
-        setPhase('question')
+        if (pairIndex < pairs.length - 1) {
+          setPairIndex(pairIndex + 1)
+          setPhase('question')
+        } else {
+          setPhase('booking')
+        }
       }, ANSWER_HOLD_MS)
     }
     return () => clearTimeout(t)
-  }, [started, phase, prefersReduced, pairs.length])
+  }, [started, phase, pairIndex, prefersReduced, pairs.length])
 
   const pair = pairs[pairIndex] ?? pairs[0]
 
@@ -154,6 +193,9 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
             <Exchange pair={p} />
           </div>
         ))}
+        <div className="col-start-1 row-start-1 invisible" aria-hidden="true">
+          <BookingPrompt animate={false} />
+        </div>
 
         <div className="col-start-1 row-start-1">
           {prefersReduced ? (
@@ -162,28 +204,40 @@ function ChatPreview({ pairs }: { pairs: QaPair[] }) {
             started && (
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={pairIndex}
+                  key={phase === 'booking' ? 'booking' : pairIndex}
                   className="space-y-3"
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35 }}
-                  >
-                    <RecruiterBubble text={pair.question} />
-                  </motion.div>
-                  {phase !== 'question' && (
+                  {phase === 'booking' ? (
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.35 }}
                     >
-                      <AiBubble>
-                        {phase === 'typing' ? <TypingDots /> : <>&ldquo;{pair.answer}&rdquo;</>}
-                      </AiBubble>
+                      <BookingPrompt animate />
                     </motion.div>
+                  ) : (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35 }}
+                      >
+                        <RecruiterBubble text={pair.question} />
+                      </motion.div>
+                      {phase !== 'question' && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.35 }}
+                        >
+                          <AiBubble>
+                            {phase === 'typing' ? <TypingDots /> : <>&ldquo;{pair.answer}&rdquo;</>}
+                          </AiBubble>
+                        </motion.div>
+                      )}
+                    </>
                   )}
                 </motion.div>
               </AnimatePresence>
