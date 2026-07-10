@@ -4,6 +4,16 @@ import { redirect } from 'next/navigation';
 import { adminClient } from '@/lib/supabase/admin';
 import { ensureAdminBootstrap } from '@/lib/auth/superadmin';
 import LandingHero from '@/components/marketing/LandingHero';
+import SocialProofBar from '@/components/marketing/SocialProofBar';
+import ProblemSection from '@/components/marketing/ProblemSection';
+import AssetSuite from '@/components/marketing/AssetSuite';
+import HowItWorksCandidate from '@/components/marketing/HowItWorksCandidate';
+import HowItWorksEmployer from '@/components/marketing/HowItWorksEmployer';
+import AIChatbotSpotlight from '@/components/marketing/AIChatbotSpotlight';
+import TranscriptLoop from '@/components/marketing/TranscriptLoop';
+import PricingSection from '@/components/marketing/PricingSection';
+import DoneForYouSection from '@/components/marketing/DoneForYouSection';
+import FinalCTA from '@/components/marketing/FinalCTA';
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://roleboost.app').replace(/\/$/, '');
 
@@ -97,6 +107,16 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <LandingHero />
+      <SocialProofBar />
+      <ProblemSection />
+      <AssetSuite />
+      <HowItWorksCandidate />
+      <HowItWorksEmployer />
+      <AIChatbotSpotlight />
+      <TranscriptLoop />
+      <PricingSection />
+      <DoneForYouSection />
+      <FinalCTA />
     </>
   );
 }

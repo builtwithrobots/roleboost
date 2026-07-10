@@ -5,6 +5,8 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/privacy',
   '/terms',
+  // Recruiter-facing marketing page, linked from the landing nav.
+  '/recruiters',
   // The Boosts marketing page and every persona example page (/boosts/[slug]).
   '/boosts(.*)',
   '/sign-in(.*)',

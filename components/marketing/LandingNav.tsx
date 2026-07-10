@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navLinks = [
   { href: '/boosts', label: 'Boosts' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '/#how-it-works', label: 'How It Works' },
+  { href: '/#pricing', label: 'Pricing' },
   { href: '/recruiters', label: 'For Recruiters' },
 ]
 
@@ -14,6 +15,14 @@ export default function LandingNav() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const hamburgerRef = useRef<HTMLButtonElement>(null)
+  const pathname = usePathname()
+
+  const onRecruitersPage = pathname?.startsWith('/recruiters') ?? false
+  // The recruiter page gets a way back to the candidate story in the center links
+  const links = onRecruitersPage
+    ? [...navLinks.slice(0, 3), { href: '/', label: 'For Candidates' }, navLinks[3]]
+    : navLinks
+  const isActive = (href: string) => href === '/recruiters' && onRecruitersPage
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8)
@@ -54,11 +63,16 @@ export default function LandingNav() {
 
           {/* Desktop links */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="font-inter text-[15px] font-medium text-[#1E3A5F]/80 hover:text-[#1E3A5F] transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5]"
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                className={`font-inter text-[15px] transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFBF5] ${
+                  isActive(link.href)
+                    ? 'font-semibold text-[#B45309]'
+                    : 'font-medium text-[#1E3A5F]/80 hover:text-[#1E3A5F]'
+                }`}
               >
                 {link.label}
               </Link>
@@ -120,11 +134,16 @@ export default function LandingNav() {
           className="md:hidden bg-[#FFFBF5] border-b border-[rgba(30,58,95,0.08)] px-4 py-4 space-y-1"
         >
           <nav aria-label="Mobile navigation">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="flex items-center min-h-[44px] font-inter text-[15px] font-medium text-[#1E3A5F]/80 hover:text-[#1E3A5F] py-3 px-3 rounded-lg hover:bg-[#F5F0E8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F]"
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                className={`flex items-center min-h-[44px] font-inter text-[15px] py-3 px-3 rounded-lg hover:bg-[#F5F0E8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3A5F] ${
+                  isActive(link.href)
+                    ? 'font-semibold text-[#B45309]'
+                    : 'font-medium text-[#1E3A5F]/80 hover:text-[#1E3A5F]'
+                }`}
                 onClick={() => setIsOpen(false)}
               >
                 {link.label}

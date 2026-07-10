@@ -1,17 +1,49 @@
 'use client'
 
-import { motion, useReducedMotion } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Mic, BarChart2, Bot } from 'lucide-react'
 
 /* Waveform bar heights in px, varying within the 8-28px band */
 const WAVE_BARS = [12, 22, 28, 18, 8]
 
-/* Tiles stagger in 150ms apart; chat messages follow 600ms after the last
-   tile settles, with the AI reply 800ms after the recruiter question. */
+/* Tiles stagger in 150ms apart; the chat loop starts 600ms after the last
+   tile settles. */
 const TILE_DELAYS = [0, 0.15, 0.3]
 const TILE_DURATION = 0.45
-const MSG_1_DELAY = TILE_DELAYS[2] + TILE_DURATION + 0.6
-const MSG_2_DELAY = MSG_1_DELAY + 0.8
+const CHAT_START_MS = (TILE_DELAYS[2] + TILE_DURATION + 0.6) * 1000
+
+/* Per-pair rhythm: recruiter question lands, the AI "types", the answer
+   replaces the dots, then the exchange holds before the next one fades in. */
+const QUESTION_MS = 1000
+const TYPING_MS = 1400
+const ANSWER_HOLD_MS = 5200
+
+export interface QaPair {
+  question: string
+  answer: string
+}
+
+/* Default candidate-POV exchanges (Jordan Mills persona) */
+const QA_PAIRS: QaPair[] = [
+  {
+    question: 'Jordan doesn’t have a degree. Is that a concern?',
+    answer:
+      'Jordan’s results speak for themselves. 97% CSAT, promoted ahead of timeline, Employee of the Quarter, competing against colleagues with 5-10 years of experience.',
+  },
+  {
+    question: 'How does Jordan perform under pressure?',
+    answer:
+      'During last year’s product launch, ticket volume tripled. Jordan held CSAT at 97% and coached two new hires through the surge at the same time.',
+  },
+  {
+    question: 'What is Jordan looking for in the next role?',
+    answer:
+      'A team where ownership grows fast. Jordan was promoted ahead of timeline once already and wants a seat where the bar keeps rising. Want to set up a conversation?',
+  },
+]
+
+type ChatPhase = 'question' | 'typing' | 'answer'
 
 function LiveDot() {
   return (
@@ -22,19 +54,137 @@ function LiveDot() {
   )
 }
 
-export default function HeroDemoCard() {
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1 px-1 py-1" aria-label="Jordan's AI is typing">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-1.5 w-1.5 rounded-full bg-white/70 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s` }}
+          aria-hidden="true"
+        />
+      ))}
+    </span>
+  )
+}
+
+function RecruiterBubble({ text }: { text: string }) {
+  return (
+    <div className="max-w-[85%]">
+      <p className="font-inter text-[10px] font-medium text-[#1E3A5F]/70 mb-1">Recruiter</p>
+      <div className="bg-white border border-[rgba(30,58,95,0.08)] text-[#1E3A5F] rounded-lg rounded-tl-none px-3 py-2 font-inter text-[12px] leading-relaxed">
+        &ldquo;{text}&rdquo;
+      </div>
+    </div>
+  )
+}
+
+function AiBubble({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-w-[85%] ml-auto text-right">
+      <p className="font-inter text-[10px] font-medium text-[#92400E] mb-1">Jordan&apos;s AI</p>
+      <div className="inline-block bg-[#1E3A5F] text-white rounded-lg rounded-tr-none px-3 py-2 font-inter text-[12px] leading-relaxed text-left">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ChatPreview({ pairs }: { pairs: QaPair[] }) {
+  const prefersReduced = useReducedMotion()
+  const [started, setStarted] = useState(false)
+  const [pairIndex, setPairIndex] = useState(0)
+  const [phase, setPhase] = useState<ChatPhase>('question')
+
+  useEffect(() => {
+    if (prefersReduced) return
+    const t = setTimeout(() => setStarted(true), CHAT_START_MS)
+    return () => clearTimeout(t)
+  }, [prefersReduced])
+
+  useEffect(() => {
+    if (!started || prefersReduced) return
+    let t: ReturnType<typeof setTimeout> | undefined
+    if (phase === 'question') {
+      t = setTimeout(() => setPhase('typing'), QUESTION_MS)
+    } else if (phase === 'typing') {
+      t = setTimeout(() => setPhase('answer'), TYPING_MS)
+    } else if (pairs.length > 1) {
+      // A single-exchange preview settles on its answer instead of looping
+      t = setTimeout(() => {
+        setPairIndex((i) => (i + 1) % pairs.length)
+        setPhase('question')
+      }, ANSWER_HOLD_MS)
+    }
+    return () => clearTimeout(t)
+  }, [started, phase, prefersReduced, pairs.length])
+
+  const pair = pairs[pairIndex] ?? pairs[0]
+
+  return (
+    <div className="mt-4 bg-[#F5F0E8] rounded-lg p-3 sm:p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5 text-[#1E3A5F]">
+          <Bot size={14} strokeWidth={2} aria-hidden="true" />
+          <span className="font-jakarta text-[12px] font-semibold">Jordan&apos;s Career AI</span>
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 font-jakarta text-[10px] font-semibold text-[#065F46]">
+          <LiveDot />
+          Live
+        </span>
+      </div>
+
+      {/* Fixed floor so the card doesn't jump as exchanges rotate */}
+      <div className="min-h-[170px] sm:min-h-[150px]">
+        {prefersReduced ? (
+          <div className="space-y-3">
+            <RecruiterBubble text={pairs[0].question} />
+            <AiBubble>&ldquo;{pairs[0].answer}&rdquo;</AiBubble>
+          </div>
+        ) : (
+          started && (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pairIndex}
+                className="space-y-3"
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  <RecruiterBubble text={pair.question} />
+                </motion.div>
+                {phase !== 'question' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35 }}
+                  >
+                    <AiBubble>
+                      {phase === 'typing' ? <TypingDots /> : <>&ldquo;{pair.answer}&rdquo;</>}
+                    </AiBubble>
+                  </motion.div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          )
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function HeroDemoCard({ chatPairs = QA_PAIRS }: { chatPairs?: QaPair[] }) {
   const prefersReduced = useReducedMotion()
 
   const tileMotion = (index: number) => ({
     initial: prefersReduced ? false : { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: TILE_DURATION, delay: prefersReduced ? 0 : TILE_DELAYS[index] },
-  })
-
-  const messageMotion = (delay: number) => ({
-    initial: prefersReduced ? false : { opacity: 0, y: 8 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4, delay: prefersReduced ? 0 : delay },
   })
 
   return (
@@ -123,39 +273,7 @@ export default function HeroDemoCard() {
         </motion.div>
       </div>
 
-      {/* AI chat preview */}
-      <div className="mt-4 bg-[#F5F0E8] rounded-lg p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5 text-[#1E3A5F]">
-            <Bot size={14} strokeWidth={2} aria-hidden="true" />
-            <span className="font-jakarta text-[12px] font-semibold">Jordan&apos;s Career AI</span>
-          </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2 py-0.5 font-jakarta text-[10px] font-semibold text-[#065F46]">
-            <LiveDot />
-            Live
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          <motion.div {...messageMotion(MSG_1_DELAY)} className="max-w-[85%]">
-            <p className="font-inter text-[10px] font-medium text-[#1E3A5F]/70 mb-1">Recruiter</p>
-            <div className="bg-white border border-[rgba(30,58,95,0.08)] text-[#1E3A5F] rounded-lg rounded-tl-none px-3 py-2 font-inter text-[12px] leading-relaxed">
-              &ldquo;Jordan doesn&apos;t have a degree. Is that a concern?&rdquo;
-            </div>
-          </motion.div>
-
-          <motion.div {...messageMotion(MSG_2_DELAY)} className="max-w-[85%] ml-auto text-right">
-            <p className="font-inter text-[10px] font-medium text-[#92400E] mb-1">
-              Jordan&apos;s AI
-            </p>
-            <div className="bg-[#1E3A5F] text-white rounded-lg rounded-tr-none px-3 py-2 font-inter text-[12px] leading-relaxed text-left">
-              &ldquo;Jordan&apos;s results speak for themselves. 97% CSAT, promoted ahead of
-              timeline, Employee of the Quarter, competing against colleagues with 5-10 years of
-              experience.&rdquo;
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      <ChatPreview pairs={chatPairs} />
     </div>
   )
 }
